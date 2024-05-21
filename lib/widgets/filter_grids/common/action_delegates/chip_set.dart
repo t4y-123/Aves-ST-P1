@@ -75,6 +75,7 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
     switch (action) {
       // general
       case ChipSetAction.configureView:
+      case ChipSetAction.startWallpaperService:
         return true;
       case ChipSetAction.select:
         return appMode.canSelectFilter && !isSelecting;
@@ -134,6 +135,9 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       // browsing
       case ChipSetAction.search:
       case ChipSetAction.toggleTitleSearch:
+        // t4y
+      case ChipSetAction.startWallpaperService:
+
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
         return true;
@@ -204,6 +208,9 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       case ChipSetAction.rename:
       case ChipSetAction.configureVault:
         break;
+      // t4y
+      case ChipSetAction.startWallpaperService:
+        _goToStats(context);
     }
   }
 

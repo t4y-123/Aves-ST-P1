@@ -8,8 +8,9 @@ import 'package:aves_model/aves_model.dart';
 
 class SettingsDefaults {
   // app
-  static const hasAcceptedTerms = false;
-  static const canUseAnalysisService = true;
+  static const hasAcceptedTerms = true; // t4y temp set true accept for test
+
+  static const canUseAnalysisService = false; // t4y temp set false accept for test
   static const isInstalledAppAccessAllowed = false;
   static const isErrorReportingAllowed = false;
   static const tileLayout = TileLayout.grid;
@@ -17,7 +18,8 @@ class SettingsDefaults {
 
   // display
   static const displayRefreshRateMode = DisplayRefreshRateMode.auto;
-  static const themeBrightness = AvesThemeBrightness.system;
+  // static const themeBrightness = AvesThemeBrightness.system;
+  static const themeBrightness = AvesThemeBrightness.dark; // t4y temp set false accept for test
   static const themeColorMode = AvesThemeColorMode.polychrome;
   static const enableDynamicColor = false;
   static const enableBlurEffect = true; // `enableBlurEffect` has a contextual default value
@@ -26,8 +28,10 @@ class SettingsDefaults {
 
   // navigation
   static const mustBackTwiceToExit = true;
-  static const keepScreenOn = KeepScreenOn.viewerOnly;
-  static const homePage = HomePageSetting.collection;
+  static const keepScreenOn = KeepScreenOn.always;// t4y temp for test
+  //static const keepScreenOn = KeepScreenOn.viewerOnly;
+  static const homePage = HomePageSetting.albums;// t4y prefer albums
+  //static const homePage = HomePageSetting.collection;
   static const enableBottomNavigationBar = true;
   static const confirm = true;
   static const setMetadataDateBeforeFileOp = false;
@@ -71,14 +75,16 @@ class SettingsDefaults {
     EntryAction.share,
     EntryAction.delete,
   ];
-  static const showOverlayOnOpening = true;
+  static const showOverlayOnOpening = false; // t4y : I prefer not show on Opening
+  //static const showOverlayOnOpening = true;
   static const showOverlayMinimap = false;
   static const overlayHistogramStyle = OverlayHistogramStyle.none;
   static const showOverlayInfo = true;
   static const showOverlayDescription = false;
   static const showOverlayRatingTags = false;
   static const showOverlayShootingDetails = false;
-  static const showOverlayThumbnailPreview = false;
+  static const showOverlayThumbnailPreview = true;// t4y : I prefer ThumbnailPreview
+  //static const showOverlayThumbnailPreview = false;
   static const viewerGestureSideTapNext = false;
   static const viewerUseCutout = true;
   static const enableMotionPhotoAutoPlay = false;

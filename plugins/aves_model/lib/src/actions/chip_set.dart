@@ -24,6 +24,9 @@ enum ChipSetAction {
   rename,
   setCover,
   configureVault,
+
+  // t4y : wallpaper service
+  startWallpaperService,
 }
 
 class ChipSetActions {
@@ -42,6 +45,9 @@ class ChipSetActions {
     ChipSetAction.map,
     ChipSetAction.slideshow,
     ChipSetAction.stats,
+    // t4y : wallpaper service
+    ChipSetAction.startWallpaperService,
+    // t4y end
     null,
     ChipSetAction.createAlbum,
     ChipSetAction.createVault,

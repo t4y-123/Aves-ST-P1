@@ -34,6 +34,9 @@ extension ExtraChipSetActionView on ChipSetAction {
       ChipSetAction.rename => l10n.chipActionRename,
       ChipSetAction.setCover => l10n.chipActionSetCover,
       ChipSetAction.configureVault => l10n.chipActionConfigureVault,
+
+      //t4y : wallpaper service
+      ChipSetAction.startWallpaperService => l10n.startWallpaperService,
     };
   }
 
@@ -68,6 +71,8 @@ extension ExtraChipSetActionView on ChipSetAction {
       ChipSetAction.rename => AIcons.name,
       ChipSetAction.setCover => AIcons.setCover,
       ChipSetAction.configureVault => AIcons.vaultConfigure,
+      // t4y
+      ChipSetAction.startWallpaperService => AIcons.setAs,
     };
   }
 }

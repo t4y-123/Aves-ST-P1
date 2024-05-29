@@ -256,6 +256,15 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".ForegroundWallpaperWidgetProvider"
+            android:enabled="true"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
+
         <!-- anonymous service for analysis worker is specified here to provide service type -->
         <!-- TODO TLAD [Android 15 (API 35)] use `mediaProcessing` -->
         <service
@@ -287,6 +296,8 @@
                 android:name="android.service.dream"
                 android:resource="@xml/screen_saver" />
         </service>
+
+        <service android:name=".ForegroundWallpaperService" android:exported="true"/>
 
         <!-- file provider to share files having a file:// URI -->
         <provider

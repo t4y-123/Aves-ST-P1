@@ -19,6 +19,7 @@ import app.loup.streams_channel.StreamsChannel
 import deckers.thibault.aves.channel.AvesByteSendingMethodCodec
 import deckers.thibault.aves.channel.calls.AccessibilityHandler
 import deckers.thibault.aves.channel.calls.AnalysisHandler
+import deckers.thibault.aves.channel.calls.ForegroundWallpaperHandler
 import deckers.thibault.aves.channel.calls.AppAdapterHandler
 import deckers.thibault.aves.channel.calls.DebugHandler
 import deckers.thibault.aves.channel.calls.DeviceHandler
@@ -72,7 +73,9 @@ open class MainActivity : FlutterFragmentActivity() {
     internal lateinit var intentDataMap: MutableMap<String, Any?>
     private lateinit var analysisHandler: AnalysisHandler
     private lateinit var mediaSessionHandler: MediaSessionHandler
-
+    //t4y add for foreground wallpaper
+    private  lateinit var foregroundWallpaperHandler: ForegroundWallpaperHandler
+    // end
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(LOG_TAG, "onCreate intent=$intent")
 
@@ -114,6 +117,10 @@ open class MainActivity : FlutterFragmentActivity() {
         // dart -> platform -> dart
         // - need Context
         analysisHandler = AnalysisHandler(this, ::onAnalysisCompleted)
+        //t4y add for foreground wallpaper
+        foregroundWallpaperHandler = ForegroundWallpaperHandler(this)
+        MethodChannel(messenger, ForegroundWallpaperHandler.CHANNEL).setMethodCallHandler(foregroundWallpaperHandler)
+        //
         mediaSessionHandler = MediaSessionHandler(this, mediaCommandStreamHandler)
         MethodChannel(messenger, AnalysisHandler.CHANNEL).setMethodCallHandler(analysisHandler)
         MethodChannel(messenger, AppAdapterHandler.CHANNEL).setMethodCallHandler(AppAdapterHandler(this))

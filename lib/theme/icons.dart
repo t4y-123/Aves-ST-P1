@@ -190,6 +190,10 @@ class AIcons {
   static const selected = Icons.check_circle_outline;
   static const unselected = Icons.radio_button_unchecked;
 
+  // t4y for classified personal features.
+  // classified setttings
+  static const classified = Icons.security;
+
   static final github = MdiIcons.github;
   static final legal = MdiIcons.scaleBalance;
 

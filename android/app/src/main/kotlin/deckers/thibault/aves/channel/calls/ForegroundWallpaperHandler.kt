@@ -12,6 +12,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import deckers.thibault.aves.utils.LogUtils
+import android.appwidget.AppWidgetManager
 
 // t4y : to make the service keep running even when the app is stop,
 // use boardcast receriver to start the service
@@ -38,6 +39,7 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
                 Toast.makeText(appContext, "Stop ForegroundWallpaper In Handler", Toast.LENGTH_SHORT).show()
                 result.success(null)
             }
+            "update" -> Coresult.safe(call, result, ::update)
             // The getRunningServices method is indeed deprecated in newer Android versions (from API level 26 and onward)
             // due to changes in Android's background execution limits.
             // Though for backwards compatibility, it will still return the caller's own services.
@@ -50,6 +52,18 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
             else -> result.notImplemented()
         }
     } // onMethodCall
+
+    private fun update(call: MethodCall, result: MethodChannel.Result) {
+        val widgetId = call.argument<Int>("widgetId")
+        if (widgetId == null) {
+            result.error("update-args", "missing arguments", null)
+            return
+        }
+
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        ForegroundWallpaperWidgetProvider().onUpdate(context, appWidgetManager, intArrayOf(widgetId))
+        result.success(null)
+    }
 
     companion object {
         private val LOG_TAG = LogUtils.createTag<ForegroundWallpaperWidgetProvider>()

@@ -8,6 +8,10 @@ import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
 
+import '../privacyGuardLevel.dart';
+import '../filterSet.dart';
+import '../wallpaperSchedule.dart';
+
 abstract class MetadataDb {
   int get nextId;
 
@@ -118,4 +122,51 @@ abstract class MetadataDb {
   Future<void> addVideoPlayback(Set<VideoPlaybackRow> rows);
 
   Future<void> removeVideoPlayback(Set<int> ids);
+
+  //
+  // Privacy Guard Level,
+
+  Future<void> clearPrivacyGuardLevel();
+
+  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels();
+
+  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+
+  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row);
+
+  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+
+  // Filter Set for wallpaper,
+
+  Future<void> clearFilterSet();
+
+  Future<Set<FilterSetRow>> loadAllFilterSet();
+
+  Future<void> addFilterSet(Set<FilterSetRow> rows);
+
+  Future<void> updateFilterSetId(int id, FilterSetRow row);
+
+  Future<void> removeFilterSet(Set<FilterSetRow> rows);
+
+  // wallpaperScheduleTable
+
+  Future<void> clearWallpaperSchedules();
+
+  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules();
+
+  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+
+  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row);
+
+  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+  // wallpaperScheduleTableDetails
+  Future<void> clearWallpaperScheduleDetails();
+
+  Future<Set<WallpaperScheduleDetailRow>> loadAllWallpaperScheduleDetails();
+
+  Future<void> addWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows);
+
+  Future<void> updateWallpaperScheduleDetails(int id, WallpaperScheduleDetailRow row);
+
+  Future<void> removeWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows);
 }

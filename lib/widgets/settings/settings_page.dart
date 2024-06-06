@@ -19,6 +19,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
+import 'classified/classified.dart';
+
 class SettingsPage extends StatelessWidget {
   static const routeName = '/settings';
 
@@ -31,6 +33,7 @@ class SettingsPage extends StatelessWidget {
     AccessibilitySection(),
     DisplaySection(),
     LanguageSection(),
+    ClassifiedSection(),
   ];
 
   const SettingsPage({super.key});

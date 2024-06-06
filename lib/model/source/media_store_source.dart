@@ -18,6 +18,8 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
+import '../wallpaperSchedule.dart';
+
 class MediaStoreSource extends CollectionSource {
   final Debouncer _changeDebouncer = Debouncer(delay: ADurations.mediaContentChangeDebounceDelay);
   final Set<String> _changedUris = {};
@@ -57,6 +59,11 @@ class MediaStoreSource extends CollectionSource {
     await vaults.init();
     await favourites.init();
     await covers.init();
+
+    //t4y: for foreground wallpaper initialize.
+    await wallpaperSchedules.initWallpaperSchedules();
+
+
     final currentTimeZoneOffset = await deviceService.getDefaultTimeZoneRawOffsetMillis();
     if (currentTimeZoneOffset != null) {
       final catalogTimeZoneOffset = settings.catalogTimeZoneRawOffsetMillis;

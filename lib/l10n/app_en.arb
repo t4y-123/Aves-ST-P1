@@ -1065,6 +1065,12 @@
   "filePickerNoItems": "No items",
   "filePickerUseThisFolder": "Use this folder",
 
+
+  "settingsClassifiedSectionTitle": "Classified",
+  "settingsClassfiedForegroundWallpaperConfigTile": "Foreground Wallpaper Personalize",
+  "settingsForgroundWallpaperConfigrBanner": "Touch and hold to move and reorder items.",
+
+
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",
   "stopWallpaperService": "Stop Wallpaper Service"

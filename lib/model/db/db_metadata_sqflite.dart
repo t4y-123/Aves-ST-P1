@@ -5,16 +5,21 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/filterSet.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
+import 'package:aves/model/wallpaperSchedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
+
+import '../privacyGuardLevel.dart';
+
 
 class SqfliteMetadataDb implements MetadataDb {
   late Database _db;
@@ -30,6 +35,14 @@ class SqfliteMetadataDb implements MetadataDb {
   static const vaultTable = 'vaults';
   static const trashTable = 'trash';
   static const videoPlaybackTable = 'videoPlayback';
+
+  // t4y for foreground Wallpaper
+  static const privacyGuardLevelTable = 'privacyGuardLevel';
+  static const filterSetTable = 'filterSet';
+  static const wallpaperScheduleTable = 'wallpaperSchedule';
+  static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
+
+  //End
 
   static int _lastId = 0;
 
@@ -106,6 +119,36 @@ class SqfliteMetadataDb implements MetadataDb {
         await db.execute('CREATE TABLE $videoPlaybackTable('
             'id INTEGER PRIMARY KEY'
             ', resumeTimeMillis INTEGER'
+            ')');
+        //T4y: Foreground Wallpaper tables
+        await db.execute('CREATE TABLE $privacyGuardLevelTable('
+            'id INTEGER PRIMARY KEY'
+            ', guardLevel INTEGER'
+            ', aliasName TEXT'
+            ', color INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $filterSetTable('
+            'id INTEGER PRIMARY KEY'
+            ', filterSetNum INTEGER'
+            ', aliasName TEXT'
+            ', filters TEXT'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $wallpaperScheduleTable('
+            'id INTEGER PRIMARY KEY'
+            ', scheduleNum INTEGER'
+            ', scheduleName TEXT'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $wallpaperScheduleDetailsTable('
+            'id INTEGER PRIMARY KEY'
+            ', wallpaperScheduleId INTEGER'
+            ', filterSetId INTEGER'
+            ', privacyGuardLevelId INTEGER'
+            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
+            ', widgetId TEXT DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', intervalTime INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
             ')');
       },
       onUpgrade: MetadataDbUpgrader.upgradeDb,
@@ -615,5 +658,198 @@ class SqfliteMetadataDb implements MetadataDb {
       where: 'id IN (${ids.join(',')})',
     );
     return rows.map(mapRow).toSet();
+  }
+
+  // Privacy Guard LevelS
+  @override
+  Future<void> clearPrivacyGuardLevel() async {
+    final count = await _db.delete(privacyGuardLevelTable, where: '1');
+    debugPrint('clearPrivacyGuardLevel deleted $count rows');
+  }
+
+  @override
+  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels() async {
+    final rows = await _db.query(privacyGuardLevelTable);
+    return rows.map(PrivacyGuardLevelRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertPrivacyGuardLevel(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row) async {
+    final batch = _db.batch();
+    batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertPrivacyGuardLevel(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [row.privacyGuardLevelID]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertPrivacyGuardLevel(Batch batch, PrivacyGuardLevelRow row) {
+    batch.insert(
+      privacyGuardLevelTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Filter Set for wallpaper,
+  @override
+  Future<void> clearFilterSet() async {
+    final count = await _db.delete(filterSetTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FilterSetRow>> loadAllFilterSet() async {
+    final rows = await _db.query(filterSetTable);
+    return rows.map(FilterSetRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFilterSet(Set<FilterSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFilterSet(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFilterSetId(int id, FilterSetRow row) async {
+    final batch = _db.batch();
+    batch.delete(filterSetTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFilterSet(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFilterSet(Set<FilterSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(filterSetTable, where: 'id = ?', whereArgs: [row.filterSetId]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFilterSet(Batch batch, FilterSetRow row) {
+    batch.insert(
+      filterSetTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // wallpaper Schedule Table
+  @override
+  Future<void> clearWallpaperSchedules() async {
+    final count = await _db.delete(wallpaperScheduleTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules() async {
+    final rows = await _db.query(wallpaperScheduleTable);
+    return rows.map(WallpaperScheduleRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertWallpaperSchedule(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row) async {
+    final batch = _db.batch();
+    batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertWallpaperSchedule(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertWallpaperSchedule(Batch batch, WallpaperScheduleRow row) {
+    batch.insert(
+      wallpaperScheduleTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // wallpaper Schedule Details Table
+  @override
+  Future<void> clearWallpaperScheduleDetails() async {
+    final count = await _db.delete(wallpaperScheduleDetailsTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<WallpaperScheduleDetailRow>> loadAllWallpaperScheduleDetails() async {
+    final rows = await _db.query(wallpaperScheduleDetailsTable);
+    return rows.map(WallpaperScheduleDetailRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertWallpaperScheduleDetails(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateWallpaperScheduleDetails(int id, WallpaperScheduleDetailRow row) async {
+    final batch = _db.batch();
+    batch.delete(wallpaperScheduleDetailsTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertWallpaperScheduleDetails(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(wallpaperScheduleDetailsTable, where: 'id = ?', whereArgs: [row.wallpaperScheduleDetailId]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertWallpaperScheduleDetails(Batch batch, WallpaperScheduleDetailRow row) {
+    batch.insert(
+      wallpaperScheduleDetailsTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

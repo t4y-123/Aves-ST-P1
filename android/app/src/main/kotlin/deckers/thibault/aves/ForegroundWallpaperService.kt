@@ -73,6 +73,7 @@ class ForegroundWallpaperService : Service() {
                     Intent.ACTION_SCREEN_ON -> handleScreenOn()
                     Intent.ACTION_SCREEN_OFF -> handleScreenOff()
                     Intent.ACTION_USER_PRESENT -> handleUserPresent()
+                    Intent.ACTION_TIME_CHANGED -> handleUserPresent()
                 }
             }
         }

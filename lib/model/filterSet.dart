@@ -82,7 +82,7 @@ class FilterSet with ChangeNotifier{
 }
 
 @immutable
-class FilterSetRow extends Equatable {
+class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
   final int filterSetId;
   final int filterSetNum;
   final String aliasName;
@@ -101,7 +101,8 @@ class FilterSetRow extends Equatable {
   });
 
   static FilterSetRow fromMap(Map map) {
-    final filters = (jsonDecode(map['filters'] ) as List<String>).map(CollectionFilter.fromJson).whereNotNull().toSet();
+    final List<dynamic> decodedFilters = jsonDecode(map['filters']);
+    final filters = decodedFilters.map((e) => CollectionFilter.fromJson(e as String)).whereNotNull().toSet();
 
     return FilterSetRow(
       filterSetId:map['id'] as int,
@@ -117,5 +118,30 @@ class FilterSetRow extends Equatable {
         'filterSetNum': filterSetNum,
         'aliasName': aliasName,
         'filters': jsonEncode(filters.map((filter) => filter.toJson()).toList()),
+        'isActive' : isActive ? 1 : 0,
   };
+
+  @override
+  int compareTo(FilterSetRow other) {
+    // Sorting logic
+    if (isActive != other.isActive) {
+      // Sort by isActive, true (1) comes before false (0)
+      return isActive ? -1 : 1;
+    }
+
+    // If isActive is the same, sort by filterSetNum
+    final filterSetNumComparison = filterSetNum.compareTo(other.filterSetNum);
+    if (filterSetNumComparison != 0) {
+      return filterSetNumComparison;
+    }
+
+    // If filterSetNum is the same, sort by aliasName
+    final aliasNameComparison = aliasName.compareTo(other.aliasName);
+    if (aliasNameComparison != 0) {
+      return aliasNameComparison;
+    }
+
+    // If aliasName is the same, sort by filterSetId
+    return filterSetId.compareTo(other.filterSetId);
+  }
 }

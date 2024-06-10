@@ -11,6 +11,8 @@ import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'foreground_wallpaper_config.dart';
+
 class ClassifiedSection extends SettingsSection {
   @override
   String get key => 'classified';
@@ -32,12 +34,12 @@ class ClassifiedSection extends SettingsSection {
 
 class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsClassfiedForegroundWallpaperConfigTile;
+  String title(BuildContext context) => context.l10n.settingsClassifiedForegroundWallpaperConfigTile;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
         title: title(context),
         routeName: NavigationDrawerEditorPage.routeName,
-        builder: (context) => const NavigationDrawerEditorPage(),
+        builder: (context) => const ForegroundWallpaperConfigPage(),
       );
 }

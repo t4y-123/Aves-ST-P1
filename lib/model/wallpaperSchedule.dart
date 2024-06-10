@@ -191,6 +191,11 @@ class WallpaperSchedules with ChangeNotifier {
       await wallpaperSchedules.add(scheduleData.toSet());
       // Add details data to the database
       await wallpaperScheduleDetails.add(detailsData.toSet());
+    }else{
+      await privacyGuardLevels.init();
+      await filterSet.init();
+      await wallpaperSchedules.init();
+      await wallpaperScheduleDetails.init();
     }
   }
 
@@ -252,7 +257,7 @@ class WallpaperSchedules with ChangeNotifier {
 }
 
 @immutable
-class WallpaperScheduleRow extends Equatable {
+class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperScheduleRow>  {
   final int id;
   final int scheduleNum;
   final String scheduleName;
@@ -286,8 +291,25 @@ class WallpaperScheduleRow extends Equatable {
         'id': id,
         'scheduleNum': scheduleNum,
         'scheduleName': scheduleName,
-        'isActive' : isActive,
+        'isActive' : isActive ? 1 : 0,
       };
+  @override
+  int compareTo(WallpaperScheduleRow other) {
+    // Sorting logic
+    if (isActive != other.isActive) {
+      // Sort by isActive, true (1) comes before false (0)
+      return isActive ? -1 : 1;
+    }
+
+    // If isActive is the same, sort by scheduleNum
+    final scheduleNumComparison = scheduleNum.compareTo(other.scheduleNum);
+    if (scheduleNumComparison != 0) {
+      return scheduleNumComparison;
+    }
+    // If scheduleNum is the same, sort by id
+    return id.compareTo(other.id);
+  }
+
 }
 
 
@@ -411,4 +433,5 @@ class WallpaperScheduleDetailRow extends Equatable {
     'widgetId': widgetId,
     'intervalTime': intervalTime,
   };
+
 }

@@ -8,9 +8,9 @@ import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
 
-import '../privacyGuardLevel.dart';
-import '../filterSet.dart';
-import '../wallpaperSchedule.dart';
+import '../foreground_wallpaper/privacyGuardLevel.dart';
+import '../foreground_wallpaper/filterSet.dart';
+import '../foreground_wallpaper/wallpaperSchedule.dart';
 
 abstract class MetadataDb {
   int get nextId;

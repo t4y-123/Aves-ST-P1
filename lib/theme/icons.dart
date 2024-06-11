@@ -193,9 +193,12 @@ class AIcons {
   // t4y for classified personal features.
   // classified setttings
   static const classified = Icons.security;
+  static const active = Icons.lightbulb_outline;
+  static const inactive = Icons.code_off_sharp;
 
   static final github = MdiIcons.github;
   static final legal = MdiIcons.scaleBalance;
+
 
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking

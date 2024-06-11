@@ -1,15 +1,15 @@
 import 'dart:async';
 
 
-import 'package:aves/model/filterSet.dart';
-import 'package:aves/model/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/filterSet.dart';
+import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import 'filters/aspect_ratio.dart';
-import 'filters/mime.dart';
+import '../filters/aspect_ratio.dart';
+import '../filters/mime.dart';
 
 final WallpaperSchedules wallpaperSchedules = WallpaperSchedules._private();
 
@@ -22,183 +22,6 @@ class WallpaperSchedules with ChangeNotifier {
     _rows = await metadataDb.loadAllWallpaperSchedules();
   }
 
-  Future<void> initWallpaperSchedules() async {
-    // Initialize wallpaperSchedules and wallpaperScheduleDetails
-    final currentWallpaperSchedules = await metadataDb.loadAllWallpaperSchedules();
-    if (currentWallpaperSchedules.isEmpty) {
-      await wallpaperScheduleDetails.init();
-
-      // init Guard Levels first.
-      final initialPrivacyGuardLevels = {
-        const PrivacyGuardLevelRow(
-          privacyGuardLevelID: 1,
-          guardLevel: 1,
-          aliasName: 'Exposure',
-          color: Color(0xFFFF0000), // Red
-          isActive: true,
-        ),
-        const PrivacyGuardLevelRow(
-          privacyGuardLevelID: 2,
-          guardLevel: 2,
-          aliasName: 'Moderate',
-          color: Color(0xFF8D4FF8), // Purple
-          isActive: true,
-        ),
-        const PrivacyGuardLevelRow(
-          privacyGuardLevelID: 3,
-          guardLevel: 3,
-          aliasName: 'Safe',
-          color: Color(0xFF7AB7EF), // Blue
-          isActive: true,
-        ),
-      };
-      await privacyGuardLevels.initializePrivacyGuardLevels(initialPrivacyGuardLevels);
-
-      // initiate FilterSet secondly.
-      final initialFilterSets = {
-        FilterSetRow(
-          filterSetId: 1,
-          filterSetNum: 1,
-          aliasName: 'Home: Exposure',
-          filters: {AspectRatioFilter.portrait, MimeFilter.image},
-          isActive: true,
-        ),
-        FilterSetRow(
-          filterSetId: 2,
-          filterSetNum: 2,
-          aliasName: 'Home: Moderate',
-          filters: {AspectRatioFilter.portrait, MimeFilter.image},
-          isActive: true,
-        ),
-        FilterSetRow(
-          filterSetId: 3,
-          filterSetNum: 3,
-          aliasName: 'Lock: Moderate & Exposure',
-          filters: {AspectRatioFilter.portrait, MimeFilter.image},
-          isActive: true,
-        ),
-        FilterSetRow(
-          filterSetId: 4,
-          filterSetNum: 4,
-          aliasName: 'Home: Safe',
-          filters: {AspectRatioFilter.portrait, MimeFilter.image},
-          isActive: true,
-        ),
-        FilterSetRow(
-          filterSetId: 5,
-          filterSetNum: 5,
-          aliasName: 'Lock: Safe',
-          filters: {AspectRatioFilter.portrait, MimeFilter.image},
-          isActive: true,
-        ),
-      };
-      await filterSet.initializeFilterSets(initialFilterSets);
-
-      // Third, make schedule.
-      const int defaulInterval = 5; // seconds.
-      //Schedule data
-
-      final scheduleData = [
-        const WallpaperScheduleRow(
-          id: 1,
-          scheduleNum: 1,
-          scheduleName: 'Home: Exposure',
-          isActive: true,
-        ),
-        const WallpaperScheduleRow(
-          id: 2,
-          scheduleNum: 2,
-          scheduleName: 'Home: Moderate',
-          isActive: true,
-        ),
-        const WallpaperScheduleRow(
-          id: 3,
-          scheduleNum: 3,
-          scheduleName: 'Lock: Exposure & Moderate',
-          isActive: true,
-        ),
-        const WallpaperScheduleRow(
-          id: 4,
-          scheduleNum: 4,
-          scheduleName: 'Home: Safe',
-          isActive: true,
-        ),
-        const WallpaperScheduleRow(
-          id: 5,
-          scheduleNum: 5,
-          scheduleName: 'Lock: Safe',
-          isActive: true,
-        ),
-      ];
-      // Details data
-      final detailsData = [
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 1,
-          wallpaperScheduleId: 1,
-          filterSetId: 1,
-          privacyGuardLevelId: 1,
-          updateType: 'home',
-          widgetId: '0',
-          intervalTime: defaulInterval,
-        ),
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 2,
-          wallpaperScheduleId: 2,
-          filterSetId: 2,
-          privacyGuardLevelId: 2,
-          updateType: 'home',
-          widgetId: '0',
-          intervalTime: defaulInterval,
-        ),
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 3,
-          wallpaperScheduleId: 3,
-          filterSetId: 3,
-          privacyGuardLevelId: 1,
-          updateType: 'lock',
-          widgetId: '0',
-          intervalTime: 0,
-        ),
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 4,
-          wallpaperScheduleId: 3,
-          filterSetId: 3,
-          privacyGuardLevelId: 2,
-          updateType: 'lock',
-          widgetId: '0',
-          intervalTime: 0,
-        ),
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 5,
-          wallpaperScheduleId: 4,
-          filterSetId: 4,
-          privacyGuardLevelId: 3,
-          updateType: 'home',
-          widgetId: '0',
-          intervalTime: defaulInterval,
-        ),
-        const WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: 6,
-          wallpaperScheduleId: 5,
-          filterSetId: 4,
-          privacyGuardLevelId: 3,
-          updateType: 'lock',
-          widgetId: '0',
-          intervalTime: 0,
-        ),
-      ];
-      // Add schedule data to the database
-      await wallpaperSchedules.add(scheduleData.toSet());
-      // Add details data to the database
-      await wallpaperScheduleDetails.add(detailsData.toSet());
-    }else{
-      await privacyGuardLevels.init();
-      await filterSet.init();
-      await wallpaperSchedules.init();
-      await wallpaperScheduleDetails.init();
-    }
-  }
-
   int get count => _rows.length;
 
   Set<WallpaperScheduleRow> get all => Set.unmodifiable(_rows);
@@ -206,6 +29,20 @@ class WallpaperSchedules with ChangeNotifier {
   Future<void> add(Set<WallpaperScheduleRow> newRows) async {
     await metadataDb.addWallpaperSchedules(newRows);
     _rows.addAll(newRows);
+    notifyListeners();
+  }
+
+  Future<void> setRows(Set<WallpaperScheduleRow> newRows) async {
+
+    await removeEntries(newRows);
+    for (var row in newRows) {
+      await set(
+        id: row.id,
+        scheduleNum: row.scheduleNum,
+        scheduleName: row.scheduleName,
+        isActive: row.isActive,
+      );
+    }
     notifyListeners();
   }
 
@@ -312,7 +149,6 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
 
 }
 
-
 // Schedules vs Details, 1:n.
 final WallpaperScheduleDetails wallpaperScheduleDetails = WallpaperScheduleDetails._private();
 
@@ -332,6 +168,23 @@ class WallpaperScheduleDetails with ChangeNotifier {
   Future<void> add(Set<WallpaperScheduleDetailRow> newRows) async {
     await metadataDb.addWallpaperScheduleDetails(newRows);
     _rows.addAll(newRows);
+    notifyListeners();
+  }
+
+  Future<void> setRows(Set<WallpaperScheduleDetailRow> newRows) async {
+
+    await removeEntries(newRows);
+    for (var row in newRows) {
+      await set(
+        wallpaperScheduleDetailId: row.wallpaperScheduleDetailId,
+        wallpaperScheduleId: row.wallpaperScheduleId,
+        filterSetId: row.filterSetId,
+        privacyGuardLevelId: row.privacyGuardLevelId,
+        updateType: row.updateType,
+        widgetId: row.widgetId,
+        intervalTime: row.intervalTime,
+      );
+    }
     notifyListeners();
   }
 

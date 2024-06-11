@@ -16,15 +16,6 @@ class PrivacyGuardLevel with ChangeNotifier {
     _rows = await metadataDb.loadAllPrivacyGuardLevels();
   }
 
-  Future<void> initializePrivacyGuardLevels(Set<PrivacyGuardLevelRow> initialPrivacyGuardLevels) async {
-    await init();
-    final currentLevels = await metadataDb.loadAllPrivacyGuardLevels();
-    if (currentLevels.isEmpty) {
-      await privacyGuardLevels.add(initialPrivacyGuardLevels);
-      notifyListeners();
-    }
-  }
-
   int get count => _rows.length;
 
   Set<PrivacyGuardLevelRow> get all => Set.unmodifiable(_rows);

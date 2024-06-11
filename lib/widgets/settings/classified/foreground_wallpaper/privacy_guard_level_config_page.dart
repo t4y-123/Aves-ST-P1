@@ -1,12 +1,12 @@
 import 'dart:math';
 
-import 'package:aves/model/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/basic/list_tiles/color.dart';
-import '../../common/identity/buttons/outlined_button.dart';
+import '../../../common/basic/list_tiles/color.dart';
+import '../../../common/identity/buttons/outlined_button.dart';
 
 class PrivacyGuardLevelConfigPage extends StatefulWidget {
   static const routeName = '/settings/classified/privacy_guard_level_config';
@@ -35,10 +35,11 @@ class _PrivacyGuardLevelConfigPageState extends State<PrivacyGuardLevelConfigPag
   void initState() {
     super.initState();
     final int newLevel = _generateGuardLevel();
+    final int newId = _generateUniqueId();
     _currentItem = widget.item ?? PrivacyGuardLevelRow(
-      privacyGuardLevelID: _generateUniqueId(),
+      privacyGuardLevelID: newId,
       guardLevel: newLevel,
-      aliasName: 'Level $newLevel',
+      aliasName: 'Level $newLevel Id:$newId',
       color: _getRandomColor(), // Assign a random color
       isActive: true,
     );
@@ -58,7 +59,7 @@ class _PrivacyGuardLevelConfigPageState extends State<PrivacyGuardLevelConfigPag
 
   int _generateUniqueId() {
     int id = 1;
-    while (privacyGuardLevels.all.any((item) => item?.privacyGuardLevelID == id)) {
+    while (privacyGuardLevels.all.any((item) => item.privacyGuardLevelID == id)) {
       id++;
     }
     return id;

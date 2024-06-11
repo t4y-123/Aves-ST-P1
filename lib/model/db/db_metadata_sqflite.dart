@@ -5,20 +5,20 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
-import 'package:aves/model/filterSet.dart';
+import 'package:aves/model/foreground_wallpaper/filterSet.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
-import 'package:aves/model/wallpaperSchedule.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../privacyGuardLevel.dart';
+import '../foreground_wallpaper/privacyGuardLevel.dart';
 
 
 class SqfliteMetadataDb implements MetadataDb {
@@ -133,7 +133,6 @@ class SqfliteMetadataDb implements MetadataDb {
             ', filterSetNum INTEGER'
             ', aliasName TEXT'
             ', filters TEXT'
-            ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $wallpaperScheduleTable('
             'id INTEGER PRIMARY KEY'

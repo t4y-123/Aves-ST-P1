@@ -3,7 +3,8 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
-import '../../common/identity/buttons/outlined_button.dart';
+import '../../../common/action_mixins/feedback.dart';
+import '../../../common/identity/buttons/outlined_button.dart';
 import 'foreground_wallpaper_config_banner.dart';
 
 typedef ItemWidgetBuilder<T> = Widget Function(T item);
@@ -14,7 +15,7 @@ typedef ItemsActionWidgetBuilder<T> = void Function(
     BuildContext context, List<T> items, Set<T> activeItems);
 typedef ItemsColorWidgetBuilder<T> = Color Function(T item);
 
-class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
+class ForegroundWallpaperFixedListTab<T> extends StatefulWidget  {
   final List<T> items;
   final Set<T> activeItems;
   final ItemWidgetBuilder<T> title;
@@ -22,7 +23,7 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
   final ItemActionWidgetBuilder<T>? editAction;
   final ItemsActionWidgetBuilder<T>? applyChangesAction;
   final ItemsActionWidgetBuilder<T>? addItemAction;
-
+  final bool useActiveButton;
 
   const ForegroundWallpaperFixedListTab({
     super.key,
@@ -33,6 +34,7 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
     this.editAction,
     this.applyChangesAction,
     this.addItemAction,
+    this.useActiveButton = true,
   });
 
   @override
@@ -41,16 +43,13 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
 }
 
 class _ForegroundWallpaperFixedListTabState<T>
-    extends State<ForegroundWallpaperFixedListTab<T>> {
-  late List<T> _items;
+    extends State<ForegroundWallpaperFixedListTab<T>>  with FeedbackMixin {
+  Set<T> get _activeItems => widget.useActiveButton ? widget.activeItems : Set.from(widget.items);
 
   @override
   void initState() {
     super.initState();
-    _items = List.from(widget.items);
   }
-
-  Set<T> get activeItems => widget.activeItems;
 
   void _showDefaultAlert(String action) {
     showDialog(
@@ -81,25 +80,42 @@ class _ForegroundWallpaperFixedListTabState<T>
         Flexible(
           child: ReorderableListView.builder(
             itemBuilder: (context, index) {
-              final item = _items[index];
-              final isActive = activeItems.contains(item);
+              final item = widget.items[index];
+              final isActive = _activeItems.contains(item);
 
               void onToggleVisibility() {
+                if (isActive && _activeItems.length <= 1) {
+                  // Show a message that at least one item must remain active
+                  showFeedback(context, FeedbackType.info, 'At least one item must remain or active.');
+                  return;
+                }
                 setState(() {
                   if (isActive) {
-                    activeItems.remove(item);
+                    _activeItems.remove(item);
                   } else {
-                    activeItems.add(item);
+                    _activeItems.add(item);
                   }
                 });
               }
 
+              void onRemoveItem() {
+                if (_activeItems.length <= 1 || widget.items.length <= 1) {
+                  // Show a message that at least one item must remain
+                  showFeedback(context, FeedbackType.info, 'At least one item must remain or active.');
+                  return;
+                }
+                setState(() {
+                  widget.items.remove(item);
+                  _activeItems.remove(item);
+                });
+              }
+
               // t4y: order with the active status: Always make active items before the inactive items.
-              final activeItemsList = _items.where(activeItems.contains).toList();
+              final activeItemsList = widget.items.where(_activeItems.contains).toList();
               final avatarNumber = isActive
                   ? activeItemsList.indexOf(item) + 1
                   : activeItemsList.length +
-                      _items.where((i) => !activeItems.contains(i))
+                      widget.items.where((i) => !_activeItems.contains(i))
                           .toList()
                           .indexOf(item) +
                       1;
@@ -110,7 +126,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                 opacity: isActive ? 1 : .4,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: avatarColor ?? Theme.of(context).primaryColor,
+                    backgroundColor: avatarColor ?? Theme.of(context).colorScheme.primary,
                     child: Text(avatarNumber.toString()),
                   ),
                   title: widget.title(item),
@@ -121,28 +137,24 @@ class _ForegroundWallpaperFixedListTabState<T>
                         icon: const Icon(AIcons.edit),
                         onPressed: () {
                           if (widget.editAction != null) {
-                            widget.editAction!(context, item,_items,activeItems);
+                            widget.editAction!(context, item,widget.items,_activeItems);
                           } else {
                             _showDefaultAlert('Edit');
                           }
                         },
                         tooltip: 'Edit',
                       ),
-                      IconButton(
-                        icon: Icon(isActive ? AIcons.hide : AIcons.show),
-                        onPressed: onToggleVisibility,
-                        tooltip: isActive ? 'Hide' : 'Show',
-                      ),
+                      if (widget.useActiveButton) ...[
+                        IconButton(
+                          icon: Icon(isActive ? AIcons.active : AIcons.inactive),
+                          onPressed: onToggleVisibility,
+                          tooltip: isActive ? 'Hide' : 'Show',
+                        ),
+                      ],
                       IconButton(
                         icon: const Icon(AIcons.clear),
-                        onPressed: () async {
-                          setState(() {
-                            _items.remove(item);
-                            activeItems.remove(item);
-                          }
-                          );
-                        },
-                        tooltip: 'Delete',
+                        onPressed: onRemoveItem,
+                        tooltip: 'Remove',
                       ),
                     ],
                   ),
@@ -150,12 +162,12 @@ class _ForegroundWallpaperFixedListTabState<T>
                 ),
               );
             },
-            itemCount: _items.length,
+            itemCount: widget.items.length,
             onReorder: (oldIndex, newIndex) {
               setState(() {
                 if (oldIndex < newIndex) newIndex -= 1;
-                final item = _items.removeAt(oldIndex);
-                _items.insert(newIndex, item);
+                final item = widget.items.removeAt(oldIndex);
+                widget.items.insert(newIndex, item);
               });
             },
             shrinkWrap: true,
@@ -171,7 +183,7 @@ class _ForegroundWallpaperFixedListTabState<T>
               label: context.l10n.settingsForegroundWallpaperConfigApplyChanges,
               onPressed: () async {
                 if (widget.applyChangesAction != null) {
-                  widget.applyChangesAction!(context, _items, activeItems);
+                  widget.applyChangesAction!(context, widget.items, _activeItems);
                 } else {
                   _showDefaultAlert('applyReorderAction');
                 }
@@ -183,7 +195,7 @@ class _ForegroundWallpaperFixedListTabState<T>
               label: context.l10n.settingsForegroundWallpaperConfigAddItem,
               onPressed: () async {
                 if (widget.addItemAction != null) {
-                  widget.addItemAction!(context, _items, activeItems);
+                  widget.addItemAction!(context, widget.items, _activeItems);
                 } else {
                   _showDefaultAlert('addItemAction');
                 }

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/foreground_wallpaper/foreground_wallpaper_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -18,7 +18,6 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
-import '../wallpaperSchedule.dart';
 
 class MediaStoreSource extends CollectionSource {
   final Debouncer _changeDebouncer = Debouncer(delay: ADurations.mediaContentChangeDebounceDelay);
@@ -61,7 +60,7 @@ class MediaStoreSource extends CollectionSource {
     await covers.init();
 
     //t4y: for foreground wallpaper initialize.
-    await wallpaperSchedules.initWallpaperSchedules();
+    await foregroundWallpaperHelper.initWallpaperSchedules();
 
 
     final currentTimeZoneOffset = await deviceService.getDefaultTimeZoneRawOffsetMillis();

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
@@ -8,7 +7,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 final FilterSet filterSet = FilterSet._private();
-
 
 class FilterSet with ChangeNotifier{
 
@@ -18,14 +16,6 @@ class FilterSet with ChangeNotifier{
 
   Future<void> init() async {
     _rows = await metadataDb.loadAllFilterSet();
-  }
-
-  Future<void> initializeFilterSets(Set<FilterSetRow> initialFilterSets) async {
-    await init();
-    final currentFilterSets = await metadataDb.loadAllFilterSet();
-    if (currentFilterSets.isEmpty) {
-      await filterSet.add(initialFilterSets);
-    }
   }
 
   Future<void> add(Set<FilterSetRow> newRows) async {
@@ -39,12 +29,25 @@ class FilterSet with ChangeNotifier{
 
   Set<FilterSetRow> get all => Set.unmodifiable(_rows);
 
+  Future<void> setRows(Set<FilterSetRow> newRows) async {
+
+    await removeEntries(newRows);
+    for (var row in newRows) {
+      await set(
+        filterSetId: row.filterSetId,
+        filterSetNum: row.filterSetNum,
+        aliasName: row.aliasName,
+        filters: row.filters,
+      );
+    }
+    notifyListeners();
+  }
+
   Future<void> set({
     required int filterSetId,
     required int filterSetNum,
     required String aliasName,
-    required Set<CollectionFilter> filters,
-    required bool isActive,
+    required Set<CollectionFilter>? filters,
   }) async {
     // erase contextual properties from filters before saving them
     final oldRows = _rows.where((row) => row.filterSetId == filterSetId).toSet();
@@ -56,7 +59,6 @@ class FilterSet with ChangeNotifier{
       filterSetNum: filterSetNum,
       aliasName: aliasName,
       filters: filters,
-      isActive: isActive,
     );
     _rows.add(row);
     await metadataDb.addFilterSet({row});
@@ -86,18 +88,16 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
   final int filterSetId;
   final int filterSetNum;
   final String aliasName;
-  final Set<CollectionFilter> filters;
-  final bool isActive;
+  final Set<CollectionFilter>? filters;
 
   @override
-  List<Object?> get props => [filterSetId, filterSetNum, aliasName, filters,isActive,];
+  List<Object?> get props => [filterSetId, filterSetNum, aliasName, filters,];
 
   const FilterSetRow({
     required this.filterSetId,
     required this.filterSetNum,
     required this.aliasName,
     required this.filters,
-    required this.isActive,
   });
 
   static FilterSetRow fromMap(Map map) {
@@ -109,7 +109,6 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
       filterSetNum:map['filterSetNum'] as int,
       aliasName: map['aliasName'] as String,
       filters: filters,
-      isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
 
@@ -117,19 +116,12 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
         'id': filterSetId,
         'filterSetNum': filterSetNum,
         'aliasName': aliasName,
-        'filters': jsonEncode(filters.map((filter) => filter.toJson()).toList()),
-        'isActive' : isActive ? 1 : 0,
+        'filters': jsonEncode(filters?.map((filter) => filter.toJson()).toList()),
   };
 
   @override
   int compareTo(FilterSetRow other) {
-    // Sorting logic
-    if (isActive != other.isActive) {
-      // Sort by isActive, true (1) comes before false (0)
-      return isActive ? -1 : 1;
-    }
-
-    // If isActive is the same, sort by filterSetNum
+    // If sort by filterSetNum
     final filterSetNumComparison = filterSetNum.compareTo(other.filterSetNum);
     if (filterSetNumComparison != 0) {
       return filterSetNumComparison;

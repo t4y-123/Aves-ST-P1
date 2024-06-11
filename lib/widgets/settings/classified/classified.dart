@@ -11,7 +11,7 @@ import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'foreground_wallpaper_config.dart';
+import 'foreground_wallpaper/foreground_wallpaper_config_page.dart';
 
 class ClassifiedSection extends SettingsSection {
   @override

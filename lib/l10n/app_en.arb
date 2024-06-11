@@ -1069,10 +1069,13 @@
   "settingsClassifiedSectionTitle": "Classified",
   "settingsClassifiedForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
   "settingsClassifiedForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
+
   "settingsPrivacyGuardLevelTabTypes": "Privacy Guard Level",
-  "settingsForegroundWallpaperConfigBanner": "Touch and hold to move and reorder items.",
+  "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
   "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
   "settingsForegroundWallpaperConfigAddItem": "Add Item",
+
+  "settingsFilterSetTabTypes": "Filter Set",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

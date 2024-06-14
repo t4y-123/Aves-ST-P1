@@ -1077,6 +1077,11 @@
 
   "settingsFilterSetTabTypes": "Filter Set",
 
+  "settingsWallpaperScheduleTabTypes": "Schedule",
+  "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
+  "settingsWallpaperUpdateEveryTimeUnlock": "As screen unlock: Interval=0",
+  "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
+
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",
   "stopWallpaperService": "Stop Wallpaper Service"

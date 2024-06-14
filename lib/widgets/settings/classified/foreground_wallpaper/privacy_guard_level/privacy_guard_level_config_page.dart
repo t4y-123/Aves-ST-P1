@@ -5,8 +5,8 @@ import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
-import '../../../common/basic/list_tiles/color.dart';
-import '../../../common/identity/buttons/outlined_button.dart';
+import '../../../../common/basic/list_tiles/color.dart';
+import '../../../../common/identity/buttons/outlined_button.dart';
 
 class PrivacyGuardLevelConfigPage extends StatefulWidget {
   static const routeName = '/settings/classified/privacy_guard_level_config';
@@ -104,7 +104,7 @@ class _PrivacyGuardLevelConfigPageState extends State<PrivacyGuardLevelConfigPag
     final l10n = context.l10n;
     return AvesScaffold(
       appBar: AppBar(
-        title: Text(l10n.settingsConfirmationDialogTitle),
+        title: Text(l10n.settingsPrivacyGuardLevelTabTypes),
       ),
       body: SafeArea(
         child: Form(

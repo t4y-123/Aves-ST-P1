@@ -133,6 +133,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', filterSetNum INTEGER'
             ', aliasName TEXT'
             ', filters TEXT'
+            ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $wallpaperScheduleTable('
             'id INTEGER PRIMARY KEY'
@@ -146,7 +147,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', filterSetId INTEGER'
             ', privacyGuardLevelId INTEGER'
             ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
-            ', widgetId TEXT DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
             ', intervalTime INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
             ')');
       },

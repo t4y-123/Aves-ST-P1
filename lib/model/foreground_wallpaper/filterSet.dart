@@ -30,7 +30,6 @@ class FilterSet with ChangeNotifier{
   Set<FilterSetRow> get all => Set.unmodifiable(_rows);
 
   Future<void> setRows(Set<FilterSetRow> newRows) async {
-
     await removeEntries(newRows);
     for (var row in newRows) {
       await set(
@@ -38,6 +37,7 @@ class FilterSet with ChangeNotifier{
         filterSetNum: row.filterSetNum,
         aliasName: row.aliasName,
         filters: row.filters,
+        isActive: row.isActive,
       );
     }
     notifyListeners();
@@ -48,6 +48,7 @@ class FilterSet with ChangeNotifier{
     required int filterSetNum,
     required String aliasName,
     required Set<CollectionFilter>? filters,
+    required bool isActive,
   }) async {
     // erase contextual properties from filters before saving them
     final oldRows = _rows.where((row) => row.filterSetId == filterSetId).toSet();
@@ -59,6 +60,7 @@ class FilterSet with ChangeNotifier{
       filterSetNum: filterSetNum,
       aliasName: aliasName,
       filters: filters,
+      isActive: isActive,
     );
     _rows.add(row);
     await metadataDb.addFilterSet({row});
@@ -89,6 +91,7 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
   final int filterSetNum;
   final String aliasName;
   final Set<CollectionFilter>? filters;
+  final bool isActive;
 
   @override
   List<Object?> get props => [filterSetId, filterSetNum, aliasName, filters,];
@@ -98,6 +101,7 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
     required this.filterSetNum,
     required this.aliasName,
     required this.filters,
+    required this.isActive,
   });
 
   static FilterSetRow fromMap(Map map) {
@@ -109,6 +113,7 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
       filterSetNum:map['filterSetNum'] as int,
       aliasName: map['aliasName'] as String,
       filters: filters,
+      isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
 
@@ -117,10 +122,16 @@ class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
         'filterSetNum': filterSetNum,
         'aliasName': aliasName,
         'filters': jsonEncode(filters?.map((filter) => filter.toJson()).toList()),
+        'isActive' : isActive ? 1 : 0,
   };
 
   @override
   int compareTo(FilterSetRow other) {
+    // Sorting logic
+    if (isActive != other.isActive) {
+      // Sort by isActive, true (1) comes before false (0)
+      return isActive ? -1 : 1;
+    }
     // If sort by filterSetNum
     final filterSetNumComparison = filterSetNum.compareTo(other.filterSetNum);
     if (filterSetNumComparison != 0) {

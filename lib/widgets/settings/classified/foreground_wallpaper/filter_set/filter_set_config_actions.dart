@@ -1,6 +1,6 @@
 import 'package:aves/model/foreground_wallpaper/filterSet.dart';
 import 'package:flutter/material.dart';
-import '../../../common/action_mixins/feedback.dart';
+import '../../../../common/action_mixins/feedback.dart';
 import 'filter_set_config_page.dart';
 
 class FilterSetConfigActions with FeedbackMixin {
@@ -27,8 +27,20 @@ class FilterSetConfigActions with FeedbackMixin {
           filterSetNum: filterSetNum++,
           aliasName: item.aliasName,
           filters: item.filters,
+          isActive: true,
         );
       });
+
+      allItems.where((item) => !activeItems.contains(item)).forEach((item) {
+        filterSet.set(
+          filterSetId: item!.filterSetId,
+          filterSetNum: filterSetNum++,
+          aliasName: item.aliasName,
+          filters: item.filters,
+          isActive: false,
+        );
+      });
+      allItems.sort();
       showFeedback(context, FeedbackType.info, 'Apply Change completely');
     });
   }
@@ -49,7 +61,9 @@ class FilterSetConfigActions with FeedbackMixin {
         setState(() {
           filterSet.add({newItem});
           allItems.add(newItem);
-          activeItems.add(newItem);
+          if (newItem.isActive) {
+            activeItems.add(newItem);
+          }
           allItems.sort();
         });
       }
@@ -82,7 +96,11 @@ class FilterSetConfigActions with FeedbackMixin {
           } else {
             allItems.add(updatedItem);
           }
-          activeItems.add(updatedItem);
+          if (updatedItem.isActive) {
+            activeItems.add(updatedItem);
+          }else{
+            activeItems.remove(updatedItem);
+          }
           filterSet.setRows({updatedItem});
         });
       }

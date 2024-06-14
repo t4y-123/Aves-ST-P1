@@ -1,13 +1,12 @@
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import '../../../../model/foreground_wallpaper/filterSet.dart';
-import '../../../../model/filters/aspect_ratio.dart';
-import '../../../../model/filters/filters.dart';
-import '../../../../model/filters/mime.dart';
-import '../../../common/identity/buttons/outlined_button.dart';
-import '../../common/collection_tile.dart';
+import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/filters/aspect_ratio.dart';
+import '../../../../../model/filters/filters.dart';
+import '../../../../../model/filters/mime.dart';
+import '../../../../common/identity/buttons/outlined_button.dart';
+import '../../../common/collection_tile.dart';
 
 class FilterSetConfigPage extends StatefulWidget {
   static const routeName = '/settings/classified/filter_set_config';
@@ -30,6 +29,7 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
   late TextEditingController _aliasNameController;
   late FilterSetRow? _currentItem;
   late Set<CollectionFilter> _collectionFilters;
+  bool _isActive = false;
 
   @override
   void initState() {
@@ -41,9 +41,11 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
       filterSetNum: newFilterSetNum,
       aliasName: 'N$newFilterSetNum id:$newId',
       filters: {AspectRatioFilter.portrait, MimeFilter.image},
+      isActive: true,
     );
     _aliasNameController = TextEditingController(text: _currentItem!.aliasName);
     _collectionFilters = _currentItem?.filters ?? {};
+    _isActive = _currentItem!.isActive;
   }
 
   int _generateUniqueId() {
@@ -67,6 +69,7 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
         filterSetNum: _currentItem!.filterSetNum,
         aliasName: _aliasNameController.text,
         filters:_collectionFilters,
+        isActive: _isActive,
       );
       Navigator.pop(context, updatedItem); // Return the updated item
     }
@@ -77,7 +80,7 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
     final l10n = context.l10n;
     return AvesScaffold(
       appBar: AppBar(
-        title: Text(l10n.settingsConfirmationDialogTitle),
+        title: Text(l10n.settingsFilterSetTabTypes),
       ),
       body: SafeArea(
         child: Form(
@@ -104,6 +107,17 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
                 filters: _collectionFilters,
                 onSelection: (v) => setState(() => _collectionFilters = v),
               ),
+              const SizedBox(height: 20),
+              SwitchListTile(
+                title: const Text('Active'),
+                value: _isActive,
+                onChanged: (value) {
+                  setState(() {
+                    _isActive = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
               AvesOutlinedButton(
                 onPressed: _applyChanges,
                 label: context.l10n.settingsForegroundWallpaperConfigApplyChanges,

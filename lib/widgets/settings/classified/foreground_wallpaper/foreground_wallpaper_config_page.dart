@@ -1,14 +1,16 @@
 import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level_config_actions.dart';
+import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_config_actions.dart';
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/tab_fixed.dart';
 
 import 'package:flutter/material.dart';
 import '../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../common/action_mixins/feedback.dart';
-import 'filter_set_config_actions.dart';
+import 'filter_set/filter_set_config_actions.dart';
+import 'schdule/wallpaper_schedule_config_actions.dart';
 
 class ForegroundWallpaperConfigPage extends StatefulWidget  {
   static const routeName = '/settings/classified_foreground_wallpaper_config';
@@ -25,25 +27,32 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
   late PrivacyGuardLevelConfigActions _privacyGuardLevelActions;
 
   final List<FilterSetRow?> _filterSet = [];
-  late Set<FilterSetRow?> _activeFilterSet = {};
+  final Set<FilterSetRow?> _activeFilterSet = {};
   late FilterSetConfigActions _filterSetActions;
 
+  final List<WallpaperScheduleRow?> _wallpaperSchedules = [];
+  final Set<WallpaperScheduleRow?> _activeWallpaperSchedules = {};
+  late WallpaperScheduleConfigActions _wallpaperSchedulesActions;
 
   @override
   void initState() {
     super.initState();
-    _privacyGuardLevelActions = PrivacyGuardLevelConfigActions(
-      context: context,
-      setState: setState,
-    );
+
     _privacyGuardLevels.addAll(privacyGuardLevels.all);
     _privacyGuardLevels.sort();// to sort make it show active item first.
     _activePrivacyGuardLevelsTypes.addAll(_privacyGuardLevels.where((v) => v?.isActive ?? false));
+    _privacyGuardLevelActions = PrivacyGuardLevelConfigActions(context: context,setState: setState,);
 
     _filterSet.addAll(filterSet.all);
     _filterSet.sort();// to sort make it show active item first.
-    _activeFilterSet = Set.from(_filterSet);
+    _activeFilterSet.addAll(_filterSet.where((v) => v?.isActive ?? false));
     _filterSetActions = FilterSetConfigActions(context: context, setState: setState);
+
+    _wallpaperSchedules.addAll(wallpaperSchedules.all);
+    _wallpaperSchedules.sort();// to sort make it show active item first.
+    _activeWallpaperSchedules.addAll(_wallpaperSchedules.where((v) => v?.isActive ?? false));
+    _wallpaperSchedulesActions = WallpaperScheduleConfigActions(context: context, setState: setState);
+
   }
 
 
@@ -72,8 +81,18 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
           editAction:_filterSetActions.editFilterSet,
           applyChangesAction: _filterSetActions.applyFilterSet,
           addItemAction: _filterSetActions.addFilterSet,
-          useActiveButton: false,
         ),
+      ),
+      (
+      Tab(text: l10n.settingsWallpaperScheduleTabTypes),
+      ForegroundWallpaperFixedListTab<WallpaperScheduleRow?>(
+        items: _wallpaperSchedules,
+        activeItems: _activeWallpaperSchedules,
+        title: (item) => Text(item?.scheduleName ?? 'Empty'),
+        editAction:_wallpaperSchedulesActions.editWallpaperSchedule,
+        applyChangesAction: _wallpaperSchedulesActions.applyWallpaperScheduleReorder,
+        addItemAction: _wallpaperSchedulesActions.addWallpaperSchedule,
+      ),
       ),
     ];
 

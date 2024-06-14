@@ -1,15 +1,7 @@
 import 'dart:async';
-
-
-import 'package:aves/model/foreground_wallpaper/filterSet.dart';
-import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
-
-import '../filters/aspect_ratio.dart';
-import '../filters/mime.dart';
 
 final WallpaperSchedules wallpaperSchedules = WallpaperSchedules._private();
 
@@ -89,8 +81,6 @@ class WallpaperSchedules with ChangeNotifier {
     _rows.clear();
     notifyListeners();
   }
-
-  //TODO: t4y: import/export
 }
 
 @immutable
@@ -234,14 +224,16 @@ class WallpaperScheduleDetails with ChangeNotifier {
 //TODO: t4y: import/export
 }
 
+
+enum WallpaperUpdateType {home,lock,widget }
 @immutable
 class WallpaperScheduleDetailRow extends Equatable {
   final int wallpaperScheduleDetailId;
   final int wallpaperScheduleId;
   final int filterSetId;
   final int privacyGuardLevelId;
-  final String updateType;
-  final String widgetId;
+  final Set<WallpaperUpdateType> updateType;
+  final int widgetId;
   final int intervalTime;
 
   @override
@@ -266,13 +258,19 @@ class WallpaperScheduleDetailRow extends Equatable {
   });
 
   static WallpaperScheduleDetailRow fromMap(Map map) {
+    // Deserialize the updateType string to a Set<WallpaperUpdateType>
+    final updateTypeString = map['updateType'] as String;
+    final updateTypeSet = updateTypeString.split(',')
+        .map((e) => WallpaperUpdateType.values.firstWhere((type) => type.toString().split('.').last == e))
+        .toSet();
+
     return WallpaperScheduleDetailRow(
       wallpaperScheduleDetailId:  map['id'] as int,
       wallpaperScheduleId: map['wallpaperScheduleId'] as int,
       filterSetId: map['filterSetId'] as int,
       privacyGuardLevelId: map['privacyGuardLevelId'] as int,
-      updateType: map['updateType'] as String,
-      widgetId: map['widgetId'] as String,
+      updateType: updateTypeSet,
+      widgetId: map['widgetId'] as int,
       intervalTime: map['intervalTime'] as int,
     );
   }
@@ -282,9 +280,8 @@ class WallpaperScheduleDetailRow extends Equatable {
     'wallpaperScheduleId': wallpaperScheduleId,
     'filterSetId': filterSetId,
     'privacyGuardLevelId': privacyGuardLevelId,
-    'updateType': updateType,
+    'updateType': updateType.map((e) => e.toString().split('.').last).join(','),
     'widgetId': widgetId,
     'intervalTime': intervalTime,
   };
-
 }

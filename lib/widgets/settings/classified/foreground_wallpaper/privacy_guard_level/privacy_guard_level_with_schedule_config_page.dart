@@ -299,13 +299,11 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
                 ),
               ),
             );
-            if (result != null) {
-              setState(() {
-                _setSchedule(result.first!);
-              });
-              debugPrint('$runtimeType copied ${result.first}');
-            }
-          },
+            setState(() {
+              _setSchedule(result.first);
+            });
+            debugPrint('$runtimeType copied ${result.first}');
+                    },
           label: 'Can copy from exist',
         ),
       ],

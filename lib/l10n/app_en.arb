@@ -1070,6 +1070,13 @@
   "settingsClassifiedForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
   "settingsClassifiedForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
 
+  "settingsClassifiedWallpaperAddDefaultScheduleTile": "Manage Default Group Schedules",
+  "settingsWallpaperSchedulesManagerTitle": "Wallpaper Schedules Manager",
+  "settingsResetAllToDefault": "Reset All to Default",
+  "confirmResetAllToDefault": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
+  "settingsAddNewT3Group": "Add New T3 Group",
+  "confirmAddNewT3Group": "This will add a new set of three guard levels and corresponding filter sets and schedules.Continue?",
+
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
   "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",

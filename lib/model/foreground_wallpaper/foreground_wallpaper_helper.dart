@@ -1,190 +1,220 @@
 import 'dart:async';
-
-
 import 'package:aves/model/foreground_wallpaper/filterSet.dart';
 import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
 import 'package:aves/services/common/services.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-
 import '../filters/aspect_ratio.dart';
 import '../filters/mime.dart';
-import '../settings/settings.dart';
-
 final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();
 
-class ForegroundWallpaperHelper  {
+class ForegroundWallpaperHelper {
   ForegroundWallpaperHelper._private();
 
-   Future<void> initWallpaperSchedules() async {
+  Future<void> initWallpaperSchedules() async {
     final currentWallpaperSchedules = await metadataDb.loadAllWallpaperSchedules();
     if (currentWallpaperSchedules.isEmpty) {
-      await initializePrivacyGuardLevels(initialPrivacyGuardLevels);
-      await initializeFilterSets(initialFilterSets);
-      // Add schedule data to the database
-      await wallpaperSchedules.add(scheduleData.toSet());
-    }else{
+      //Must initializeSchedules For it will generate twice guard levels and filter sets.
+      await initializeSchedules();
+      await initializePrivacyGuardLevels();
+      await initializeFilterSets();
+    } else {
       await privacyGuardLevels.init();
       await filterSet.init();
       await wallpaperSchedules.init();
     }
   }
 
-  Future<void> initializeFilterSets(Set<FilterSetRow> initialFilterSets) async {
-    await filterSet.init();
-    final currentFilterSets = await metadataDb.loadAllFilterSet();
-    if (currentFilterSets.isEmpty) {
-      await filterSet.add(initialFilterSets);
-    }
+  Future<void> clearWallpaperSchedules() async {
+      await privacyGuardLevels.clear();
+      await filterSet.clear();
+      await wallpaperSchedules.clear();
   }
 
-  Future<void> initializePrivacyGuardLevels(Set<PrivacyGuardLevelRow> initialPrivacyGuardLevels) async {
+  Future<void> initializePrivacyGuardLevels() async {
     await privacyGuardLevels.init();
     final currentLevels = await metadataDb.loadAllPrivacyGuardLevels();
     if (currentLevels.isEmpty) {
-      await privacyGuardLevels.add(initialPrivacyGuardLevels);
+      final newLevels = generatePrivacyGuardLevels();
+      await privacyGuardLevels.add(newLevels);
     }
   }
 
-  // init Guard Levels first.
-  final initialPrivacyGuardLevels = {
-    const PrivacyGuardLevelRow(
-      privacyGuardLevelID: 1,
-      guardLevel: 1,
-      aliasName: 'Exposure',
-      color: Color(0xFF808080), // Grey
-      isActive: true,
-    ),
-    const PrivacyGuardLevelRow(
-      privacyGuardLevelID: 2,
-      guardLevel: 2,
-      aliasName: 'Moderate',
-      color: Color(0xFF8D4FF8), // Purple
-      isActive: true,
-    ),
-    const PrivacyGuardLevelRow(
-      privacyGuardLevelID: 3,
-      guardLevel: 3,
-      aliasName: 'Safe',
-      color: Color(0xFF2986cc), // Blue
-      isActive: true,
-    ),
-  };
+  Future<void> initializeFilterSets() async {
+    await filterSet.init();
+    final currentFilterSets = await metadataDb.loadAllFilterSet();
+    if (currentFilterSets.isEmpty) {
+      final newFilterSets = generateFilterSets();
+      await filterSet.add(newFilterSets);
+    }
+  }
 
-  // initiate FilterSet secondly.
-  final initialFilterSets = {
-    FilterSetRow(
-      filterSetId: 1,
-      filterSetNum: 1,
-      aliasName: 'Home: Exposure',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    ),
-    FilterSetRow(
-      filterSetId: 2,
-      filterSetNum: 2,
-      aliasName: 'Home: Moderate',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    ),
-    FilterSetRow(
-      filterSetId: 3,
-      filterSetNum: 3,
-      aliasName: 'Lock: Moderate & Exposure',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    ),
-    FilterSetRow(
-      filterSetId: 4,
-      filterSetNum: 4,
-      aliasName: 'Home: Safe',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    ),
-    FilterSetRow(
-      filterSetId: 5,
-      filterSetNum: 5,
-      aliasName: 'Lock: Safe',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    ),
-  };
+  Future<void> initializeSchedules() async {
+    final newSchedules = generateSchedules();
+    await wallpaperSchedules.add(newSchedules.toSet());
+  }
 
-  // Third, make schedule.
+  Set<PrivacyGuardLevelRow> generatePrivacyGuardLevels() {
+    final int maxId = privacyGuardLevels.all.map((e) => e.privacyGuardLevelID).fold(0, (prev, next) => prev > next ? prev : next);
+    final int maxGuardLevel = privacyGuardLevels.all.map((e) => e.guardLevel).fold(0, (prev, next) => prev > next ? prev : next);
+    return {
+      PrivacyGuardLevelRow(
+        privacyGuardLevelID: maxId + 1,
+        guardLevel: maxGuardLevel +1 ,
+        aliasName: 'Exposure',
+        color: privacyGuardLevels.all.isEmpty? const Color(0xFF808080): privacyGuardLevels.getRandomColor(), // Grey
+        isActive: true,
+      ),
+      PrivacyGuardLevelRow(
+        privacyGuardLevelID: maxId + 2,
+        guardLevel: maxGuardLevel + 2,
+        aliasName: 'Moderate',
+        color: privacyGuardLevels.all.isEmpty? const Color(0xFF8D4FF8): privacyGuardLevels.getRandomColor(), // Purple
+        isActive: true,
+      ),
+      PrivacyGuardLevelRow(
+        privacyGuardLevelID: maxId + 3,
+        guardLevel: maxGuardLevel + 3,
+        aliasName: 'Safe',
+        color:privacyGuardLevels.all.isEmpty? const Color(0xFF2986cc): privacyGuardLevels.getRandomColor(), // Blue
+        isActive: true,
+      ),
+    };
+  }
 
-  //Schedule data
+  Set<FilterSetRow> generateFilterSets() {
+    final int maxId = filterSet.all.map((e) => e.filterSetId).fold(0, (prev, next) => prev > next ? prev : next);
+    final int maxFilterSetNum = filterSet.all.map((e) => e.filterSetNum).fold(0, (prev, next) => prev > next ? prev : next);
+    return {
+      FilterSetRow(
+        filterSetId: maxId + 1,
+        filterSetNum: maxFilterSetNum + 1,
+        aliasName: 'Home: Exposure',
+        filters: {AspectRatioFilter.portrait, MimeFilter.image},
+        isActive: true,
+      ),
+      FilterSetRow(
+        filterSetId: maxId + 2,
+        filterSetNum: maxFilterSetNum + 2,
+        aliasName: 'Home: Moderate',
+        filters: {AspectRatioFilter.portrait, MimeFilter.image},
+        isActive: true,
+      ),
+      FilterSetRow(
+        filterSetId: maxId + 3,
+        filterSetNum: maxFilterSetNum + 3,
+        aliasName: 'Lock: Moderate & Exposure',
+        filters: {AspectRatioFilter.portrait, MimeFilter.image},
+        isActive: true,
+      ),
+      FilterSetRow(
+        filterSetId: maxId + 4,
+        filterSetNum: maxFilterSetNum + 4,
+        aliasName: 'Home: Safe',
+        filters: {AspectRatioFilter.portrait, MimeFilter.image},
+        isActive: true,
+      ),
+      FilterSetRow(
+        filterSetId: maxId + 5,
+        filterSetNum: maxFilterSetNum + 5,
+        aliasName: 'Lock: Safe',
+        filters: {AspectRatioFilter.portrait, MimeFilter.image},
+        isActive: true,
+      ),
+    };
+  }
 
-  static const int defaultInterval = 3; // seconds.
+  List<WallpaperScheduleRow> generateSchedules() {
+    final int maxId = wallpaperSchedules.all.map((e) => e.id).fold(0, (prev, next) => prev > next ? prev : next);
+    final int maxScheduleNum = wallpaperSchedules.all.map((e) => e.scheduleNum).fold(0, (prev, next) => prev > next ? prev : next);
+    const int defaultInterval = 3; // seconds.
 
-  final scheduleData = [
-    const WallpaperScheduleRow(
-      id: 1,
-      scheduleNum: 1,
-      aliasName: 'L1-ID_1-HOME',
-      filterSetId: 1,
-      privacyGuardLevelId: 1,
-      updateType: WallpaperUpdateType.home,
-      widgetId: 0,
-      intervalTime: defaultInterval,
-      isActive: true,
-    ),
-    const WallpaperScheduleRow(
-      id: 2,
-      scheduleNum: 2,
-      aliasName: 'L1-ID_1-LOCK',
-      filterSetId: 3,
-      privacyGuardLevelId: 1,
-      updateType: WallpaperUpdateType.lock,
-      widgetId: 0,
-      intervalTime: 0,
-      isActive: true,
-    ),
-    const WallpaperScheduleRow(
-      id: 3,
-      scheduleNum: 3,
-      aliasName: 'L2-ID_2-HOME',
-      filterSetId: 2,
-      privacyGuardLevelId: 2,
-      updateType: WallpaperUpdateType.home,
-      widgetId: 0,
-      intervalTime: defaultInterval,
-      isActive: true,
-    ),
-    const WallpaperScheduleRow(
-      id: 4,
-      scheduleNum: 4,
-      aliasName: 'L2-ID_2-LOCK',
-      filterSetId: 3,
-      privacyGuardLevelId: 2,
-      updateType: WallpaperUpdateType.lock,
-      widgetId: 0,
-      intervalTime: 0,
-      isActive: true,
-    ),
-    const WallpaperScheduleRow(
-      id: 5,
-      scheduleNum: 5,
-      aliasName: 'L3-ID_3-HOME',
-      filterSetId: 4,
-      privacyGuardLevelId: 3,
-      updateType: WallpaperUpdateType.home,
-      widgetId: 0,
-      intervalTime: defaultInterval,
-      isActive: true,
-    ),
-    const WallpaperScheduleRow(
-      id: 6,
-      scheduleNum: 6,
-      aliasName: 'L2-ID_2-LOCK',
-      filterSetId: 5,
-      privacyGuardLevelId: 3,
-      updateType: WallpaperUpdateType.lock,
-      widgetId: 0,
-      intervalTime: 0,
-      isActive: true,
-    ),
-  ];
+    // Retrieve dynamically generated privacy guard levels and filter sets
+    final privacyGuardLevels = generatePrivacyGuardLevels();
+    final filterSets = generateFilterSets();
+
+    final List<int> privacyGuardLevelIds = privacyGuardLevels.map((e) => e.privacyGuardLevelID).toList();
+    final List<int> filterSetIds = filterSets.map((e) => e.filterSetId).toList();
+
+    return [
+      WallpaperScheduleRow(
+        id: maxId + 1,
+        scheduleNum: maxScheduleNum + 1,
+        aliasName: 'L${privacyGuardLevelIds[0]}-ID_${privacyGuardLevelIds[0]}-HOME',
+        filterSetId: filterSetIds[0],
+        privacyGuardLevelId: privacyGuardLevelIds[0],
+        updateType: WallpaperUpdateType.home,
+        widgetId: 0,
+        intervalTime: defaultInterval,
+        isActive: true,
+      ),
+      WallpaperScheduleRow(
+        id: maxId + 2,
+        scheduleNum: maxScheduleNum + 2,
+        aliasName: 'L${privacyGuardLevelIds[0]}-ID_${privacyGuardLevelIds[0]}-LOCK',
+        filterSetId: filterSetIds[2],
+        privacyGuardLevelId: privacyGuardLevelIds[0],
+        updateType: WallpaperUpdateType.lock,
+        widgetId: 0,
+        intervalTime: 0,
+        isActive: true,
+      ),
+      WallpaperScheduleRow(
+        id: maxId + 3,
+        scheduleNum: maxScheduleNum + 3,
+        aliasName: 'L${privacyGuardLevelIds[1]}-ID_${privacyGuardLevelIds[1]}-HOME',
+        filterSetId: filterSetIds[1],
+        privacyGuardLevelId: privacyGuardLevelIds[1],
+        updateType: WallpaperUpdateType.home,
+        widgetId: 0,
+        intervalTime: defaultInterval,
+        isActive: true,
+      ),
+      WallpaperScheduleRow(
+        id: maxId + 4,
+        scheduleNum: maxScheduleNum + 4,
+        aliasName: 'L${privacyGuardLevelIds[1]}-ID_${privacyGuardLevelIds[1]}-LOCK',
+        filterSetId: filterSetIds[2],
+        privacyGuardLevelId: privacyGuardLevelIds[1],
+        updateType: WallpaperUpdateType.lock,
+        widgetId: 0,
+        intervalTime: 0,
+        isActive: true,
+      ),
+      WallpaperScheduleRow(
+        id: maxId + 5,
+        scheduleNum: maxScheduleNum + 5,
+        aliasName: 'L${privacyGuardLevelIds[2]}-ID_${privacyGuardLevelIds[2]}-HOME',
+        filterSetId: filterSetIds[3],
+        privacyGuardLevelId: privacyGuardLevelIds[2],
+        updateType: WallpaperUpdateType.home,
+        widgetId: 0,
+        intervalTime: defaultInterval,
+        isActive: true,
+      ),
+      WallpaperScheduleRow(
+        id: maxId + 6,
+        scheduleNum: maxScheduleNum + 6,
+        aliasName: 'L${privacyGuardLevelIds[2]}-ID_${privacyGuardLevelIds[2]}-LOCK',
+        filterSetId: filterSetIds[4],
+        privacyGuardLevelId: privacyGuardLevelIds[2],
+        updateType: WallpaperUpdateType.lock,
+        widgetId: 0,
+        intervalTime: 0,
+        isActive: true,
+      ),
+    ];
+  }
+
+  Future<void> addDynamicSets() async {
+    // Must first generate Schedules.
+    final newSchedules = generateSchedules();
+    await wallpaperSchedules.add(newSchedules.toSet());
+
+    final newLevels = generatePrivacyGuardLevels();
+    await privacyGuardLevels.add(newLevels);
+
+    final newFilterSets = generateFilterSets();
+    await filterSet.add(newFilterSets);
+  }
 }
-

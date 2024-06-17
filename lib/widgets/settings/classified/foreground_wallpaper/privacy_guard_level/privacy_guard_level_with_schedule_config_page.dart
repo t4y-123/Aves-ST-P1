@@ -303,8 +303,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
               setState(() {
                 _setSchedule(result.first!);
               });
-              showFeedback(
-                  context, FeedbackType.info, 'copied ${result.first}');
+              debugPrint('$runtimeType copied ${result.first}');
             }
           },
           label: 'Can copy from exist',

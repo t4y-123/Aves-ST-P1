@@ -1,4 +1,4 @@
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_config_page.dart';
+import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_with_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../model/foreground_wallpaper/privacyGuardLevel.dart';
@@ -56,7 +56,7 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PrivacyGuardLevelConfigPage(
+        builder: (context) => PrivacyGuardLevelWithScheduleConfigPage(
           item: null, // Pass null to create a new item
           allItems: allItems,
           activeItems: activeItems,
@@ -88,7 +88,7 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PrivacyGuardLevelConfigPage(
+        builder: (context) => PrivacyGuardLevelWithScheduleConfigPage(
           item: currentItem,
           allItems: allItems,
           activeItems: activeItems,

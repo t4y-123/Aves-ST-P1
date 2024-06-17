@@ -41,6 +41,8 @@ class SqfliteMetadataDb implements MetadataDb {
   static const filterSetTable = 'filterSet';
   static const wallpaperScheduleTable = 'wallpaperSchedule';
   static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
+  static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
+
 
   //End
 
@@ -138,17 +140,13 @@ class SqfliteMetadataDb implements MetadataDb {
         await db.execute('CREATE TABLE $wallpaperScheduleTable('
             'id INTEGER PRIMARY KEY'
             ', scheduleNum INTEGER'
-            ', scheduleName TEXT'
-            ', isActive INTEGER DEFAULT 0'
-            ')');
-        await db.execute('CREATE TABLE $wallpaperScheduleDetailsTable('
-            'id INTEGER PRIMARY KEY'
-            ', wallpaperScheduleId INTEGER'
-            ', filterSetId INTEGER'
+            ', aliasName TEXT'
             ', privacyGuardLevelId INTEGER'
+            ', filterSetId INTEGER'
             ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
             ', intervalTime INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
+            ', isActive INTEGER DEFAULT 0'
             ')');
       },
       onUpgrade: MetadataDbUpgrader.upgradeDb,
@@ -801,53 +799,6 @@ class SqfliteMetadataDb implements MetadataDb {
   void _batchInsertWallpaperSchedule(Batch batch, WallpaperScheduleRow row) {
     batch.insert(
       wallpaperScheduleTable,
-      row.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  // wallpaper Schedule Details Table
-  @override
-  Future<void> clearWallpaperScheduleDetails() async {
-    final count = await _db.delete(wallpaperScheduleDetailsTable, where: '1');
-    debugPrint('clearFilterSet deleted $count rows');
-  }
-
-  @override
-  Future<Set<WallpaperScheduleDetailRow>> loadAllWallpaperScheduleDetails() async {
-    final rows = await _db.query(wallpaperScheduleDetailsTable);
-    return rows.map(WallpaperScheduleDetailRow.fromMap).where((row) => row != null).toSet();
-  }
-
-  @override
-  Future<void> addWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows) async {
-    if (rows.isEmpty) return;
-    final batch = _db.batch();
-    rows.forEach((row) => _batchInsertWallpaperScheduleDetails(batch, row));
-    await batch.commit(noResult: true);
-  }
-
-  @override
-  Future<void> updateWallpaperScheduleDetails(int id, WallpaperScheduleDetailRow row) async {
-    final batch = _db.batch();
-    batch.delete(wallpaperScheduleDetailsTable, where: 'id = ?', whereArgs: [id]);
-    _batchInsertWallpaperScheduleDetails(batch, row);
-    await batch.commit(noResult: true);
-  }
-
-  @override
-  Future<void> removeWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows) async {
-    if (rows.isEmpty) return;
-    final batch = _db.batch();
-    rows.forEach((row) {
-      batch.delete(wallpaperScheduleDetailsTable, where: 'id = ?', whereArgs: [row.wallpaperScheduleDetailId]);
-    });
-    await batch.commit(noResult: true);
-  }
-
-  void _batchInsertWallpaperScheduleDetails(Batch batch, WallpaperScheduleDetailRow row) {
-    batch.insert(
-      wallpaperScheduleDetailsTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

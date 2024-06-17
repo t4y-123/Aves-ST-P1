@@ -1,8 +1,8 @@
 import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/schdule/select_filter_set_page.dart';
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/schdule/select_privcy_guard_level_page.dart';
+import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/select_filter_set_page.dart';
+import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/select_privcy_guard_level_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
@@ -52,31 +52,32 @@ class _WallpaperScheduleConfigPageState
     super.initState();
     final int newNum = _generateNewNum();
     final int newId = _generateUniqueId();
-    _currentItem = widget.item ??
-        WallpaperScheduleRow(
-          id: newId,
-          scheduleNum: newNum,
-          scheduleName: 'S$newNum Id:$newId',
-          isActive: true,
-        );
+    _currentItem = widget.item;
+    // _currentItem = widget.item ??
+    //     WallpaperScheduleRow(
+    //       id: newId,
+    //       scheduleNum: newNum,
+    //       scheduleName: 'S$newNum Id:$newId',
+    //       isActive: true,
+    //     );
     _aliasNameController =
-        TextEditingController(text: _currentItem!.scheduleName);
+        TextEditingController(text: _currentItem!.aliasName);
     _isActive = _currentItem!.isActive;
 
     //Get schedule details, if exist.
     if (widget.item != null) {
       final int scheduleId = _currentItem!.id;
-      final firstScheduleDetail = wallpaperScheduleDetails.all
-          .firstWhere((e) => e.wallpaperScheduleId == scheduleId);
+      final firstScheduleDetail = wallpaperSchedules.all
+          .firstWhere((e) => e.id == scheduleId);
 
-      _currentUpdateTypes = firstScheduleDetail.updateType;
-      if (_currentUpdateTypes.contains(WallpaperUpdateType.widget)) {
-        _IsWidgetSchdeule = true;
-      }
+      // _currentUpdateTypes = firstScheduleDetail.updateType;
+      // if (_currentUpdateTypes.contains(WallpaperUpdateType.widget)) {
+      //   _IsWidgetSchdeule = true;
+      // }
       _curWidgetID = firstScheduleDetail.widgetId;
       // Filter the WallpaperScheduleDetailRow objects by scheduleId
-      final relevantDetails = wallpaperScheduleDetails.all
-          .where((detail) => detail.wallpaperScheduleId == scheduleId)
+      final relevantDetails = wallpaperSchedules.all
+          .where((detail) => detail.id == scheduleId)
           .toSet();
       // Extract the privacyGuardLevelIds from the filtered details
       final privacyGuardLevelIds =
@@ -191,15 +192,6 @@ class _WallpaperScheduleConfigPageState
     return id;
   }
 
-  int _generateDetailUniqueId() {
-    int id = 1;
-    while (wallpaperScheduleDetails.all
-        .any((item) => item.wallpaperScheduleDetailId == id)) {
-      id++;
-    }
-    return id;
-  }
-
   int _generateNewNum() {
     // final activeItems = widget.allItems.where((item) => item?.isActive ?? false).toList();
     final int maxNow = widget.allItems
@@ -209,50 +201,50 @@ class _WallpaperScheduleConfigPageState
   }
 
   void _applyChanges() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final updatedItem = WallpaperScheduleRow(
-        id: _currentItem!.id,
-        scheduleNum: _currentItem!.scheduleNum,
-        scheduleName: _aliasNameController.text,
-        isActive: _isActive,
-      );
+    // if (_formKey.currentState?.validate() ?? false) {
+    //  final updatedItem = WallpaperScheduleRow(
+    //    id: _currentItem!.id,
+    //    scheduleNum: _currentItem!.scheduleNum,
+    //    aliasName: _aliasNameController.text,
+    //    isActive: _isActive,
+    //  );
+      //
+      // await wallpaperSchedules.setRows({updatedItem});
+      //
+      // //generate details for each privacy level
+      // await wallpaperScheduleDetails.removeEntries(wallpaperScheduleDetails.all
+      //     .where((row) => row.wallpaperScheduleId == updatedItem.id)
+      //     .toSet());
+      // if(!_useInterval)(_curInterval = 0);
+      // for (var privacyGuardLevelRow in _selectedPrivacyGuardLevels) {
+      //   final detailRow = WallpaperScheduleDetailRow(
+      //     wallpaperScheduleDetailId: _generateDetailUniqueId(),
+      //     wallpaperScheduleId: updatedItem.id,
+      //     filterSetId: _selectedFilterSet.first.filterSetId,
+      //     privacyGuardLevelId: privacyGuardLevelRow.privacyGuardLevelID,
+      //     updateType: _currentUpdateTypes,
+      //     // Simplified for the example
+      //     widgetId: _curWidgetID,
+      //     intervalTime: _curInterval,
+      //   );
+      //   await wallpaperScheduleDetails.add({detailRow});
+      // }
 
-      await wallpaperSchedules.setRows({updatedItem});
-
-      //generate details for each privacy level
-      await wallpaperScheduleDetails.removeEntries(wallpaperScheduleDetails.all
-          .where((row) => row.wallpaperScheduleId == updatedItem.id)
-          .toSet());
-      if(!_useInterval)(_curInterval = 0);
-      for (var privacyGuardLevelRow in _selectedPrivacyGuardLevels) {
-        final detailRow = WallpaperScheduleDetailRow(
-          wallpaperScheduleDetailId: _generateDetailUniqueId(),
-          wallpaperScheduleId: updatedItem.id,
-          filterSetId: _selectedFilterSet.first.filterSetId,
-          privacyGuardLevelId: privacyGuardLevelRow.privacyGuardLevelID,
-          updateType: _currentUpdateTypes,
-          // Simplified for the example
-          widgetId: _curWidgetID,
-          intervalTime: _curInterval,
-        );
-        await wallpaperScheduleDetails.add({detailRow});
-      }
-
-      Navigator.pop(context, updatedItem); // Return the updated item
-    }
+      Navigator.pop(context, widget.activeItems.first); // Return the updated item
+    // }
   }
 
   void _toggleUpdateType(WallpaperUpdateType type) {
     setState(() {
-      if (_currentUpdateTypes.contains(type)) {
-        if (_currentUpdateTypes.length > 1) {
-          _currentUpdateTypes.remove(type);
-        }else{
-          showFeedback(context, FeedbackType.warn,context.l10n.settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback );
-        }
-      } else {
-        _currentUpdateTypes.add(type);
-      }
+      // if (_currentUpdateTypes.contains(type)) {
+      //   if (_currentUpdateTypes.length > 1) {
+      //     _currentUpdateTypes.remove(type);
+      //   }else{
+      //     showFeedback(context, FeedbackType.warn,context.l10n.settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback );
+      //   }
+      // } else {
+      //   _currentUpdateTypes.add(type);
+      // }
     });
   }
 

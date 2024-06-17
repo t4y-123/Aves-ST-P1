@@ -1070,7 +1070,7 @@
   "settingsClassifiedForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
   "settingsClassifiedForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
 
-  "settingsPrivacyGuardLevelTabTypes": "Privacy Guard Level",
+  "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
   "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
   "settingsForegroundWallpaperConfigAddItem": "Add Item",
@@ -1079,6 +1079,7 @@
 
   "settingsWallpaperScheduleTabTypes": "Schedule",
   "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
+  "settingsSelectOneGuardLevelTitle": "Select one guard level",
   "settingsWallpaperUpdateEveryTimeUnlock": "As screen unlock: Interval=0",
   "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
 

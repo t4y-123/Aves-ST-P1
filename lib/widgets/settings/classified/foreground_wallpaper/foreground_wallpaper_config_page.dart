@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../common/action_mixins/feedback.dart';
 import 'filter_set/filter_set_config_actions.dart';
-import 'schdule/wallpaper_schedule_config_actions.dart';
+import 'schedule/wallpaper_schedule_config_actions.dart';
 
 class ForegroundWallpaperConfigPage extends StatefulWidget  {
   static const routeName = '/settings/classified_foreground_wallpaper_config';
@@ -82,17 +82,6 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
           applyChangesAction: _filterSetActions.applyFilterSet,
           addItemAction: _filterSetActions.addFilterSet,
         ),
-      ),
-      (
-      Tab(text: l10n.settingsWallpaperScheduleTabTypes),
-      ForegroundWallpaperFixedListTab<WallpaperScheduleRow?>(
-        items: _wallpaperSchedules,
-        activeItems: _activeWallpaperSchedules,
-        title: (item) => Text(item?.scheduleName ?? 'Empty'),
-        editAction:_wallpaperSchedulesActions.editWallpaperSchedule,
-        applyChangesAction: _wallpaperSchedulesActions.applyWallpaperScheduleReorder,
-        addItemAction: _wallpaperSchedulesActions.addWallpaperSchedule,
-      ),
       ),
     ];
 

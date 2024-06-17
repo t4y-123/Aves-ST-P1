@@ -139,4 +139,8 @@ class SettingsDefaults {
   // platform settings
   static const isRotationLocked = false;
   static const areAnimationsRemoved = false;
+
+  //t4y: foreground wallpaper
+  static const int defaultNewUpdateInterval = 3;
+
 }

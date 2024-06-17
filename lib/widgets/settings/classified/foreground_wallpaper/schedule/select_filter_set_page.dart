@@ -4,36 +4,53 @@ import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filterSet.dart';
 
 
+import 'dart:collection';
 
-class FilterSetSelectionPage  extends StatefulWidget {
+class FilterSetSelectionPage extends StatefulWidget {
   static const routeName = '/settings/classified/wallpaper_schedule_config/select_filter_set';
   final Set<FilterSetRow> selectedFilterSet;
+  final int? maxSelection;
 
-
-  const FilterSetSelectionPage ({
+  const FilterSetSelectionPage({
     super.key,
     required this.selectedFilterSet,
+    this.maxSelection,
   });
 
   @override
-  State<FilterSetSelectionPage > createState() => _PrivacyGuardLevelSelectionState();
+  State<FilterSetSelectionPage> createState() => _FilterSetSelectionPageState();
 }
-class _PrivacyGuardLevelSelectionState extends State<FilterSetSelectionPage > {
+
+class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
   late Set<int> _selectedFilterSet;
   late int _selectedFilterSetNum;
+  final Queue<int> _selectionOrder = Queue<int>();
 
   @override
   void initState() {
     super.initState();
     _selectedFilterSet = widget.selectedFilterSet.map((item) => item.filterSetNum).toSet();
-    _selectedFilterSetNum = _selectedFilterSet.first;
+    if (_selectedFilterSet.isNotEmpty) {
+      _selectedFilterSetNum = _selectedFilterSet.first;
+      _selectionOrder.addAll(_selectedFilterSet);
+    }
   }
 
   void _selectFilterSet(int num) {
     setState(() {
-      _selectedFilterSet.clear();
-      _selectedFilterSet.add(num);
-      _selectedFilterSetNum = num;
+      if (_selectedFilterSet.contains(num)) {
+        _selectedFilterSet.remove(num);
+        _selectionOrder.remove(num);
+      } else if (widget.maxSelection == null || widget.maxSelection! <= 0 || _selectedFilterSet.length < widget.maxSelection!) {
+        _selectedFilterSet.add(num);
+        _selectionOrder.addLast(num);
+      } else {
+        final int earliestSelected = _selectionOrder.removeFirst();
+        _selectedFilterSet.remove(earliestSelected);
+        _selectedFilterSet.add(num);
+        _selectionOrder.addLast(num);
+      }
+      _selectedFilterSetNum = _selectedFilterSet.isEmpty ? -1 : _selectedFilterSet.last;
     });
   }
 
@@ -45,7 +62,7 @@ class _PrivacyGuardLevelSelectionState extends State<FilterSetSelectionPage > {
         title: Text(l10n.settingsConfirmationDialogTitle),
       ),
       body: SafeArea(
-        child:  ListView(
+        child: ListView(
           children: filterSet.all.where((e) => e.isActive).map((filterSet) {
             return ListTile(
               title: Text('ID: ${filterSet.filterSetId}-Num: ${filterSet.filterSetNum}: ${filterSet.aliasName}'),
@@ -63,7 +80,6 @@ class _PrivacyGuardLevelSelectionState extends State<FilterSetSelectionPage > {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Set<FilterSetRow> resultFilterSet = filterSet.all.where((item) => _selectedFilterSet.contains(item.filterSetNum)).toSet();
-
           Navigator.pop(context, resultFilterSet);
         },
         child: const Icon(Icons.check),

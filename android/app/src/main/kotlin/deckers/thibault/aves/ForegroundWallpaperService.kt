@@ -115,25 +115,27 @@ class ForegroundWallpaperService : Service() {
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
-        //t4y: temp implement, next time to chaneg to open the entry, or the setting of foreground wallpaper.
+
         val openAppIntent = Intent(applicationContext, MainActivity::class.java).let {
             PendingIntent.getActivity(applicationContext, MainActivity.OPEN_FROM_ANALYSIS_SERVICE, it, pendingIntentFlags)
         }
-        // t4y: to swich the action group in notification.
+
         val switchPendingIntent = createPendingIntent(ACTION_SWITCH_GROUP)
 
         val group1Actions = listOf(
-            NotificationCompat.Action.Builder(R.drawable.ic_outline_stop_24, "Switch", switchPendingIntent).build(),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Left", ACTION_LEFT),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Right", ACTION_RIGHT),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Duplicate", ACTION_DUPLICATE),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Reshuffle", ACTION_RESHUFFLE)
+            NotificationCompat.Action.Builder(R.drawable.baseline_pages_24, "Switch", switchPendingIntent).build(),
+            createSimpleAction(R.drawable.baseline_pages_24, "Left", ACTION_LEFT),
+            createSimpleAction(R.drawable.baseline_pages_24, "Right", ACTION_RIGHT),
+            createSimpleAction(R.drawable.baseline_pages_24, "Duplicate", ACTION_DUPLICATE),
+            createSimpleAction(R.drawable.baseline_pages_24, "Reshuffle", ACTION_RESHUFFLE)
         )
 
         val group2Actions = listOf(
-            NotificationCompat.Action.Builder(R.drawable.ic_outline_stop_24, "Switch", switchPendingIntent).build(),
+            NotificationCompat.Action.Builder(R.drawable.baseline_pages_24, "Switch", switchPendingIntent).build(),
             createSimpleAction(R.drawable.ic_outline_stop_24, "Downward", ACTION_DOWNWARD),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Upward", ACTION_UPWARD)
+            createSimpleAction(R.drawable.ic_outline_stop_24, "Upward", ACTION_UPWARD),
+            createSimpleAction(R.drawable.ic_outline_stop_24, "Option 4", "ACTION_OPTION_4"),
+            createSimpleAction(R.drawable.ic_outline_stop_24, "Option 5", "ACTION_OPTION_5")
         )
 
         val actionsToShow = if (isGroup1) group1Actions else group2Actions
@@ -146,6 +148,7 @@ class ForegroundWallpaperService : Service() {
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setContentIntent(openAppIntent)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .also { builder ->
                 actionsToShow.forEach { action ->
                     builder.addAction(action)

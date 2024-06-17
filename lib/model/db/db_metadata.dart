@@ -159,14 +159,5 @@ abstract class MetadataDb {
   Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row);
 
   Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows);
-  // wallpaperScheduleTableDetails
-  Future<void> clearWallpaperScheduleDetails();
 
-  Future<Set<WallpaperScheduleDetailRow>> loadAllWallpaperScheduleDetails();
-
-  Future<void> addWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows);
-
-  Future<void> updateWallpaperScheduleDetails(int id, WallpaperScheduleDetailRow row);
-
-  Future<void> removeWallpaperScheduleDetails(Set<WallpaperScheduleDetailRow> rows);
 }

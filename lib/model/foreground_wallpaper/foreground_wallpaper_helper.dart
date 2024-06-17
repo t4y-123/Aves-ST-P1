@@ -11,6 +11,7 @@ import 'package:flutter/painting.dart';
 
 import '../filters/aspect_ratio.dart';
 import '../filters/mime.dart';
+import '../settings/settings.dart';
 
 final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();
 
@@ -18,24 +19,18 @@ class ForegroundWallpaperHelper  {
   ForegroundWallpaperHelper._private();
 
    Future<void> initWallpaperSchedules() async {
-    // Initialize wallpaperSchedules and wallpaperScheduleDetails
     final currentWallpaperSchedules = await metadataDb.loadAllWallpaperSchedules();
     if (currentWallpaperSchedules.isEmpty) {
       await initializePrivacyGuardLevels(initialPrivacyGuardLevels);
-      await wallpaperScheduleDetails.init();
       await initializeFilterSets(initialFilterSets);
       // Add schedule data to the database
       await wallpaperSchedules.add(scheduleData.toSet());
-      // Add details data to the database
-      await wallpaperScheduleDetails.add(detailsData.toSet());
     }else{
       await privacyGuardLevels.init();
       await filterSet.init();
       await wallpaperSchedules.init();
-      await wallpaperScheduleDetails.init();
     }
   }
-
 
   Future<void> initializeFilterSets(Set<FilterSetRow> initialFilterSets) async {
     await filterSet.init();
@@ -53,15 +48,13 @@ class ForegroundWallpaperHelper  {
     }
   }
 
-  static const int defaultInterval = 5; // seconds.
-
   // init Guard Levels first.
   final initialPrivacyGuardLevels = {
     const PrivacyGuardLevelRow(
       privacyGuardLevelID: 1,
       guardLevel: 1,
       aliasName: 'Exposure',
-      color: Color(0xFFFF0000), // Red
+      color: Color(0xFF808080), // Grey
       isActive: true,
     ),
     const PrivacyGuardLevelRow(
@@ -75,7 +68,7 @@ class ForegroundWallpaperHelper  {
       privacyGuardLevelID: 3,
       guardLevel: 3,
       aliasName: 'Safe',
-      color: Color(0xFF7AB7EF), // Blue
+      color: Color(0xFF2986cc), // Blue
       isActive: true,
     ),
   };
@@ -123,95 +116,75 @@ class ForegroundWallpaperHelper  {
 
   //Schedule data
 
+  static const int defaultInterval = 3; // seconds.
+
   final scheduleData = [
     const WallpaperScheduleRow(
       id: 1,
       scheduleNum: 1,
-      scheduleName: 'Home: Exposure',
+      aliasName: 'L1-ID_1-HOME',
+      filterSetId: 1,
+      privacyGuardLevelId: 1,
+      updateType: WallpaperUpdateType.home,
+      widgetId: 0,
+      intervalTime: defaultInterval,
       isActive: true,
     ),
     const WallpaperScheduleRow(
       id: 2,
       scheduleNum: 2,
-      scheduleName: 'Home: Moderate',
+      aliasName: 'L1-ID_1-LOCK',
+      filterSetId: 3,
+      privacyGuardLevelId: 1,
+      updateType: WallpaperUpdateType.lock,
+      widgetId: 0,
+      intervalTime: 0,
       isActive: true,
     ),
     const WallpaperScheduleRow(
       id: 3,
       scheduleNum: 3,
-      scheduleName: 'Lock: Exposure & Moderate',
+      aliasName: 'L2-ID_2-HOME',
+      filterSetId: 2,
+      privacyGuardLevelId: 2,
+      updateType: WallpaperUpdateType.home,
+      widgetId: 0,
+      intervalTime: defaultInterval,
       isActive: true,
     ),
     const WallpaperScheduleRow(
       id: 4,
       scheduleNum: 4,
-      scheduleName: 'Home: Safe',
+      aliasName: 'L2-ID_2-LOCK',
+      filterSetId: 3,
+      privacyGuardLevelId: 2,
+      updateType: WallpaperUpdateType.lock,
+      widgetId: 0,
+      intervalTime: 0,
       isActive: true,
     ),
     const WallpaperScheduleRow(
       id: 5,
       scheduleNum: 5,
-      scheduleName: 'Lock: Safe',
+      aliasName: 'L3-ID_3-HOME',
+      filterSetId: 4,
+      privacyGuardLevelId: 3,
+      updateType: WallpaperUpdateType.home,
+      widgetId: 0,
+      intervalTime: defaultInterval,
+      isActive: true,
+    ),
+    const WallpaperScheduleRow(
+      id: 6,
+      scheduleNum: 6,
+      aliasName: 'L2-ID_2-LOCK',
+      filterSetId: 5,
+      privacyGuardLevelId: 3,
+      updateType: WallpaperUpdateType.lock,
+      widgetId: 0,
+      intervalTime: 0,
       isActive: true,
     ),
   ];
-  // Details data
-  final detailsData = [
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 1,
-      wallpaperScheduleId: 1,
-      filterSetId: 1,
-      privacyGuardLevelId: 1,
-      updateType: {WallpaperUpdateType.home},
-      widgetId: 0,
-      intervalTime: defaultInterval,
-    ),
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 2,
-      wallpaperScheduleId: 2,
-      filterSetId: 2,
-      privacyGuardLevelId: 2,
-      updateType:  {WallpaperUpdateType.lock},
-      widgetId: 0,
-      intervalTime: defaultInterval,
-    ),
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 3,
-      wallpaperScheduleId: 3,
-      filterSetId: 3,
-      privacyGuardLevelId: 1,
-      updateType:  {WallpaperUpdateType.lock},
-      widgetId: 0,
-      intervalTime: 0,
-    ),
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 4,
-      wallpaperScheduleId: 3,
-      filterSetId: 3,
-      privacyGuardLevelId: 2,
-      updateType:  {WallpaperUpdateType.lock},
-      widgetId: 0,
-      intervalTime: 0,
-    ),
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 5,
-      wallpaperScheduleId: 4,
-      filterSetId: 4,
-      privacyGuardLevelId: 3,
-      updateType:  {WallpaperUpdateType.home},
-      widgetId: 0,
-      intervalTime: defaultInterval,
-    ),
-    const WallpaperScheduleDetailRow(
-      wallpaperScheduleDetailId: 6,
-      wallpaperScheduleId: 5,
-      filterSetId: 4,
-      privacyGuardLevelId: 3,
-      updateType: {WallpaperUpdateType.lock},
-      widgetId: 0,
-      intervalTime: 0,
-    ),
-  ];
-
 }
 

@@ -1,4 +1,4 @@
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/schdule/wallpaper_schedule_config_page.dart';
+import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/wallpaper_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
@@ -24,22 +24,22 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
       // Second, should use allItems to keep the reorder level.
       int guardLevelIndex = 1;
       allItems.where((item) => activeItems.contains(item)).forEach((item) {
-        wallpaperSchedules.set(
-          id: item!.id,
-          scheduleName: item.scheduleName,
-          scheduleNum: guardLevelIndex++,
-          isActive: true,
-        );
+        // wallpaperSchedules.set(
+        //   id: item!.id,
+        //   aliasName: item.aliasName,
+        //   scheduleNum: guardLevelIndex++,
+        //   isActive: true,
+        // );
       });
 
       // Process reordered items that are not in active items
       allItems.where((item) => !activeItems.contains(item)).forEach((item) {
-        wallpaperSchedules.set(
-          id: item!.id,
-          scheduleName: item.scheduleName,
-          scheduleNum: guardLevelIndex++,
-          isActive: false,
-        );
+      //   wallpaperSchedules.set(
+      //     id: item!.id,
+      //     aliasName: item.aliasName,
+      //     scheduleNum: guardLevelIndex++,
+      //     isActive: false,
+      //   );
       });
       allItems.sort();
       //

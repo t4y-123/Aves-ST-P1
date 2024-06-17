@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:aves/services/common/services.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
@@ -82,6 +83,29 @@ class PrivacyGuardLevel with ChangeNotifier {
     notifyListeners();
   }
 
+  Color getRandomColor() {
+    final Random random = Random();
+    return Color.fromARGB(
+      255,
+      random.nextInt(256),
+      random.nextInt(256),
+      random.nextInt(256),
+    );
+  }
+
+  int getValidUniqueId() {
+    int id = 1;
+    while (privacyGuardLevels.all.any((item) => item.privacyGuardLevelID == id)) {
+      id++;
+    }
+    return id;
+  }
+
+  int getValidGuardLevel() {
+    // final activeItems = widget.allItems.where((item) => item?.isActive ?? false).toList();
+    final int maxLevelNow = privacyGuardLevels.all.where((item) => item.isActive).length;
+    return maxLevelNow + 1;
+  }
 // import/export
   // TODO: import/export for backup.
 }

@@ -12,10 +12,14 @@ import android.content.pm.ServiceInfo
 import android.widget.Toast;
 import android.os.Build
 import android.util.Log
+import android.widget.RemoteViews
+import android.app.KeyguardManager
+import android.graphics.Color
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.ForegroundInfo
+
 import kotlinx.coroutines.*
 import deckers.thibault.aves.utils.FlutterUtils
 import deckers.thibault.aves.utils.LogUtils
@@ -33,7 +37,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class ForegroundWallpaperService : Service() {
 
-    private var isGroup1 = true
+
     private lateinit var screenStateReceiver: BroadcastReceiver
 
     override fun onCreate() {
@@ -41,28 +45,245 @@ class ForegroundWallpaperService : Service() {
 
         createNotificationChannel()
         startForeground(2, createNotification())
-        updateNotification()
-        isRunning = true
-        Log.i(LOG_TAG, "Foreground wallpaper service started")
-        // Register receiver for screen events
         registerScreenStateReceiver()
+        isRunning = true
+        updateNotification()
+        Log.i(LOG_TAG, "Foreground wallpaper service started")
 
     }
 
-    private fun createNotification(): Notification {
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0,
-            Intent(this, MainActivity::class.java), 0
-        )
 
-        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
-            .setContentTitle("Foreground Service")
-            .setContentText("Running...")
+    private fun createNotification(): Notification {
+        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+
+        val pendingIntent = Intent(applicationContext, MainActivity::class.java).let {
+            PendingIntent.getActivity(applicationContext, MainActivity.OPEN_FROM_ANALYSIS_SERVICE, it, pendingIntentFlags)
+        }
+
+        val builder = NotificationCompat.Builder(this, FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setTicker("Ticker text")
-            .build()
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setOngoing(true)
+            builder.setCustomContentView(getNormalContentView())
+            builder.setCustomBigContentView(getBigContentView())
+
+        return builder.build()
     }
+
+    private fun updateNotification() {
+        val notification = createNotification()
+        val notificationManager = NotificationManagerCompat.from(applicationContext)
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun getNormalContentView(): RemoteViews {
+        val remoteViews = RemoteViews(packageName, R.layout.fgw_notification_normal)
+
+        val statusText: String
+        val statusColor: Int
+
+        if (isLocked) {
+            statusText = "3"
+            statusColor = android.R.color.holo_blue_dark
+        } else {
+            if (isGroup1) {
+                statusText = "1"
+                statusColor = android.R.color.darker_gray
+            } else {
+                statusText = "2"
+                statusColor = android.R.color.holo_purple
+            }
+        }
+
+        remoteViews.setTextViewText(R.id.tv_status, statusText)
+        remoteViews.setInt(R.id.tv_status, "setBackgroundColor", resources.getColor(statusColor, null))
+
+
+        if(isScreenLocked()){
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_01, R.drawable.baseline_arrow_downward_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_01, createPendingIntent(ACTION_DOWNWARD))
+
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_02, R.drawable.baseline_arrow_upward_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_02, createPendingIntent(ACTION_UPWARD))
+
+            if(isLocked){
+                remoteViews.setImageViewResource(R.id.iv_normal_layout_button_03, R.drawable.baseline_lock_24)
+            }else{
+                remoteViews.setImageViewResource(R.id.iv_normal_layout_button_03, R.drawable.baseline_lock_open_24)
+            }
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_03, createPendingIntent(ACTION_LOCK_UNLOCK))
+
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_04, R.drawable.baseline_check_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_04, createPendingIntent(ACTION_APPLY_LEVEL_CHANGE))
+
+        }else{
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_01, R.drawable.baseline_navigate_before_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_01, createPendingIntent(ACTION_LEFT))
+
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_02, R.drawable.baseline_add_photo_alternate_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_02, createPendingIntent(ACTION_DUPLICATE))
+
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_03, R.drawable.baseline_navigate_next_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_03, createPendingIntent(ACTION_RIGHT))
+
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_04, R.drawable.baseline_shuffle_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_04, createPendingIntent(ACTION_RESHUFFLE))
+        }
+
+        return remoteViews
+    }
+
+    private fun getBigContentView(): RemoteViews {
+        val remoteViews = RemoteViews(packageName, R.layout.fgw_notification_big)
+
+        val statusText: String
+        val statusColor: Int
+
+        if (isLocked) {
+            statusText = "3"
+            statusColor = android.R.color.holo_blue_dark
+        } else {
+            if (isGroup1) {
+                statusText = "1"
+                statusColor = android.R.color.darker_gray
+            } else {
+                statusText = "2"
+                statusColor = android.R.color.holo_purple
+            }
+        }
+
+        remoteViews.setTextViewText(R.id.tv_status, statusText)
+        remoteViews.setInt(R.id.tv_status, "setBackgroundColor", resources.getColor(statusColor, null))
+
+        remoteViews.setImageViewResource(R.id.iv_big_layout_button_01, R.drawable.baseline_menu_open_24)
+        remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_01, createPendingIntent(ACTION_SWITCH_GROUP))
+
+        if (isGroup1) {
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_02, R.drawable.baseline_navigate_before_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_02, createPendingIntent(ACTION_LEFT))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_03, R.drawable.baseline_add_photo_alternate_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_03, createPendingIntent(ACTION_DUPLICATE))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_04, R.drawable.baseline_navigate_next_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_04, createPendingIntent(ACTION_RIGHT))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_05, R.drawable.baseline_shuffle_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_05, createPendingIntent(ACTION_RESHUFFLE))
+        } else {
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_02, R.drawable.baseline_arrow_downward_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_02, createPendingIntent(ACTION_DOWNWARD))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_03, R.drawable.baseline_arrow_upward_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_03, createPendingIntent(ACTION_UPWARD))
+
+            if(isLocked){
+                remoteViews.setImageViewResource(R.id.iv_big_layout_button_04, R.drawable.baseline_lock_24)
+            }else{
+                remoteViews.setImageViewResource(R.id.iv_big_layout_button_04, R.drawable.baseline_lock_open_24)
+            }
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_04, createPendingIntent(ACTION_LOCK_UNLOCK))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_05, R.drawable.baseline_check_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_05, createPendingIntent(ACTION_APPLY_LEVEL_CHANGE))
+        }
+
+        return remoteViews
+    }
+
+
+    // create update notification
+    private fun createNotificationChannel() {
+        val channel = NotificationChannelCompat.Builder(FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_HIGH)
+            //.setName(applicationContext.getText(R.string.analysis_channel_name))
+            .setName("ForegroundWallpaper")
+            .setShowBadge(false)
+            .build()
+        NotificationManagerCompat.from(applicationContext).createNotificationChannel(channel)
+    }
+
+    private fun createPendingIntent(action: String): PendingIntent {
+        val intent = Intent(applicationContext, ForegroundWallpaperService::class.java).apply {
+            this.action = action
+        }
+        return PendingIntent.getService(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_SWITCH_GROUP -> {
+                isGroup1 = !isGroup1
+                updateNotification()
+            }
+            ForegroundWallpaperWidgetProvider.ACTION_STOP_FOREGROUND -> {
+                stopForeground(true)
+                stopSelf()
+            }
+            ACTION_LEFT -> showToast("Left arrow tapped")
+            ACTION_RIGHT -> showToast("Right arrow tapped")
+            ACTION_DUPLICATE -> showToast("Duplicate icon tapped")
+            ACTION_RESHUFFLE -> showToast("Reshuffle icon tapped")
+            ACTION_DOWNWARD -> showToast("Downward arrow tapped")
+            ACTION_UPWARD -> showToast("Upward arrow tapped")
+            ACTION_APPLY_LEVEL_CHANGE ->showToast("APPLY LEVEL CHANGE")
+            ACTION_LOCK_UNLOCK -> {
+                isLocked = !isLocked
+                showToast(if (isLocked) "Locked" else "Unlocked")
+                updateNotification()
+            }
+            Intent.ACTION_SCREEN_ON -> handleScreenOn()
+            Intent.ACTION_SCREEN_OFF -> handleScreenOff()
+            Intent.ACTION_USER_PRESENT -> handleUserPresent()
+        }
+        return START_STICKY
+    }
+
+    private fun handleScreenOn() {
+        // Handle screen on event
+        Log.i(LOG_TAG, "Screen ON")
+        updateNotification()
+    }
+
+    private fun handleScreenOff() {
+        // Handle screen off event
+        Log.i(LOG_TAG, "Screen OFF")
+        updateNotification()
+    }
+
+    private fun handleUserPresent() {
+        // Handle user present (unlock) event
+        Log.i(LOG_TAG, "User Present (Unlocked)")
+	        updateNotification()
+    }
+
+    private fun handleStartService() {
+        // Handle starting the service
+        Log.i(LOG_TAG, "Service started")
+	        updateNotification()
+    }
+
+
+
+    // create and update notification end
+    private fun isScreenLocked(): Boolean {
+        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return keyguardManager.isKeyguardLocked
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
+        // Unregister receiver for screen events
+        unregisterScreenStateReceiver()
+        isRunning = false
+    }
+
 
     // Functionality of register and unregister for screen on, screen off, and screen unlock intents
     // when starting or stopping the service
@@ -93,168 +314,17 @@ class ForegroundWallpaperService : Service() {
         }
     }
 
-    // create update notification
-    private fun createNotificationChannel() {
-        val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_LOW)
-            //.setName(applicationContext.getText(R.string.analysis_channel_name))
-            .setName("ForegroundWallpaper")
-            .setShowBadge(false)
-            .build()
-        NotificationManagerCompat.from(applicationContext).createNotificationChannel(channel)
-    }
-
-    private fun updateNotification() {
-        val foregroundInfo = createForegroundInfo()
-        val notificationManager = NotificationManagerCompat.from(applicationContext)
-        notificationManager.notify(NOTIFICATION_ID, foregroundInfo.notification)
-    }
-
-    private fun createForegroundInfo(title: String? = null, message: String? = null): ForegroundInfo {
-        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
-
-        val openAppIntent = Intent(applicationContext, MainActivity::class.java).let {
-            PendingIntent.getActivity(applicationContext, MainActivity.OPEN_FROM_ANALYSIS_SERVICE, it, pendingIntentFlags)
-        }
-
-        val switchPendingIntent = createPendingIntent(ACTION_SWITCH_GROUP)
-
-        val group1Actions = listOf(
-            NotificationCompat.Action.Builder(R.drawable.baseline_pages_24, "Switch", switchPendingIntent).build(),
-            createSimpleAction(R.drawable.baseline_pages_24, "Left", ACTION_LEFT),
-            createSimpleAction(R.drawable.baseline_pages_24, "Right", ACTION_RIGHT),
-            createSimpleAction(R.drawable.baseline_pages_24, "Duplicate", ACTION_DUPLICATE),
-            createSimpleAction(R.drawable.baseline_pages_24, "Reshuffle", ACTION_RESHUFFLE)
-        )
-
-        val group2Actions = listOf(
-            NotificationCompat.Action.Builder(R.drawable.baseline_pages_24, "Switch", switchPendingIntent).build(),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Downward", ACTION_DOWNWARD),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Upward", ACTION_UPWARD),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Option 4", "ACTION_OPTION_4"),
-            createSimpleAction(R.drawable.ic_outline_stop_24, "Option 5", "ACTION_OPTION_5")
-        )
-
-        val actionsToShow = if (isGroup1) group1Actions else group2Actions
-
-        val contentTitle = title ?: "Foreground Wallpaper"
-        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL)
-            .setContentTitle(contentTitle)
-            .setTicker(contentTitle)
-            .setContentText(message)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setOngoing(true)
-            .setContentIntent(openAppIntent)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .also { builder ->
-                actionsToShow.forEach { action ->
-                    builder.addAction(action)
-                }
-            }
-            .build()
-
-        return if (Build.VERSION.SDK_INT >= 34) {
-            // from Android 14 (API 34), foreground service type is mandatory
-            // despite the sample code omitting it at:
-            // https://developer.android.com/guide/background/persistent/how-to/long-running
-            // TODO TLAD [Android 15 (API 35)] use `FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK`
-            //  for it use to 'display' the wallpaper in periodic time
-            val type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            ForegroundInfo(NOTIFICATION_ID, notification, type)
-        } else {
-            ForegroundInfo(NOTIFICATION_ID, notification)
-        }
-    }
-
-    private fun createSimpleAction(icon: Int, title: String, action: String): NotificationCompat.Action {
-        val intent = Intent(applicationContext, ForegroundWallpaperService::class.java).apply {
-            this.action = action
-        }
-        val pendingIntent = PendingIntent.getService(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        return NotificationCompat.Action.Builder(icon, title, pendingIntent).build()
-    }
-
-    private fun createPendingIntent(action: String): PendingIntent {
-        val intent = Intent(applicationContext, ForegroundWallpaperService::class.java).apply {
-            this.action = action
-        }
-        return PendingIntent.getService(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_SWITCH_GROUP -> {
-                isGroup1 = !isGroup1
-                updateNotification()
-            }
-            ForegroundWallpaperWidgetProvider.ACTION_STOP_FOREGROUND -> {
-                stopForeground(true)
-                stopSelf()
-            }
-            ACTION_LEFT -> showToast("Left arrow tapped")
-            ACTION_RIGHT -> showToast("Right arrow tapped")
-            ACTION_DUPLICATE -> showToast("Duplicate icon tapped")
-            ACTION_RESHUFFLE -> showToast("Reshuffle icon tapped")
-            ACTION_DOWNWARD -> showToast("Downward arrow tapped")
-            ACTION_UPWARD -> showToast("Upward arrow tapped")
-            Intent.ACTION_SCREEN_ON -> handleScreenOn()
-            Intent.ACTION_SCREEN_OFF -> handleScreenOff()
-            Intent.ACTION_USER_PRESENT -> handleUserPresent()
-        }
-        return START_STICKY
-    }
-
-    private fun handleScreenOn() {
-        // Handle screen on event
-        Log.i(LOG_TAG, "Screen ON")
-    }
-
-    private fun handleScreenOff() {
-        // Handle screen off event
-        Log.i(LOG_TAG, "Screen OFF")
-    }
-
-    private fun handleUserPresent() {
-        // Handle user present (unlock) event
-        Log.i(LOG_TAG, "User Present (Unlocked)")
-    }
-
-    private fun handleStartService() {
-        // Handle starting the service
-        Log.i(LOG_TAG, "Service started")
-    }
-
     private fun showToast(message: String) {
         Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
     }
-
-    // create and update notification end
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
-        // Unregister receiver for screen events
-        unregisterScreenStateReceiver()
-        isRunning = false
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     companion object {
         private val LOG_TAG = LogUtils.createTag<ForegroundWallpaperService>()
-        const val NOTIFICATION_CHANNEL = "foreground_wallpaper"
+        const val FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID = "foreground_wallpaper"
         const val NOTIFICATION_ID = 2
-
-        const val KEY_ENTRY_IDS = "entry_ids"
-        const val KEY_FORCE = "force"
-        const val KEY_PROGRESS_TOTAL = "progress_total"
-        const val KEY_PROGRESS_OFFSET = "progress_offset"
 
         const val ACTION_SWITCH_GROUP = "ACTION_SWITCH_GROUP"
         const val ACTION_LEFT = "ACTION_LEFT"
@@ -263,7 +333,11 @@ class ForegroundWallpaperService : Service() {
         const val ACTION_RESHUFFLE = "ACTION_RESHUFFLE"
         const val ACTION_DOWNWARD = "ACTION_DOWNWARD"
         const val ACTION_UPWARD = "ACTION_UPWARD"
+        const val ACTION_LOCK_UNLOCK = "ACTION_LOCK_UNLOCK"
+        const val ACTION_APPLY_LEVEL_CHANGE = "ACTION_APPLY_LEVEL_CHANGE"
 
+        var isGroup1 = true
+        var isLocked = false
         var isRunning = false
     }
 }

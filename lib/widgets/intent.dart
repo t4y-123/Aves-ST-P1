@@ -9,6 +9,9 @@ class IntentActions {
   static const view = 'view';
   static const widgetOpen = 'widget_open';
   static const widgetSettings = 'widget_settings';
+  // t4y: foreground wallpaper.
+  static const foregroundWallpaperWidgetSettings = 'foreground_wallpaper_widget_settings';
+  static const foregroundWallpaperWidgetOpen = 'foreground_wallpaper_widget_open';
 }
 
 class IntentDataKeys {

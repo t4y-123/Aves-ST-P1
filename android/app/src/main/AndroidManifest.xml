@@ -312,7 +312,23 @@
                 android:resource="@xml/screen_saver" />
         </service>
 
-        <service android:name=".ForegroundWallpaperService" android:exported="true"/>
+        <service android:name=".ForegroundWallpaperService"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <service
+            android:name=".ForegroundWallpaperTileService"
+            android:icon="@drawable/fgw_tile_icon"
+            android:label="@string/foreground_wallpaper_tile_service_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+            <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
 
         <!-- file provider to share files having a file:// URI -->
         <provider
@@ -323,6 +339,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
+
         </provider>
 
         <provider

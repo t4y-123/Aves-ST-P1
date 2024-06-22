@@ -4,7 +4,6 @@ import android.content.Context
 import android.app.Service
 import android.app.PendingIntent
 import android.content.Intent
-import android.widget.Toast;
 import androidx.core.content.ContextCompat
 import deckers.thibault.aves.ForegroundWallpaperService
 import deckers.thibault.aves.ForegroundWallpaperWidgetProvider
@@ -28,7 +27,7 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
                 val serviceIntent = Intent(appContext, ForegroundWallpaperWidgetProvider::class.java)
                 serviceIntent.action = ForegroundWallpaperWidgetProvider.ACTION_START_FOREGROUND
                 appContext.sendBroadcast(serviceIntent)
-                Toast.makeText(appContext, "Start ForegroundWallpaper In Handler", Toast.LENGTH_SHORT).show()
+                Log.i(LOG_TAG, "Start ForegroundWallpaper In Handler")
                 result.success(null)
             }
             "stopForegroundWallpaper" -> {
@@ -36,10 +35,10 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
                 val serviceIntent = Intent(appContext, ForegroundWallpaperWidgetProvider::class.java)
                 serviceIntent.action = ForegroundWallpaperWidgetProvider.ACTION_STOP_FOREGROUND
                 appContext.sendBroadcast(serviceIntent)
-                Toast.makeText(appContext, "Stop ForegroundWallpaper In Handler", Toast.LENGTH_SHORT).show()
+                Log.i(LOG_TAG, "Stop ForegroundWallpaper In Handler")
                 result.success(null)
             }
-            "update" -> Coresult.safe(call, result, ::update)
+            "update_widget" -> Coresult.safe(call, result, ::update_widget)
             // The getRunningServices method is indeed deprecated in newer Android versions (from API level 26 and onward)
             // due to changes in Android's background execution limits.
             // Though for backwards compatibility, it will still return the caller's own services.
@@ -53,7 +52,7 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
         }
     } // onMethodCall
 
-    private fun update(call: MethodCall, result: MethodChannel.Result) {
+    private fun update_widget(call: MethodCall, result: MethodChannel.Result) {
         val widgetId = call.argument<Int>("widgetId")
         if (widgetId == null) {
             result.error("update-args", "missing arguments", null)

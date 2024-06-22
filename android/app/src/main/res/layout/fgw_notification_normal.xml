@@ -93,6 +93,5 @@
             android:contentDescription="lock current level"
             android:src="@drawable/baseline_check_24" />
 
-
     </LinearLayout>
 </RelativeLayout>

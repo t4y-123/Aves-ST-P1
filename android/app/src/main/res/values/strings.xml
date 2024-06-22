@@ -4,6 +4,7 @@
     <string name="app_widget_label">Photo Frame</string>
     <string name="foreground_wallpaper_widget_label">Foreground Wallpaper</string>
     <string name="foreground_wallpaper_channel_name">Foreground Wallpaper</string>
+    <string name="foreground_wallpaper_tile_service_label">Fg Wallpaper</string>
     <string name="foreground_wallpaper_notification_default_title">Foreground Wallpaper Title</string>
     <string name="foreground_wallpaper_notification_default_message">Foreground Wallpaper Message</string>
     <string name="wallpaper">Wallpaper</string>

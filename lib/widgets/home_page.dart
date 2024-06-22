@@ -13,6 +13,7 @@ import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/foreground_wallpaper_widget_service.dart';
 import 'package:aves/services/global_search.dart';
 import 'package:aves/services/intent_service.dart';
 import 'package:aves/services/widget_service.dart';
@@ -29,6 +30,7 @@ import 'package:aves/widgets/filter_grids/albums_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/intent.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
+import 'package:aves/widgets/settings/foreground_wallpaper_widget_settings_page.dart';
 import 'package:aves/widgets/settings/home_widget_settings_page.dart';
 import 'package:aves/widgets/settings/screen_saver_settings_page.dart';
 import 'package:aves/widgets/viewer/entry_viewer_page.dart';
@@ -106,6 +108,7 @@ class _HomePageState extends State<HomePage> {
       switch (intentAction) {
         case IntentActions.view:
         case IntentActions.widgetOpen:
+        case IntentActions.foregroundWallpaperWidgetOpen:
           String? uri, mimeType;
           final widgetId = intentData[IntentDataKeys.widgetId];
           if (widgetId != null) {
@@ -121,7 +124,12 @@ class _HomePageState extends State<HomePage> {
               case WidgetOpenPage.viewer:
                 uri = settings.getWidgetUri(widgetId);
             }
-            unawaited(WidgetService.update(widgetId));
+            // t4y: for foreground update diff.
+            if(intentAction == IntentActions.widgetOpen){
+              unawaited(WidgetService.update(widgetId));
+            }else if(intentAction == IntentActions.foregroundWallpaperWidgetOpen){
+              unawaited(ForegroundWallpaperWidgetService.update(widgetId));
+            }
           } else {
             uri = intentData[IntentDataKeys.uri];
             mimeType = intentData[IntentDataKeys.mimeType];
@@ -170,6 +178,9 @@ class _HomePageState extends State<HomePage> {
           _initialSearchQuery = intentData[IntentDataKeys.query];
         case IntentActions.widgetSettings:
           _initialRouteName = HomeWidgetSettingsPage.routeName;
+          _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
+        case IntentActions.foregroundWallpaperWidgetSettings:
+          _initialRouteName = ForegroundWallpaperWidgetSettings.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
@@ -352,6 +363,8 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => const ScreenSaverSettingsPage());
       case HomeWidgetSettingsPage.routeName:
         return buildRoute((context) => HomeWidgetSettingsPage(widgetId: _widgetId!));
+      case ForegroundWallpaperWidgetSettings.routeName:
+        return buildRoute((context) => ForegroundWallpaperWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
         return SearchPageRoute(
           delegate: CollectionSearchDelegate(

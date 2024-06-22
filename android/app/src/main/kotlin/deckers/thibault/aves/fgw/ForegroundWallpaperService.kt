@@ -19,7 +19,6 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.ForegroundInfo
-
 import kotlinx.coroutines.*
 import deckers.thibault.aves.utils.FlutterUtils
 import deckers.thibault.aves.utils.LogUtils
@@ -37,7 +36,6 @@ import kotlin.coroutines.suspendCoroutine
 
 class ForegroundWallpaperService : Service() {
 
-
     private lateinit var screenStateReceiver: BroadcastReceiver
 
     override fun onCreate() {
@@ -48,10 +46,16 @@ class ForegroundWallpaperService : Service() {
         registerScreenStateReceiver()
         isRunning = true
         updateNotification()
+        startForegroundWallpaperTileService()
         Log.i(LOG_TAG, "Foreground wallpaper service started")
-
     }
 
+    private fun startForegroundWallpaperTileService() {
+        val intent = Intent(this, ForegroundWallpaperTileService::class.java)
+        intent.action = ForegroundWallpaperTileService.ACTION_START_FGW_TILE_SERIVCE
+        startService(intent)
+        Log.i(LOG_TAG, "Foreground wallpaper tile service start intent sent")
+    }
 
     private fun createNotification(): Notification {
         val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -70,8 +74,8 @@ class ForegroundWallpaperService : Service() {
             .setTicker("Ticker text")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setOngoing(true)
-            builder.setCustomContentView(getNormalContentView())
-            builder.setCustomBigContentView(getBigContentView())
+        builder.setCustomContentView(getNormalContentView())
+        builder.setCustomBigContentView(getBigContentView())
 
         return builder.build()
     }
@@ -126,11 +130,11 @@ class ForegroundWallpaperService : Service() {
             remoteViews.setImageViewResource(R.id.iv_normal_layout_button_01, R.drawable.baseline_navigate_before_24)
             remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_01, createPendingIntent(ACTION_LEFT))
 
-            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_02, R.drawable.baseline_add_photo_alternate_24)
-            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_02, createPendingIntent(ACTION_DUPLICATE))
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_02, R.drawable.baseline_navigate_next_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_02, createPendingIntent(ACTION_RIGHT))
 
-            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_03, R.drawable.baseline_navigate_next_24)
-            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_03, createPendingIntent(ACTION_RIGHT))
+            remoteViews.setImageViewResource(R.id.iv_normal_layout_button_03, R.drawable.baseline_add_photo_alternate_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_03, createPendingIntent(ACTION_DUPLICATE))
 
             remoteViews.setImageViewResource(R.id.iv_normal_layout_button_04, R.drawable.baseline_shuffle_24)
             remoteViews.setOnClickPendingIntent(R.id.iv_normal_layout_button_04, createPendingIntent(ACTION_RESHUFFLE))
@@ -168,11 +172,12 @@ class ForegroundWallpaperService : Service() {
             remoteViews.setImageViewResource(R.id.iv_big_layout_button_02, R.drawable.baseline_navigate_before_24)
             remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_02, createPendingIntent(ACTION_LEFT))
 
-            remoteViews.setImageViewResource(R.id.iv_big_layout_button_03, R.drawable.baseline_add_photo_alternate_24)
-            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_03, createPendingIntent(ACTION_DUPLICATE))
 
-            remoteViews.setImageViewResource(R.id.iv_big_layout_button_04, R.drawable.baseline_navigate_next_24)
-            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_04, createPendingIntent(ACTION_RIGHT))
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_03, R.drawable.baseline_navigate_next_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_03, createPendingIntent(ACTION_RIGHT))
+
+            remoteViews.setImageViewResource(R.id.iv_big_layout_button_04, R.drawable.baseline_add_photo_alternate_24)
+            remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_04, createPendingIntent(ACTION_DUPLICATE))
 
             remoteViews.setImageViewResource(R.id.iv_big_layout_button_05, R.drawable.baseline_shuffle_24)
             remoteViews.setOnClickPendingIntent(R.id.iv_big_layout_button_05, createPendingIntent(ACTION_RESHUFFLE))
@@ -259,13 +264,13 @@ class ForegroundWallpaperService : Service() {
     private fun handleUserPresent() {
         // Handle user present (unlock) event
         Log.i(LOG_TAG, "User Present (Unlocked)")
-	        updateNotification()
+        updateNotification()
     }
 
     private fun handleStartService() {
         // Handle starting the service
         Log.i(LOG_TAG, "Service started")
-	        updateNotification()
+        updateNotification()
     }
 
 
@@ -282,6 +287,7 @@ class ForegroundWallpaperService : Service() {
         // Unregister receiver for screen events
         unregisterScreenStateReceiver()
         isRunning = false
+        Log.i(LOG_TAG, "On ForegroundWallpaperService")
     }
 
 
@@ -325,6 +331,7 @@ class ForegroundWallpaperService : Service() {
         private val LOG_TAG = LogUtils.createTag<ForegroundWallpaperService>()
         const val FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID = "foreground_wallpaper"
         const val NOTIFICATION_ID = 2
+        const val ACTION_SERVICE_STATE_CHANGED = "ACTION_SERVICE_STATE_CHANGED"
 
         const val ACTION_SWITCH_GROUP = "ACTION_SWITCH_GROUP"
         const val ACTION_LEFT = "ACTION_LEFT"

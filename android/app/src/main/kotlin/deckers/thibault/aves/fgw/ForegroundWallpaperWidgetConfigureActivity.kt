@@ -7,7 +7,7 @@ import deckers.thibault.aves.model.FieldMap
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class ForegroundWallpaperWidgetConfigureActivity : MainActivity() {
+class ForegroundWallpaperWidgetSettingsActivity : MainActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +45,7 @@ class ForegroundWallpaperWidgetConfigureActivity : MainActivity() {
     private fun saveWidget() {
         val appWidgetManager = AppWidgetManager.getInstance(this)
         val widgetInfo = appWidgetManager.getAppWidgetOptions(appWidgetId)
-        HomeWidgetProvider().onAppWidgetOptionsChanged(this, appWidgetManager, appWidgetId, widgetInfo)
+        ForegroundWallpaperWidgetProvider().onAppWidgetOptionsChanged(this, appWidgetManager, appWidgetId, widgetInfo)
 
         val intent = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_OK, intent)
@@ -54,7 +54,7 @@ class ForegroundWallpaperWidgetConfigureActivity : MainActivity() {
 
     override fun extractIntentData(intent: Intent?): FieldMap {
         return hashMapOf(
-            INTENT_DATA_KEY_ACTION to INTENT_ACTION_WIDGET_SETTINGS,
+            INTENT_DATA_KEY_ACTION to INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_SETTINGS,
             INTENT_DATA_KEY_WIDGET_ID to appWidgetId,
         )
     }

@@ -59,7 +59,7 @@ Future<void> foregroundWallpaper() async {
   await metadataDb.init();
   await device.init();
   await mobileServices.init();
-  await settings.init(monitorPlatformSettings: true);
+  await settings.init(monitorPlatformSettings: false);
   await reportService.init();
 
   final analyzer = ForegroundWallpaper();

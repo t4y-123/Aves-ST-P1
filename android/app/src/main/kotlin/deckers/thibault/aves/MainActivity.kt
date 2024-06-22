@@ -369,6 +369,17 @@ open class MainActivity : FlutterFragmentActivity() {
                 }
             }
 
+
+            INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN -> {
+                val widgetId = intent.getIntExtra(EXTRA_KEY_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    return hashMapOf(
+                        INTENT_DATA_KEY_ACTION to action,
+                        INTENT_DATA_KEY_WIDGET_ID to widgetId,
+                    )
+                }
+            }
+
             Intent.ACTION_RUN -> {
                 // flutter run
             }
@@ -500,6 +511,8 @@ open class MainActivity : FlutterFragmentActivity() {
         const val INTENT_ACTION_VIEW = "view"
         const val INTENT_ACTION_WIDGET_OPEN = "widget_open"
         const val INTENT_ACTION_WIDGET_SETTINGS = "widget_settings"
+        const val INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_SETTINGS = "foreground_wallpaper_widget_settings"
+        const val INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN = "foreground_wallpaper_widget_open"
 
         const val INTENT_DATA_KEY_ACTION = "action"
         const val INTENT_DATA_KEY_ALLOW_MULTIPLE = "allowMultiple"

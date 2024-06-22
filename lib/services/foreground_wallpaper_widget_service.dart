@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 class ForegroundWallpaperWidgetService {
   static const _configureChannel = MethodChannel('deckers.thibault/aves/foreground_wallpaper_widget_configure');
-  static const _updateChannel = MethodChannel('deckers.thibault/aves/foreground_wallpaper_widget_update');
+  static const _updateChannel = MethodChannel('deckers.thibault/aves/foreground_wallpaper_handler');
 
   static Future<bool> configure() async {
     try {
@@ -17,7 +17,7 @@ class ForegroundWallpaperWidgetService {
 
   static Future<bool> update(int widgetId) async {
     try {
-      await _updateChannel.invokeMethod('update', <String, dynamic>{
+      await _updateChannel.invokeMethod('update_widget', <String, dynamic>{
         'widgetId': widgetId,
       });
       return true;

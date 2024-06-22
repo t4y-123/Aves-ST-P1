@@ -35,6 +35,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 import io.flutter.plugin.common.MethodCall
+import deckers.thibault.aves.channel.calls.ForegroundWallpaperHandler
 
 class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
     private val defaultScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -42,9 +43,10 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent) // Ensure that widget-related events are handled
 
-        Log.i(LOG_TAG, "onReceive intent=$intent")
+        Log.i(LOG_TAG, "ForegroundWallpaperWidgetProvider onReceive intent=$intent")
         val action = intent.action
         val serviceIntent = Intent(context, ForegroundWallpaperService::class.java)
+       // serviceIntent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK);
 
         when (action) {
             ACTION_START_FOREGROUND -> {
@@ -52,38 +54,42 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                 if (!ForegroundWallpaperService.isRunning) {
                     serviceIntent.action = ACTION_START_FOREGROUND
                     ContextCompat.startForegroundService(context, serviceIntent)
-                    Toast.makeText(context, "Start ForegroundWallpaper on BroadcastReceiver", Toast.LENGTH_SHORT).show()
+                    Log.i(LOG_TAG, "Start ForegroundWallpaper on BroadcastReceiver")
                 } else {
-                    Toast.makeText(context, "ForegroundWallpaper is already running", Toast.LENGTH_SHORT).show()
+                    Log.i(LOG_TAG, "ForegroundWallpaper is already running")
                 }
             }
+
             ACTION_STOP_FOREGROUND -> {
-//                Log.i(LOG_TAG, "Stopping ForegroundWallpaperService")
-//                context.stopService(serviceIntent)
-//                Toast.makeText(context, "Stop ForegroundWallpaper on BroadcastReceiver", Toast.LENGTH_SHORT).show()
-                Log.i(LOG_TAG, "Stopping ForegroundWallpaperService")
                 serviceIntent.action = ACTION_STOP_FOREGROUND
                 context.stopService(serviceIntent)
-                Toast.makeText(context, "Stop ForegroundWallpaper on BroadcastReceiver", Toast.LENGTH_SHORT).show()
+                Log.i(LOG_TAG, "Stop ForegroundWallpaper on BroadcastReceiver")
             }
         }
     }
 
-
     // t4y: do almost the same as pre normal widget.
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        Log.d(LOG_TAG, "Widget onUpdate widgetIds=${appWidgetIds.contentToString()}")
+        Log.d(LOG_TAG, "ForegroundWallpaperWidgetProvider onUpdate widgetIds=${appWidgetIds.contentToString()}")
         for (widgetId in appWidgetIds) {
             val widgetInfo = appWidgetManager.getAppWidgetOptions(widgetId)
 
-            defaultScope.launch {
-                val backgroundProps = getProps(context, widgetId, widgetInfo, drawEntryImage = false)
-                updateWidgetImage(context, appWidgetManager, widgetId, widgetInfo, backgroundProps)
+            val appContext = context.applicationContext
+            Log.i(LOG_TAG, "On ForegroundWallpaperWidgetProvider")
+             val serviceIntent = Intent(appContext, ForegroundWallpaperWidgetProvider::class.java)
+             serviceIntent.action = ForegroundWallpaperWidgetProvider.ACTION_START_FOREGROUND
+             appContext.sendBroadcast(serviceIntent)
+            Log.i(LOG_TAG, "Start ForegroundWallpaperWidgetProvider In Handler")
 
-                val imageProps = getProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = false)
-                updateWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
+            defaultScope.launch {
+                val backgroundProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = false)
+                updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, backgroundProps)
+
+                val imageProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = false)
+                updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
             }
         }
+
     }
 
     override fun onAppWidgetOptionsChanged(context: Context, appWidgetManager: AppWidgetManager?, widgetId: Int, widgetInfo: Bundle?) {
@@ -96,8 +102,8 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         }
         imageByteFetchJob = defaultScope.launch {
             delay(500)
-            val imageProps = getProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = true)
-            updateWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
+            val imageProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = true)
+            updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
         }
     }
 
@@ -113,7 +119,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         return Pair(widthPx, heightPx)
     }
 
-    private suspend fun getProps(
+    private suspend fun getWallpaperProps(
         context: Context,
         widgetId: Int,
         widgetInfo: Bundle,
@@ -157,6 +163,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                 }
             }
             @Suppress("unchecked_cast")
+            Log.i(LOG_TAG, "finish suspendCoroutine ForegroundWallpaperWidgetProvider ")
             return props as FieldMap?
         } catch (e: Exception) {
             Log.e(LOG_TAG, "failed to draw widget for widgetId=$widgetId widthPx=$widthPx heightPx=$heightPx", e)
@@ -164,7 +171,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         return null
     }
 
-    private fun updateWidgetImage(
+    private fun updateWallpaperWidgetImage(
         context: Context,
         appWidgetManager: AppWidgetManager,
         widgetId: Int,
@@ -189,9 +196,9 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
 
             val pendingIntent = if (updateOnTap) buildUpdateIntent(context, widgetId) else buildOpenAppIntent(context, widgetId)
 
-            val views = RemoteViews(context.packageName, R.layout.app_widget).apply {
-                setImageViewBitmap(R.id.widget_img, bitmap)
-                setOnClickPendingIntent(R.id.widget_img, pendingIntent)
+            val views = RemoteViews(context.packageName, R.layout.fgw_widget).apply {
+                setImageViewBitmap(R.id.fgw_widget_img, bitmap)
+                setOnClickPendingIntent(R.id.fgw_widget_img, pendingIntent)
             }
 
             appWidgetManager.updateAppWidget(widgetId, views)
@@ -202,7 +209,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
     }
 
     private fun buildUpdateIntent(context: Context, widgetId: Int): PendingIntent {
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, Uri.parse("widget://$widgetId"), context, HomeWidgetProvider::class.java)
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, Uri.parse("widget://$widgetId"), context, ForegroundWallpaperWidgetProvider::class.java)
             .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
 
         return PendingIntent.getBroadcast(
@@ -219,7 +226,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
 
     private fun buildOpenAppIntent(context: Context, widgetId: Int): PendingIntent {
         // set a unique URI to prevent the intent (and its extras) from being shared by different widgets
-        val intent = Intent(MainActivity.INTENT_ACTION_WIDGET_OPEN, Uri.parse("widget://$widgetId"), context, MainActivity::class.java)
+        val intent = Intent(MainActivity.INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN, Uri.parse("widget://$widgetId"), context, MainActivity::class.java)
             .putExtra(MainActivity.EXTRA_KEY_WIDGET_ID, widgetId)
 
         return PendingIntent.getActivity(
@@ -239,8 +246,8 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         const val ACTION_START_FOREGROUND = "deckers.thibault.aves.ACTION_START_FOREGROUND_WALLPAPER"
         const val ACTION_STOP_FOREGROUND = "deckers.thibault.aves.ACTION_STOP_FOREGROUND_WALLPAPER"
 
-        private val LOG_TAG = LogUtils.createTag<HomeWidgetProvider>()
-        private const val FOREGROUND_WALLPAPER_DART_ENTRYPOINT = "foregroundWallpaper"
+        private val LOG_TAG = LogUtils.createTag<ForegroundWallpaperWidgetProvider>()
+        private const val FOREGROUND_WALLPAPER_DART_ENTRYPOINT = "foregroundWallpaperMain"
         private const val FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL = "deckers.thibault/aves/foreground_wallpaper_notification"
         private const val FOREGROUND_WALLPAPER_WIDGET_DRAW_CHANNEL = "deckers.thibault/aves/foreground_wallpaper_widget_draw"
          // To communicate with flutter code.
@@ -281,6 +288,19 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                 MethodChannel(messenger, FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL).apply {
                     setMethodCallHandler { call, result -> onMethodCall(call, result) }
                 }
+
+            MethodChannel(messenger, DeviceHandler.CHANNEL).setMethodCallHandler(DeviceHandler(context))
+            MethodChannel(messenger, MediaStoreHandler.CHANNEL).setMethodCallHandler(MediaStoreHandler(context))
+            MethodChannel(messenger, MediaFetchBytesHandler.CHANNEL, AvesByteSendingMethodCodec.INSTANCE).setMethodCallHandler(MediaFetchBytesHandler(context))
+            MethodChannel(messenger, MediaFetchObjectHandler.CHANNEL).setMethodCallHandler(MediaFetchObjectHandler(context))
+            MethodChannel(messenger, StorageHandler.CHANNEL).setMethodCallHandler(StorageHandler(context))
+
+            MethodChannel(messenger, ForegroundWallpaperHandler.CHANNEL).setMethodCallHandler(ForegroundWallpaperHandler(context))
+            // result streaming: dart -> platform ->->-> dart
+            // - need Context
+            StreamsChannel(messenger, ImageByteStreamHandler.CHANNEL).setStreamHandlerFactory { args -> ImageByteStreamHandler(context, args) }
+            StreamsChannel(messenger, MediaStoreStreamHandler.CHANNEL).setStreamHandlerFactory { args -> MediaStoreStreamHandler(context, args) }
+
         }
 
         private fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -290,7 +310,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                     result.success(null)
                 }
 
-                "updateNotification" -> {
+                "widget_update" -> {
 
                     result.success(null)
                 }
@@ -303,6 +323,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                 else -> result.notImplemented()
             }
         }// onMethodCall
+	
     }
 }
 

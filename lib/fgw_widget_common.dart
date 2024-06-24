@@ -39,7 +39,7 @@ void foregroundWallpaperWidgetMainCommon(AppFlavor flavor) async {
 
 Future<Map<String, dynamic>> _drawWidget(dynamic args) async {
   debugPrint('_drawWidget in foregroundWallpaperWidgetMainCommon $args');
-  await ForegroundWallpaperService.startService( );
+  //await ForegroundWallpaperService.startService( );
   final widgetId = args['widgetId'] as int;
   final widthPx = args['widthPx'] as int;
   final heightPx = args['heightPx'] as int;

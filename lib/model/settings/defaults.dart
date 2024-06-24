@@ -141,6 +141,10 @@ class SettingsDefaults {
   static const areAnimationsRemoved = false;
 
   //t4y: foreground wallpaper
-  static const int defaultNewUpdateInterval = 3;
+  static const int fgwNewUpdateInterval = 3;
+  static const int defaultPrivacyGuardLevel = 1;
+  //
+  static const int maxFgwUsedEntryRecord = 10;
+  static const int resetPrivacyGuardLevelDuraiont = 5; // second
 
 }

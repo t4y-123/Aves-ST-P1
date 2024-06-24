@@ -13,8 +13,6 @@ import android.util.Log
 import deckers.thibault.aves.utils.LogUtils
 import android.appwidget.AppWidgetManager
 
-// t4y : to make the service keep running even when the app is stop,
-// use boardcast receriver to start the service
 class ForegroundWallpaperHandler(private val context: Context): MethodChannel.MethodCallHandler {
 
     private val appContext = context.applicationContext
@@ -24,17 +22,11 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
         when (call.method) {
             "startForegroundWallpaper" -> {
                 Log.i(LOG_TAG, "On startForegroundWallpaper")
-                val serviceIntent = Intent(appContext, ForegroundWallpaperWidgetProvider::class.java)
-                serviceIntent.action = ForegroundWallpaperWidgetProvider.ACTION_START_FOREGROUND
-                appContext.sendBroadcast(serviceIntent)
-                Log.i(LOG_TAG, "Start ForegroundWallpaper In Handler")
+                ForegroundWallpaperService.startForeground(appContext)
                 result.success(null)
             }
             "stopForegroundWallpaper" -> {
-                Log.i(LOG_TAG, "On stopForegroundWallpaper")
-                val serviceIntent = Intent(appContext, ForegroundWallpaperWidgetProvider::class.java)
-                serviceIntent.action = ForegroundWallpaperWidgetProvider.ACTION_STOP_FOREGROUND
-                appContext.sendBroadcast(serviceIntent)
+                ForegroundWallpaperService.stop(appContext)
                 Log.i(LOG_TAG, "Stop ForegroundWallpaper In Handler")
                 result.success(null)
             }
@@ -66,7 +58,6 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
 
     companion object {
         private val LOG_TAG = LogUtils.createTag<ForegroundWallpaperWidgetProvider>()
-        const val FOREGROUND_WALLPAPER_ACTION = "deckers.thibault.aves.FOREGROUND_WALLPAPER_ACTION"
         const val CHANNEL = "deckers.thibault/aves/foreground_wallpaper_handler"
     }
 }

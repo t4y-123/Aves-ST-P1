@@ -2,7 +2,7 @@ import 'package:aves/app_flavor.dart';
 import 'package:aves/main_common.dart';
 import 'package:aves/widget_common.dart';
 
-import 'foreground_wallpaper_widget_common.dart';
+import 'fgw_widget_common.dart';
 
 const _flavor = AppFlavor.izzy;
 
@@ -13,4 +13,4 @@ void main() => mainCommon(_flavor);
 void widgetMain() => widgetMainCommon(_flavor);
 
 @pragma('vm:entry-point')
-void foregroundWallpaperMain() => foregroundWallpaperWidgetMainCommon(_flavor);
+void fgwWidgetMain() => foregroundWallpaperWidgetMainCommon(_flavor);

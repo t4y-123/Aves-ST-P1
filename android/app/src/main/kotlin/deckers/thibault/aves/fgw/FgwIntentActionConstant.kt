@@ -1,0 +1,23 @@
+package deckers.thibault.aves.fgw
+
+@Suppress("ConstPropertyName")
+object FgwIntentAction {
+    // handler to start or stop intent
+    const val ACTION_START_FGW_SERVICE = "ACTION_START_FOREGROUND_WALLPAPER_SERVICE"
+    const val ACTION_STOP_FGW_SERVICE = "ACTION_STOP_FOREGROUND_WALLPAPER_SERVICE"
+    //service notifcation intent
+    const val ACTION_SERVICE_STATE_CHANGED = "ACTION_SERVICE_STATE_CHANGED"
+    const val ACTION_SWITCH_GROUP = "ACTION_SWITCH_GROUP"
+    const val ACTION_LEFT = "ACTION_LEFT"
+    const val ACTION_RIGHT = "ACTION_RIGHT"
+    const val ACTION_DUPLICATE = "ACTION_DUPLICATE"
+    const val ACTION_RESHUFFLE = "ACTION_RESHUFFLE"
+    const val ACTION_DOWNWARD = "ACTION_DOWNWARD"
+    const val ACTION_UPWARD = "ACTION_UPWARD"
+    const val ACTION_LOCK_UNLOCK = "ACTION_LOCK_UNLOCK"
+    const val ACTION_APPLY_LEVEL_CHANGE = "ACTION_APPLY_LEVEL_CHANGE"
+    //tile service
+    const val ACTION_FGW_TILE_SERIVCE_START = "ACTION_FGW_TILE_SERIVCE_START"
+    const val ACTION_FGW_TILE_SERIVCE_STOP = "ACTION_FGW_TILE_SERIVCE_STOP"
+
+}

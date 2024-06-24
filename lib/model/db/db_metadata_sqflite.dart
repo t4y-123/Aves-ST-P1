@@ -18,6 +18,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacyGuardLevel.dart';
 
 
@@ -42,7 +43,7 @@ class SqfliteMetadataDb implements MetadataDb {
   static const wallpaperScheduleTable = 'wallpaperSchedule';
   static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
   static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
-
+  static const fgwUsedEntryTable = 'foregroundWallpaperUsedEntry';
 
   //End
 
@@ -147,6 +148,14 @@ class SqfliteMetadataDb implements MetadataDb {
             ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
             ', intervalTime INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
             ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $fgwUsedEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', privacyGuardLevelId INTEGER'
+            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', entryId INTEGER'
+            ', dateMillis INTEGER'
             ')');
       },
       onUpgrade: MetadataDbUpgrader.upgradeDb,
@@ -799,6 +808,54 @@ class SqfliteMetadataDb implements MetadataDb {
   void _batchInsertWallpaperSchedule(Batch batch, WallpaperScheduleRow row) {
     batch.insert(
       wallpaperScheduleTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // foreground wallpaper used entry record Table
+  @override
+  Future<void> clearFgwUsedEntryRecord() async {
+    final count = await _db.delete(fgwUsedEntryTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FgwUsedEntryRecordRow>> loadAllFgwUsedEntryRecord() async {
+    final rows = await _db.query(fgwUsedEntryTable);
+    return rows.map(FgwUsedEntryRecordRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFgwUsedEntryRecord(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFgwUsedEntryRecord(int id, FgwUsedEntryRecordRow row) async {
+    final batch = _db.batch();
+    batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFgwUsedEntryRecord(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFgwUsedEntryRecord(Batch batch, FgwUsedEntryRecordRow row) {
+    batch.insert(
+      fgwUsedEntryTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

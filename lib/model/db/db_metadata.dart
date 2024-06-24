@@ -8,6 +8,7 @@ import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
 
+import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacyGuardLevel.dart';
 import '../foreground_wallpaper/filterSet.dart';
 import '../foreground_wallpaper/wallpaperSchedule.dart';
@@ -159,5 +160,17 @@ abstract class MetadataDb {
   Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row);
 
   Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+
+  // wallpaperScheduleTable
+
+  Future<void> clearFgwUsedEntryRecord();
+
+  Future<Set<FgwUsedEntryRecordRow>> loadAllFgwUsedEntryRecord();
+
+  Future<void> addFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows);
+
+  Future<void> updateFgwUsedEntryRecord(int id, FgwUsedEntryRecordRow row);
+
+  Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows);
 
 }

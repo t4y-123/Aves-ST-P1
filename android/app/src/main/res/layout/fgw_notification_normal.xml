@@ -63,7 +63,7 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/iv_normal_layout_button_01"
+            android:id="@+id/iv_normal_lyt_btn_01"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -72,7 +72,7 @@
             android:src="@drawable/baseline_arrow_downward_24" />
 
         <ImageButton
-            android:id="@+id/iv_normal_layout_button_02"
+            android:id="@+id/iv_normal_lyt_btn_02"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="48dp"
             android:layout_height="match_parent"
@@ -80,7 +80,7 @@
             android:src="@drawable/baseline_arrow_upward_24" />
 
         <ImageButton
-            android:id="@+id/iv_normal_layout_button_03"
+            android:id="@+id/iv_normal_lyt_btn_03"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="48dp"
             android:layout_height="match_parent"
@@ -88,7 +88,7 @@
             android:src="@drawable/baseline_lock_24" />
 
         <ImageButton
-            android:id="@+id/iv_normal_layout_button_04"
+            android:id="@+id/iv_normal_lyt_btn_04"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="48dp"
             android:layout_height="match_parent"

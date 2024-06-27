@@ -115,6 +115,8 @@ dependencies:
   vector_math:
   volume_controller:
   xml:
+  wallpaper_handler:
+
 
 dependency_overrides:
   # media_kit_video v1.2.4 depends on a specific old version of screen_brightness

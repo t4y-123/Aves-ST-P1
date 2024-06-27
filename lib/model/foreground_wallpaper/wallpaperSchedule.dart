@@ -85,12 +85,10 @@ class WallpaperSchedules with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<WallpaperScheduleRow> rows) =>
-      removeIds(rows.map((row) => row.id).toSet());
+  Future<void> removeEntries(Set<WallpaperScheduleRow> rows) => removeIds(rows.map((row) => row.id).toSet());
 
   Future<void> removeNumbers(Set<int> rowNums) async {
-    final removedRows =
-        _rows.where((row) => rowNums.contains(row.scheduleNum)).toSet();
+    final removedRows = _rows.where((row) => rowNums.contains(row.scheduleNum)).toSet();
     await metadataDb.removeWallpaperSchedules(removedRows);
     removedRows.forEach(_rows.remove);
     notifyListeners();
@@ -132,8 +130,7 @@ class WallpaperSchedules with ChangeNotifier {
 }
 
 @immutable
-class WallpaperScheduleRow extends Equatable
-    implements Comparable<WallpaperScheduleRow> {
+class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperScheduleRow> {
   final int id;
   final int scheduleNum;
   final String aliasName;
@@ -170,7 +167,6 @@ class WallpaperScheduleRow extends Equatable
   });
 
   static WallpaperScheduleRow fromMap(Map map) {
-
     return WallpaperScheduleRow(
       id: map['id'] as int,
       scheduleNum: map['scheduleNum'] as int,

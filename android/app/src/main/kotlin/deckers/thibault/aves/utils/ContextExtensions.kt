@@ -20,14 +20,12 @@ import androidx.core.content.ContextCompat
 import kotlin.system.exitProcess
 
 
-
 inline fun <reified A : Activity> Context.startActivity(configIntent: Intent.() -> Unit = {}) {
     val intent = Intent(this, A::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     intent.apply(configIntent)
     startActivity(intent)
 }
-
 
 inline fun <reified T : Service> Context.startService(configIntent: Intent.() -> Unit = {}) {
     startService(Intent(this, T::class.java).apply(configIntent))

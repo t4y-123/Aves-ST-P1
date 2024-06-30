@@ -144,6 +144,18 @@ object FgwServiceFlutterHandler {
         Log.i(LOG_TAG, "callDartStopMethod:end")
     }
 
+    fun preWallpaper(context: Context) {
+        runBlocking {
+            invokeFlutterMethod<Any>(context, FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL, "preWallpaper",
+                arguments = hashMapOf(
+                    "updateType" to "home",  // Replace with actual data
+                    "widgetId" to 0,
+                ),
+                onSuccess = { result -> Log.d(LOG_TAG, "preWallpaper success: $result") },
+                onError = { e -> Log.e(LOG_TAG, "Failed to invoke preWallpaper", e) }
+            )
+        }
+    }
 
     fun nextWallpaper(context: Context) {
         runBlocking {

@@ -49,7 +49,11 @@ Future<void> fgwNotificationServiceAsync() async {
         fgwServiceHelper.stop();
         return Future.value(true);
       case 'nextWallpaper':
+        debugPrint('fgwServiceHelper.nextWallpaper(${call.arguments}))');
         return fgwServiceHelper.nextWallpaper(call.arguments);
+      case 'preWallpaper':
+        debugPrint('fgwServiceHelper.preWallpaper(${call.arguments}))');
+        return fgwServiceHelper.preWallpaper(call.arguments);
       case 'updateNotificationProp':
         debugPrint('fgwServiceHelper.updateNotificationProp()');
         return fgwServiceHelper.updateNotificationProp();
@@ -60,7 +64,7 @@ Future<void> fgwNotificationServiceAsync() async {
 }
 
 
-enum FgwServiceState { starting,running, stopping, stopped }
+enum FgwServiceState { starting,running, stopped }
 
 class FgwServiceHelper with WidgetsBindingObserver {
   late AppLocalizations _l10n;
@@ -161,13 +165,11 @@ class FgwServiceHelper with WidgetsBindingObserver {
         break;
       case FgwServiceState.running:
         break;
-      case FgwServiceState.stopping:
-        break;
       case FgwServiceState.stopped:
-        await ForegroundWallpaperService.stopService();
         _stopUpdateTimer();
     }
   }
+
   Future<void> _waitForRunningState() async {
     debugPrint('_waitForRunningState serviceState $serviceState');
     if (serviceState == FgwServiceState.running) {
@@ -183,6 +185,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
       }
     } else {
       debugPrint('_waitForRunningState serviceState $serviceState');
+      await start();
       while (serviceState != FgwServiceState.running) {
         await Future.delayed(const Duration(milliseconds: 100));
       }
@@ -213,6 +216,31 @@ class FgwServiceHelper with WidgetsBindingObserver {
     );
     debugPrint('Updated PrivacyGuardLevel: $_currentGuardLevel');
   }
+
+
+  Future<void> setFgWallpaper(AvesEntry entry, {WallpaperUpdateType updateType = WallpaperUpdateType.home ,int widgetId = 0}) async {
+    debugPrint(' setFgWallpaper');
+    WallpaperLocation location = WallpaperLocation.homeScreen;
+    switch (updateType) {
+      case WallpaperUpdateType.home : // Logical-or pattern
+        location = WallpaperLocation.homeScreen;
+        debugPrint(' location = WallpaperLocation.homeScreen;');
+      case WallpaperUpdateType.lock: // Logica pattern
+        location = WallpaperLocation.lockScreen;
+        debugPrint(' location = WallpaperLocation.lockScreen;');
+      case WallpaperUpdateType.widget:
+        debugPrint('setFgWallpaper WallpaperUpdateType.widget wait for implementation');
+        return;
+      default:
+        throw const FormatException('Invalid setWallpaper');
+    }
+    bool result = await WallpaperHandler.instance.setWallpaperFromFile(entry.path!, location);
+    debugPrint('setFgWallpaper result: $result');
+    if (!result) {
+      debugPrint('setFgWallpaper fail result: $result');
+    }
+  }
+
 
   Future<bool> preWallpaper(dynamic args) async {
     await _waitForRunningState();
@@ -262,45 +290,25 @@ class FgwServiceHelper with WidgetsBindingObserver {
     }
 
     if (previousEntry != null) {
-      // Set the previousEntry as the wallpaper
-      bool result = await WallpaperHandler.instance.setWallpaperFromFile(previousEntry.path!, WallpaperLocation.homeScreen);
-      debugPrint('preWallpaper result: $result');
-      if (!result) {
-        debugPrint('preWallpaper fail result: $result');
-      }
-
-      // Update the curEntry in the corresponding FgwInfos item
       curEntry = previousEntry;
-      return Future.value(true);
     } else {
-      throw Exception('No suitable entry found to set as wallpaper');
+      if(recentUsedEntries.isNotEmpty){
+        previousEntry = recentUsedEntries.first as AvesEntry?;
+      }else{
+        debugPrint('preWallpaper previousEntry null: $previousEntry');
+        return Future.value(false);
+      }
     }
+    bool result = await WallpaperHandler.instance.setWallpaperFromFile(previousEntry!.path!, WallpaperLocation.homeScreen);
+    debugPrint('preWallpaper result: $result');
+    if (!result) {
+      debugPrint('setWallpaperFromFile fail result: $result');
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 
 
-  Future<void> setFgWallpaper(AvesEntry entry, {WallpaperUpdateType updateType = WallpaperUpdateType.home ,int widgetId = 0}) async {
-    debugPrint(' setFgWallpaper');
-    WallpaperLocation location = WallpaperLocation.homeScreen;
-      switch (updateType) {
-      case WallpaperUpdateType.home : // Logical-or pattern
-          location = WallpaperLocation.homeScreen;
-          debugPrint(' location = WallpaperLocation.homeScreen;');
-      case WallpaperUpdateType.lock: // Logica pattern
-          location = WallpaperLocation.lockScreen;
-        debugPrint(' location = WallpaperLocation.lockScreen;');
-      case WallpaperUpdateType.widget:
-        debugPrint('setFgWallpaper WallpaperUpdateType.widget wait for implementation');
-        return;
-      default:
-        throw const FormatException('Invalid setWallpaper');
-      }
-      bool result = await WallpaperHandler.instance.setWallpaperFromFile(entry.path!, location);
-      debugPrint('setFgWallpaper result: $result');
-      if (!result) {
-        debugPrint('setFgWallpaper fail result: $result');
-      }
-  }
-  
   Future<bool> nextWallpaper(dynamic args) async {
     await _waitForRunningState();
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
@@ -335,6 +343,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
 
     await setFgWallpaper(nextEntry, updateType: updateType, widgetId: widgetId);
     // await metadataDb.init();
+    curEntry = nextEntry;
     int newId = metadataDb.nextId;
     debugPrint(' nextWallpaper newId $newId');
     final FgwUsedEntryRecordRow newRow = FgwUsedEntryRecordRow(

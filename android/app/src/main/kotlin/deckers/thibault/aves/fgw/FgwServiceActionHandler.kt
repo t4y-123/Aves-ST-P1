@@ -19,7 +19,10 @@ object FgwServiceActionHandler {
                 FgwSeviceNotificationHandler.isLevelGroup = !FgwSeviceNotificationHandler.isLevelGroup
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
-            FgwIntentAction.LEFT -> showToast(context, "Left arrow tapped")
+            FgwIntentAction.LEFT -> {
+                showToast(context, "Left arrow tapped")
+                FgwServiceFlutterHandler.preWallpaper(context)  // Add this line
+            }
             FgwIntentAction.RIGHT -> {
                 showToast(context, "Right arrow tapped")
                 FgwServiceFlutterHandler.nextWallpaper(context)  // Add this line

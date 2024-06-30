@@ -1,63 +1,23 @@
 package deckers.thibault.aves
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.BroadcastReceiver
 import android.os.IBinder
-import android.content.pm.ServiceInfo
-import android.widget.Toast;
-import android.os.Build
 import android.util.Log
-import android.widget.RemoteViews
-import android.app.KeyguardManager
-import android.graphics.Color
+import android.widget.Toast
 import androidx.core.app.NotificationChannelCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.ForegroundInfo
-import androidx.core.content.ContextCompat
-import app.loup.streams_channel.StreamsChannel
-import kotlinx.coroutines.*
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.startForegroundServiceCompat
 import deckers.thibault.aves.utils.startService
 import deckers.thibault.aves.utils.stopService
-import deckers.thibault.aves.utils.servicePendingIntent
-import deckers.thibault.aves.utils.activityPendingIntent
-import deckers.thibault.aves.fgw.*
-import deckers.thibault.aves.ForegroundWallpaperService
-import deckers.thibault.aves.channel.calls.DeviceHandler
-import deckers.thibault.aves.channel.calls.MediaStoreHandler
-import deckers.thibault.aves.channel.calls.MediaFetchObjectHandler
-import deckers.thibault.aves.channel.calls.MediaFetchBytesHandler
-import deckers.thibault.aves.channel.calls.StorageHandler
-import deckers.thibault.aves.channel.streams.ImageByteStreamHandler
-import deckers.thibault.aves.channel.streams.MediaStoreStreamHandler
-import deckers.thibault.aves.channel.AvesByteSendingMethodCodec
-import deckers.thibault.aves.model.FieldMap
-import deckers.thibault.aves.utils.FlutterUtils
-import io.flutter.FlutterInjector
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.runBlocking
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-
-import deckers.thibault.aves.channel.calls.MetadataFetchHandler
-import deckers.thibault.aves.channel.calls.GeocodingHandler
+import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler
+import deckers.thibault.aves.fgw.FgwServiceActionHandler
+import deckers.thibault.aves.fgw.FgwServiceFlutterHandler
 
 
 class ForegroundWallpaperService : Service() {
@@ -73,6 +33,8 @@ class ForegroundWallpaperService : Service() {
         isRunning = true
         ForegroundWallpaperTileService.upTile(this,true)
         Log.i(LOG_TAG, "Foreground wallpaper service started")
+        // Call the Dart start method via FgwServiceFlutterHandler
+        FgwServiceFlutterHandler.callDartStartMethod(serviceContext)
     }
 
     // create update notification
@@ -96,6 +58,7 @@ class ForegroundWallpaperService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
+        FgwServiceFlutterHandler.callDartStopMethod(serviceContext)
         // Unregister receiver for screen events
         unregisterScreenStateReceiver()
         isRunning = false

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
 import '../../../../../model/settings/settings.dart';
+import '../../../../../services/common/services.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import '../../../../common/basic/list_tiles/color.dart';
 import '../../../../common/identity/buttons/outlined_button.dart';
@@ -47,7 +48,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
   void initState() {
     super.initState();
     final int newLevel = _generateGuardLevel();
-    final int newId = privacyGuardLevels.getValidUniqueId();
+    final int newId = metadataDb.nextId;
     // when is not edit but add a new item.
     _currentItem = widget.item ??
         PrivacyGuardLevelRow(
@@ -81,7 +82,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       int newScheduleNum = 1;
       for (var type in WallpaperUpdateType.values) {
         if (type != WallpaperUpdateType.widget) {
-          newScheduleId = _generateUniqueId(newScheduleId);
+          newScheduleId = metadataDb.nextId;
           newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
           _templateSchedules.add(WallpaperScheduleRow(
             id: newScheduleId++,
@@ -101,13 +102,6 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       }
     }
     // If _currentUpdateTypes is empty, do nothing.
-  }
-
-  int _generateUniqueId(int id) {
-    while (wallpaperSchedules.all.any((row) => row.id == id)) {
-      id++;
-    }
-    return id;
   }
 
   int _generateUniqueScheduleNum(int scheduleNum) {
@@ -136,13 +130,13 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       int newScheduleNum = 1;
       // Iterate through all WallpaperUpdateType values
       for (var type in WallpaperUpdateType.values) {
-        newScheduleId = _generateUniqueId(newScheduleId);
+        newScheduleId = metadataDb.nextId;
         newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
         if (type != WallpaperUpdateType.widget) {
           var existingSchedule = _currentSchedules.firstWhereOrNull(
             (e) => e.updateType == type,
           );
-          newScheduleId = _generateUniqueId(newScheduleId);
+          newScheduleId = metadataDb.nextId;
           newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
           debugPrint(
               '$runtimeType set $type  WallpaperScheduleRow  existingSchedule $existingSchedule');
@@ -169,7 +163,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
             );
             _currentUpdateTypes.add(type); // only exist item need to add type.
           } else {
-            newScheduleId = _generateUniqueId(newScheduleId);
+            newScheduleId = metadataDb.nextId;
             newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
             // If no existing schedule found, create a completely new one
             scheduleRow = WallpaperScheduleRow(
@@ -204,7 +198,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
                 .where((e) => e.updateType == WallpaperUpdateType.widget)
                 .toList();
             for (var widgetSchedule in widgetSchedules) {
-              newScheduleId = _generateUniqueId(newScheduleId);
+              newScheduleId = metadataDb.nextId;
               newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
               _templateSchedules.add(WallpaperScheduleRow(
                 id: newScheduleId++,

@@ -9,7 +9,7 @@ import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/common/services.dart';
-import 'package:aves/services/foreground_wallpaper_service.dart';
+import 'package:aves/services/fgw_service_handler.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/themes.dart';

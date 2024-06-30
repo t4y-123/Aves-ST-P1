@@ -5,6 +5,7 @@ import '../../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../../../model/filters/aspect_ratio.dart';
 import '../../../../../model/filters/filters.dart';
 import '../../../../../model/filters/mime.dart';
+import '../../../../../services/common/services.dart';
 import '../../../../common/identity/buttons/outlined_button.dart';
 import '../../../common/collection_tile.dart';
 
@@ -35,7 +36,7 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
   void initState() {
     super.initState();
     final int newFilterSetNum = _generateFilterSetNum();
-    final int newId = _generateUniqueId();
+    final int newId = metadataDb.nextId;
     _currentItem = widget.item ?? FilterSetRow(
       filterSetId: newId,
       filterSetNum: newFilterSetNum,
@@ -46,14 +47,6 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
     _aliasNameController = TextEditingController(text: _currentItem!.aliasName);
     _collectionFilters = _currentItem?.filters ?? {};
     _isActive = _currentItem!.isActive;
-  }
-
-  int _generateUniqueId() {
-    int id = 1;
-    while (filterSet.all.any((item) => item.filterSetId == id)) {
-      id++;
-    }
-    return id;
   }
 
   int _generateFilterSetNum() {

@@ -64,6 +64,7 @@ class FilterSet with ChangeNotifier{
     );
     _rows.add(row);
     await metadataDb.addFilterSet({row});
+    notifyListeners();
   }
 
   Future<void> removeEntries(Set<FilterSetRow> rows) => removeIds(rows.map((row) => row.filterSetId).toSet());
@@ -81,6 +82,7 @@ class FilterSet with ChangeNotifier{
   Future<void> clear() async {
     await metadataDb.clearFilterSet();
     _rows.clear();
+    notifyListeners();
   }
    // import/export
 }

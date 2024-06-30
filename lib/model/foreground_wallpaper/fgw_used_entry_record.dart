@@ -6,7 +6,6 @@ import 'package:aves/utils/collection_utils.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
-
 final FgwUsedEntryRecord fgwUsedEntryRecord = FgwUsedEntryRecord._private();
 
 class FgwUsedEntryRecord with ChangeNotifier {
@@ -41,23 +40,20 @@ class FgwUsedEntryRecord with ChangeNotifier {
         privacyGuardLevelId: row.privacyGuardLevelId,
         updateType: row.updateType,
         widgetId: row.widgetId,
-        entryId: row.widgetId,
-        dateMillis: row.widgetId,
+        entryId: row.entryId,
+        dateMillis: row.dateMillis,
       );
     }
     notifyListeners();
   }
 
-  Future<void> set({
-    required int id,
-    required int privacyGuardLevelId,
-    required WallpaperUpdateType updateType,
-    required int widgetId,
-    required int entryId,
-    required int dateMillis
-  }) async {
-    // Remove existing entries with the same privacyGuardLevelId and updateType
-    // erase contextual properties from filters before saving them
+  Future<void> set(
+      {required int id,
+      required int privacyGuardLevelId,
+      required WallpaperUpdateType updateType,
+      required int widgetId,
+      required int entryId,
+      required int dateMillis}) async {
     final oldRows = _rows.where((row) => row.id == id).toSet();
     _rows.removeAll(oldRows);
     await metadataDb.removeFgwUsedEntryRecord(oldRows);
@@ -68,16 +64,15 @@ class FgwUsedEntryRecord with ChangeNotifier {
       widgetId: widgetId,
       entryId: entryId,
       dateMillis: dateMillis,
-      );
+    );
     debugPrint('$runtimeType set  FgwUsedEntryRecordRow  $row');
     _rows.add(row);
-    await metadataDb.addFgwUsedEntryRecord({row});
     await _removeOldestEntries();
+    await metadataDb.addFgwUsedEntryRecord({row});
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<FgwUsedEntryRecordRow> rows) =>
-      removeIds(rows.map((row) => row.id).toSet());
+  Future<void> removeEntries(Set<FgwUsedEntryRecordRow> rows) => removeIds(rows.map((row) => row.id).toSet());
 
   Future<void> removeIds(Set<int> rowIds) async {
     final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();
@@ -92,36 +87,55 @@ class FgwUsedEntryRecord with ChangeNotifier {
     removedRows.forEach(_rows.remove);
     notifyListeners();
   }
-
   Future<void> _removeOldestEntries() async {
+    debugPrint('_removeOldestEntries start');
     final Map<String, List<FgwUsedEntryRecordRow>> groupedRows = {};
-
-    for (var row in _rows) {
-      String key = '${row.privacyGuardLevelId}_${row.updateType}_${row.widgetId}_${row.entryId}';
-      if (!groupedRows.containsKey(key)) {
-        groupedRows[key] = [];
+    if (_rows.isNotEmpty) {
+      // Group rows by key excluding entryId
+      for (var row in _rows) {
+        String key = '${row.privacyGuardLevelId}_${row.updateType}_${row.widgetId}';
+        if (!groupedRows.containsKey(key)) {
+          groupedRows[key] = [];
+        }
+        groupedRows[key]!.add(row);
       }
-      groupedRows[key]!.add(row);
+
+      // Remove keys with the same entryId first
+      for (var rows in groupedRows.values) {
+        var entryIds = <int>{};
+        rows.removeWhere((row) {
+          if (entryIds.contains(row.entryId)) {
+            debugPrint('_removeOldestEntries remove (${row.entryId}); $groupedRows');
+            return true;
+          } else {
+            entryIds.add(row.entryId);
+            debugPrint('_removeOldestEntries entryIds.add(${row.entryId});  $groupedRows');
+            return false;
+          }
+        });
+      }
+
+      // Remove oldest entries if group length exceeds max limit
+      for (var key in groupedRows.keys) {
+        var rows = groupedRows[key]!;
+        if (rows.length > settings.maxFgwUsedEntryRecord) {
+          // Sort rows by dateMillis in ascending order using direct comparison
+          rows.sort((a, b) {
+            if (a.dateMillis < b.dateMillis) return -1;
+            if (a.dateMillis > b.dateMillis) return 1;
+            return 0;
+          });
+          final rowsToRemove = rows.sublist(0, rows.length - settings.maxFgwUsedEntryRecord);
+          debugPrint('_removeOldestEntries rowsToRemove $rowsToRemove');
+          await metadataDb.removeFgwUsedEntryRecord(rowsToRemove.toSet());
+          _rows.removeAll(rowsToRemove);
+        }
+      }
+    } else {
+      debugPrint('_removeOldestEntries _rows is empty');
     }
-
-    groupedRows.forEach((key, rows) {
-      if (rows.length > settings.maxFgwUsedEntryRecord) {
-        // Sort rows within the group by dateMillis (assuming ascending order here)
-        rows.sort((a, b) => a.dateMillis.compareTo(b.dateMillis));
-        final rowsToRemove = rows.sublist(settings.maxFgwUsedEntryRecord);
-        _rows.removeAll(rowsToRemove);
-        metadataDb.removeFgwUsedEntryRecord(rowsToRemove.toSet());
-      }
-    });
   }
 
-  int getValidUniqueId() {
-    int id = 1;
-    while (fgwUsedEntryRecord.all.any((item) => item.id == id)) {
-      id+= 1;
-    }
-    return id;
-  }
 
   Future<void> clear() async {
     await metadataDb.clearFgwUsedEntryRecord();
@@ -131,8 +145,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
 }
 
 @immutable
-class FgwUsedEntryRecordRow extends Equatable
-    implements Comparable<FgwUsedEntryRecordRow> {
+class FgwUsedEntryRecordRow extends Equatable implements Comparable<FgwUsedEntryRecordRow> {
   final int id;
   final int privacyGuardLevelId;
   final WallpaperUpdateType updateType;
@@ -143,11 +156,11 @@ class FgwUsedEntryRecordRow extends Equatable
   @override
   List<Object?> get props => [
         id,
-    privacyGuardLevelId,
+        privacyGuardLevelId,
         updateType,
         widgetId,
-    entryId,
-    dateMillis,
+        entryId,
+        dateMillis,
       ];
 
   const FgwUsedEntryRecordRow({
@@ -160,13 +173,12 @@ class FgwUsedEntryRecordRow extends Equatable
   });
 
   static FgwUsedEntryRecordRow fromMap(Map map) {
-
     return FgwUsedEntryRecordRow(
       id: map['id'] as int,
       privacyGuardLevelId: map['privacyGuardLevelId'] as int,
       updateType: WallpaperUpdateType.values.safeByName(map['updateType'] as String, WallpaperUpdateType.home),
       widgetId: map['widgetId'] as int,
-      entryId: map['id'] as int,
+      entryId: map['entryId'] as int,
       dateMillis: map['dateMillis'] as int,
     );
   }

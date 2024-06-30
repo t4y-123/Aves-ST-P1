@@ -47,10 +47,18 @@ inline fun RemoteViews.setGroupBtns(
     buttonActions: List<Triple<Int, Int, String>>,
     canChangeLevel: Boolean,
     isLevelGroup: Boolean,
-    levelButtonResId: Set<Int>
+    inactiveButtonResIds: Set<Int>
 ) {
     buttonActions.forEach { (buttonId, iconResId, action) ->
-        setupButton(context, buttonId, iconResId, action, canChangeLevel,isLevelGroup, levelButtonResId.contains(iconResId))
+        setupButton(
+            context,
+            buttonId,
+            iconResId,
+            action,
+            canChangeLevel,
+            isLevelGroup,
+            inactiveButtonResIds.contains(iconResId)
+        )
     }
 }
 
@@ -67,12 +75,16 @@ object FgwSeviceNotificationHandler {
     var titleName: String = "Guard Level"
     var color: Int = android.R.color.darker_gray
 
+    // Inactive button IDs
+    val inactiveButtonResIds = mutableSetOf<Int>()
+
     // Level changing button IDs
     private val levelButtonResId = setOf(
         R.drawable.baseline_arrow_downward_24, // DOWNWARD
         R.drawable.baseline_arrow_upward_24, // UPWARD
         R.drawable.baseline_check_24, // APPLY_LEVEL_CHANGE
     )
+
     // used for unlock screen, easily to make wallpaper next or go into the related collection.
     private val normalLytEntryBtns = listOf(
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_navigate_before_24, FgwIntentAction.LEFT),
@@ -80,6 +92,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_add_photo_24, FgwIntentAction.DUPLICATE),
         Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_auto_stories_24, FgwIntentAction.STORES)
     )
+
     // used for phone lock screen, easily to change privacy guard level.
     private val normalLytLevelBtns = listOf(
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
@@ -93,6 +106,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_close_24, FgwIntentAction.CANCEL_LEVEL_CHANGE),
         Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_check_24, FgwIntentAction.APPLY_LEVEL_CHANGE)
     )
+
     // by default, expand unlocked entry type layout.
     private val bigLytEntryBtns = listOf(
         Triple(R.id.iv_big_lyt_btn_01, R.drawable.baseline_menu_open_24, FgwIntentAction.SWITCH_GROUP),
@@ -101,6 +115,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_add_photo_24, FgwIntentAction.DUPLICATE),
         Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_auto_stories_24, FgwIntentAction.STORES)
     )
+
     // else, expand privacy guard level modify type layout.
     private val bigLytLevelBtns = listOf(
         Triple(R.id.iv_big_lyt_btn_01, R.drawable.baseline_menu_open_24, FgwIntentAction.SWITCH_GROUP),
@@ -117,6 +132,14 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_close_24, FgwIntentAction.CANCEL_LEVEL_CHANGE),
         Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_check_24, FgwIntentAction.APPLY_LEVEL_CHANGE)
     )
+
+    fun updateButtonbyDrawable(iconResId: Int, available: Boolean) {
+        if (available) {
+            inactiveButtonResIds.remove(iconResId)
+        } else {
+            inactiveButtonResIds.add(iconResId)
+        }
+    }
 
     fun createNotification(
         context: Context,
@@ -175,7 +198,10 @@ object FgwSeviceNotificationHandler {
             } else {
                 normalLytLevelBtns.map { Triple(it.first, it.second, it.third) }.toMutableList().also {
                     if (!canChangeLevel) {
+                        inactiveButtonResIds += levelButtonResId
                         it[2] = Triple(it[2].first, R.drawable.baseline_lock_24, it[2].third)
+                    } else {
+                        inactiveButtonResIds -= levelButtonResId
                     }
                 }
             }
@@ -183,7 +209,7 @@ object FgwSeviceNotificationHandler {
             normalLytEntryBtns
         }
 
-        remoteViews.setGroupBtns(context, buttonActions, canChangeLevel, isLevelGroup,levelButtonResId)
+        remoteViews.setGroupBtns(context, buttonActions, canChangeLevel, isLevelGroup, levelButtonResId)
         return remoteViews
     }
 

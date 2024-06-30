@@ -48,7 +48,13 @@ class SqfliteMetadataDb implements MetadataDb {
   //End
 
   static int _lastId = 0;
-
+  // In dart ,the int is 64-bit.
+  // The 64-bit signed integer records the number of ticks from a certain era to the present.
+  // Some systems (such as the Java standard library) agree that 1 tick is equal to 1 millisecond.
+  // This agreed time system can be used until about 292 million years later.
+  // Other systems (such as Win32) agree that 1 tick is equal to 100 nanoseconds.
+  // The time range covered by this system is 29227 years before and after the era.
+  // https://zh.wikipedia.org/wiki/9223372036854775807
   @override
   int get nextId => ++_lastId;
 

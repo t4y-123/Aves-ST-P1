@@ -1,11 +1,11 @@
 package deckers.thibault.aves
+
 import android.content.Intent
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.BroadcastReceiver
 import android.content.IntentFilter;
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.startService
@@ -39,12 +39,12 @@ class ForegroundWallpaperTileService : TileService() {
             ForegroundWallpaperService.stop(this)
             tile.state = Tile.STATE_INACTIVE
             setIsTileClickRunning(this, false)
-            Log.d(LOG_TAG, "Service stopped, tile state : ${tile.state} isTileClickRuning ${getIsTileClickRunning(this)}")
+            Log.d(LOG_TAG, "Service stopped, tile state: ${tile.state} isTileClickRunning ${getIsTileClickRunning(this)}")
         } else {
             ForegroundWallpaperService.startForeground(this)
             tile.state = Tile.STATE_ACTIVE
             setIsTileClickRunning(this, true)
-            Log.d(LOG_TAG, "Service started, tile state: ${tile.state}  isTileClickRuning true")
+            Log.d(LOG_TAG, "Service started, tile state: ${tile.state} isTileClickRunning true")
         }
         tile.updateTile()
     }
@@ -56,6 +56,12 @@ class ForegroundWallpaperTileService : TileService() {
         // don't set the tile service as recommend  active mode in offical:
         // https://developer.android.com/develop/ui/views/quicksettings-tiles
         // for every time will start the service is quiet more fit my need.
+
+        if (tile.state == Tile.STATE_UNAVAILABLE) {
+            ForegroundWallpaperService.stop(this)
+            tile.state = Tile.STATE_INACTIVE
+            Log.d(LOG_TAG, "Tile unavailable, stopping service and setting tile state to inactive")
+        } 
         if (getIsTileClickRunning(this)) {
             ForegroundWallpaperService.startForeground(this)
             tile.state = Tile.STATE_ACTIVE

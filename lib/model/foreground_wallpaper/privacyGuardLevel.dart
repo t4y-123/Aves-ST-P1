@@ -38,6 +38,7 @@ class PrivacyGuardLevel with ChangeNotifier {
         isActive: row.isActive,
       );
     }
+    notifyListeners();
   }
 
   Future<void> set({
@@ -93,21 +94,11 @@ class PrivacyGuardLevel with ChangeNotifier {
     );
   }
 
-  int getValidUniqueId() {
-    int id = 1;
-    while (privacyGuardLevels.all.any((item) => item.privacyGuardLevelID == id)) {
-      id++;
-    }
-    return id;
-  }
-
   int getValidGuardLevel() {
     // final activeItems = widget.allItems.where((item) => item?.isActive ?? false).toList();
     final int maxLevelNow = privacyGuardLevels.all.where((item) => item.isActive).length;
     return maxLevelNow + 1;
   }
-// import/export
-  // TODO: import/export for backup.
 }
 
 

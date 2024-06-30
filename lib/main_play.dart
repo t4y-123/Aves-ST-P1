@@ -1,6 +1,6 @@
 import 'package:aves/app_flavor.dart';
 import 'package:aves/main_common.dart';
-import 'package:aves/services/foreground_wallpaper_service.dart';
+import 'package:aves/services/fgw_notification_service.dart';
 import 'package:aves/widget_common.dart';
 
 import 'fgw_widget_common.dart';

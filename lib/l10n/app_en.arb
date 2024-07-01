@@ -1077,6 +1077,8 @@
   "confirmResetAllToDefault": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
   "settingsAddNewT3Group": "Add New T3 Group",
   "confirmAddNewT3Group": "This will add a new set of three guard levels and corresponding filter sets and schedules.Continue?",
+  "settingsClearRecentUsedEntryRecord": "Clear wallpaper used record",
+  "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries record\nContinue?",
 
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
@@ -1088,7 +1090,7 @@
   "settingsWallpaperScheduleTabTypes": "Schedule",
   "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
   "settingsSelectOneGuardLevelTitle": "Select one guard level",
-  "settingsWallpaperUpdateEveryTimeUnlock": "As screen unlock: Interval=0",
+  "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
   "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.app.KeyguardManager
 import android.widget.RemoteViews
 import android.view.View
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import deckers.thibault.aves.MainActivity
@@ -22,12 +23,10 @@ inline fun RemoteViews.setupButton(
     buttonId: Int,
     iconResId: Int,
     action: String,
-    canChangeLevel: Boolean,
-    isLevelButton: Boolean,
-    isLevelGroup: Boolean
+    isInactiveButton: Boolean,
 ) {
     setImageViewResource(buttonId, iconResId)
-    if (!isLevelGroup || canChangeLevel || !isLevelButton) {
+    if (!isInactiveButton) {
         setOnClickPendingIntent(
             buttonId,
             context.servicePendingIntent<ForegroundWallpaperService>(action)
@@ -45,8 +44,6 @@ inline fun RemoteViews.setupButton(
 inline fun RemoteViews.setGroupBtns(
     context: Context,
     buttonActions: List<Triple<Int, Int, String>>,
-    canChangeLevel: Boolean,
-    isLevelGroup: Boolean,
     inactiveButtonResIds: Set<Int>
 ) {
     buttonActions.forEach { (buttonId, iconResId, action) ->
@@ -55,8 +52,6 @@ inline fun RemoteViews.setGroupBtns(
             buttonId,
             iconResId,
             action,
-            canChangeLevel,
-            isLevelGroup,
             inactiveButtonResIds.contains(iconResId)
         )
     }
@@ -70,10 +65,7 @@ object FgwSeviceNotificationHandler {
     var canChangeLevel = true
     var isLevelGroup = false
     var isChangingGuardLevel = false
-    var guardLevel: String = "0"
-    var tmpGuardLevel = 1
-    var titleName: String = "Guard Level"
-    var color: Int = android.R.color.darker_gray
+    var guardLevel: Int = 0
 
     // Inactive button IDs
     val inactiveButtonResIds = mutableSetOf<Int>()
@@ -133,6 +125,10 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_check_24, FgwIntentAction.APPLY_LEVEL_CHANGE)
     )
 
+    enum class LayoutType {
+        NORMAL_ENTRY, NORMAL_LEVEL, NORMAL_LEVEL_CHANGING, BIG_ENTRY, BIG_LEVEL, BIG_LEVEL_CHANGING
+    }
+
     fun updateButtonbyDrawable(iconResId: Int, available: Boolean) {
         if (available) {
             inactiveButtonResIds.remove(iconResId)
@@ -141,12 +137,8 @@ object FgwSeviceNotificationHandler {
         }
     }
 
-    fun createNotification(
-        context: Context,
-        guardLevel: String = "0",
-        titleName: String = "guardLevel",
-        color: Int = android.R.color.darker_gray
-    ): Notification {
+    fun createNotification(context: Context): Notification {
+        Log.d(LOG_TAG, "createNotification($context)")
         val builder =
             NotificationCompat.Builder(context, FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -160,86 +152,115 @@ object FgwSeviceNotificationHandler {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setOngoing(true)
 
-        // Set custom content view for normal and big notifications
-        builder.setCustomContentView(
-            FgwSeviceNotificationHandler.getNormalContentView(
-                context,
-                guardLevel,
-                titleName,
-                color
-            )
+        val (normalLytType, bigLytType) = when {
+            isLevelGroup && !isChangingGuardLevel-> LayoutType.NORMAL_LEVEL to LayoutType.BIG_LEVEL
+            isLevelGroup  -> LayoutType.NORMAL_LEVEL_CHANGING to LayoutType.BIG_LEVEL_CHANGING
+            isScreenLocked(context) && !isChangingGuardLevel -> LayoutType.NORMAL_LEVEL to LayoutType.BIG_LEVEL
+            isScreenLocked(context) -> LayoutType.NORMAL_LEVEL_CHANGING to LayoutType.BIG_LEVEL_CHANGING
+            else -> LayoutType.NORMAL_ENTRY to LayoutType.BIG_ENTRY
+        }
+
+        Log.d(
+            LOG_TAG, "createNotification(isLevelGroup:$isLevelGroup)\n" +
+                    "isChangingGuardLevel:$isChangingGuardLevel \n" +
+                    "normalLytType $normalLytType \n" +
+                    "bigLytType $bigLytType \n"
         )
-        builder.setCustomBigContentView(getBigContentView(context, guardLevel, titleName, color))
-        tmpGuardLevel = guardLevel.toInt()
+        builder.setCustomContentView(getContentView(context, normalLytType))
+        builder.setCustomBigContentView(getContentView(context, bigLytType))
         return builder.build()
     }
 
     fun updateNotificationFromStoredValues(context: Context) {
-        val notification = createNotification(context, guardLevel, titleName, color)
+        Log.d(LOG_TAG, "updateNotificationFromStoredValues($context)")
+        val notification = createNotification(context)
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
-    fun getNormalContentView(
-        context: Context,
-        guardLevel: String,
-        titleName: String,
-        color: Int
-    ): RemoteViews {
-        val remoteViews = RemoteViews(context.packageName, R.layout.fgw_notification_normal)
+    private fun updateGuardLevel(remoteViews: RemoteViews) {
+        Log.d(LOG_TAG, "updateGuardLevel($remoteViews) $guardLevel")
+        Log.d(LOG_TAG, "updateGuardLevel(${FgwServiceFlutterHandler.activeLevelsList})")
 
-        remoteViews.setTextViewText(R.id.tv_status, guardLevel)
-        remoteViews.setInt(R.id.tv_status, "setBackgroundColor", color)
-        remoteViews.setTextViewText(R.id.tv_title, titleName)
+        val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.first }?.first ?: 1
+        val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.first }?.first ?: 1
 
-        val buttonActions = if (isScreenLocked(context)) {
-            if (isChangingGuardLevel) {
-                normalLytLevelChangingBtns
-            } else {
-                normalLytLevelBtns.map { Triple(it.first, it.second, it.third) }.toMutableList().also {
-                    if (!canChangeLevel) {
-                        inactiveButtonResIds += levelButtonResId
-                        it[2] = Triple(it[2].first, R.drawable.baseline_lock_24, it[2].third)
-                    } else {
-                        inactiveButtonResIds -= levelButtonResId
-                    }
-                }
+        guardLevel = when {
+            guardLevel >= maxLevel -> {
+                inactiveButtonResIds.add(R.drawable.baseline_arrow_upward_24)
+                maxLevel
             }
-        } else {
-            normalLytEntryBtns
-        }
 
-        remoteViews.setGroupBtns(context, buttonActions, canChangeLevel, isLevelGroup, levelButtonResId)
-        return remoteViews
+            guardLevel <= minLevel -> {
+                inactiveButtonResIds.add(R.drawable.baseline_arrow_downward_24)
+                minLevel
+            }
+
+            else -> {
+                inactiveButtonResIds.remove(R.drawable.baseline_arrow_upward_24)
+                inactiveButtonResIds.remove(R.drawable.baseline_arrow_downward_24)
+                guardLevel
+            }
+        }
+        Log.d(LOG_TAG, "updateGuardLevel inactiveButtonResIds: ($inactiveButtonResIds)")
+
+        val matchingTriple = FgwServiceFlutterHandler.activeLevelsList.find { it.first == guardLevel }
+        Log.d(LOG_TAG, "updateGuardLevel matchingTriple ($matchingTriple)")
+
+        matchingTriple?.let { triple ->
+            Log.d(LOG_TAG, "updateGuardLevel triple.first.toString() (${triple.first.toString()})")
+            remoteViews.setTextViewText(R.id.tv_status, triple.first.toString())
+            Log.d(LOG_TAG, "updateGuardLevel triple.second (${triple.second})")
+            remoteViews.setTextViewText(R.id.tv_title, triple.second)
+            Log.d(LOG_TAG, "updateGuardLevel triple.third (${triple.third})")
+            remoteViews.setInt(R.id.tv_status, "setBackgroundColor", triple.third)
+            Log.d(
+                LOG_TAG,
+                "updateGuardLevel remoteViews.setTextViewText(${R.id.tv_text}, (${FgwServiceFlutterHandler.entryFilename})"
+            )
+            remoteViews.setTextViewText(R.id.tv_text, FgwServiceFlutterHandler.entryFilename)
+        }
     }
 
-    private fun getBigContentView(
-        context: Context,
-        guardLevel: String,
-        titleName: String,
-        color: Int
-    ): RemoteViews {
-        val remoteViews = RemoteViews(context.packageName, R.layout.fgw_notification_big)
+    private fun getContentView(context: Context, layoutType: LayoutType): RemoteViews {
+        Log.d(LOG_TAG, "getContentView($context)")
+        val remoteViews = when (layoutType) {
+            LayoutType.NORMAL_ENTRY, LayoutType.NORMAL_LEVEL, LayoutType.NORMAL_LEVEL_CHANGING ->
+                RemoteViews(context.packageName, R.layout.fgw_notification_normal)
 
-        remoteViews.setTextViewText(R.id.tv_status, guardLevel)
-        remoteViews.setInt(R.id.tv_status, "setBackgroundColor", color)
-        remoteViews.setTextViewText(R.id.tv_title, titleName)
+            LayoutType.BIG_ENTRY, LayoutType.BIG_LEVEL, LayoutType.BIG_LEVEL_CHANGING ->
+                RemoteViews(context.packageName, R.layout.fgw_notification_big)
+        }
+        Log.d(LOG_TAG, "getContentView($context)")
 
-        val buttonActions = if (!isLevelGroup) {
-            bigLytEntryBtns
-        } else {
-            if (isChangingGuardLevel) {
-                bigLytLevelBtnsChanging
-            } else {
-                bigLytLevelBtns.map { Triple(it.first, it.second, it.third) }.toMutableList().also {
-                    if (!canChangeLevel) {
-                        it[3] = Triple(it[3].first, R.drawable.baseline_lock_24, it[3].third)
-                    }
-                }
+        val buttonActions = when (layoutType) {
+            LayoutType.NORMAL_ENTRY -> normalLytEntryBtns
+            LayoutType.NORMAL_LEVEL -> normalLytLevelBtns
+            LayoutType.NORMAL_LEVEL_CHANGING -> normalLytLevelChangingBtns
+            LayoutType.BIG_ENTRY -> bigLytEntryBtns
+            LayoutType.BIG_LEVEL -> bigLytLevelBtns
+            LayoutType.BIG_LEVEL_CHANGING -> bigLytLevelBtnsChanging
+        }.map { Triple(it.first, it.second, it.third) }.toMutableList()
+
+        if (!canChangeLevel) {
+            inactiveButtonResIds += levelButtonResId
+            when (layoutType) {
+                LayoutType.NORMAL_LEVEL ->
+                    buttonActions[2] =
+                        Triple(buttonActions[2].first, R.drawable.baseline_lock_24, buttonActions[2].third)
+
+                LayoutType.BIG_LEVEL ->
+                    buttonActions[3] =
+                        Triple(buttonActions[3].first, R.drawable.baseline_lock_24, buttonActions[3].third)
+
+                else -> Log.i(LOG_TAG, "layoutType($layoutType)")
             }
+        } else {
+            inactiveButtonResIds -= levelButtonResId
         }
 
-        remoteViews.setGroupBtns(context, buttonActions, canChangeLevel, isLevelGroup, levelButtonResId)
+        updateGuardLevel(remoteViews)
+        remoteViews.setGroupBtns(context, buttonActions, inactiveButtonResIds)
         return remoteViews
     }
 

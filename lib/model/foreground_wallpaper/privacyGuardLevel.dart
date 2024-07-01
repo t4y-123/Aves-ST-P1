@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:aves/services/common/services.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
@@ -123,9 +125,11 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
   });
 
   factory PrivacyGuardLevelRow.fromMap(Map<String, dynamic> map) {
-
-    final colorValue = map['color'] as int?;
-    final color = colorValue != null ? Color(colorValue) : null;
+    debugPrint('$PrivacyGuardLevelRow map $map');
+    final colorValue = map['color'] as String?;
+    debugPrint('$PrivacyGuardLevelRow colorValue $colorValue ${colorValue!.toColor}');
+    final color = colorValue!.toColor;
+    debugPrint('$PrivacyGuardLevelRow  color $color');
 
     return PrivacyGuardLevelRow(
       privacyGuardLevelID: map['id'] as int,
@@ -140,9 +144,11 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
     'id': privacyGuardLevelID,
     'guardLevel': guardLevel,
     'aliasName': aliasName,
-    'color': color?.value,
+    'color':'0x${color?.value.toRadixString(16).padLeft(8, '0')}',
     'isActive' : isActive ? 1 : 0,
   };
+
+  String toJson() => jsonEncode(toMap());
 
   @override
   int compareTo(PrivacyGuardLevelRow other) {

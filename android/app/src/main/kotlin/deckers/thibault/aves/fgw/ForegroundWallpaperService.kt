@@ -51,6 +51,7 @@ class ForegroundWallpaperService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        FgwServiceFlutterHandler.syncNecessaryDataFromDart(serviceContext)
         FgwServiceActionHandler.handleStartCommand(serviceContext,intent,flags,startId)
         return START_STICKY
     }

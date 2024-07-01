@@ -20,5 +20,12 @@ object FgwIntentAction {
     //tile service
     const val TILE_SERIVCE_START = "FGW_TILE_SERIVCE_START"
     const val TILE_SERIVCE_STOP = "FGW_TILE_SERIVCE_STOP"
+}
 
+object FgwConstant {
+    const val CUR_TYPE_HOME = "home"
+    const val CUR_TYPE_LOCK = "lock"
+    const val CUR_TYPE_BOTH = "both"
+    const val CUR_TYPE_WIDGET = "widget"
+    const val NOT_WIDGET_ID:Int = 0
 }

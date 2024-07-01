@@ -7,6 +7,9 @@
     <string name="foreground_wallpaper_tile_service_label">Fg Wallpaper</string>
     <string name="foreground_wallpaper_notification_default_title">Foreground Wallpaper Title</string>
     <string name="foreground_wallpaper_notification_default_message">Foreground Wallpaper Message</string>
+    <string name="fgw_init_guard_level">0</string>
+    <string name="fgw_init_title_name_level">Level 0</string>
+    <string name="fgw_init_colorString">Color(0xffffffff)</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="safe_mode_shortcut_short_label">Safe mode</string>
     <string name="search_shortcut_short_label">Search</string>

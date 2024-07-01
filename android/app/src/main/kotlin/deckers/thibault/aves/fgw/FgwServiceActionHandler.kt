@@ -27,29 +27,33 @@ object FgwServiceActionHandler {
                 showToast(context, "Right arrow tapped")
                 FgwServiceFlutterHandler.nextWallpaper(context)  // Add this line
             }
-            FgwIntentAction.DUPLICATE -> showToast(context, "Duplicate icon tapped")
+            FgwIntentAction.DUPLICATE -> {
+                FgwServiceFlutterHandler.syncNecessaryDataFromDart(context)
+                showToast(context, "Duplicate icon tapped")
+            }
             FgwIntentAction.STORES -> {
                 showToast(context, "Reshuffle icon tapped")
                 FgwServiceFlutterHandler.updateNotificationFromDart(context)
             }
             FgwIntentAction.DOWNWARD -> {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = true
-                FgwSeviceNotificationHandler.tmpGuardLevel -= 1
+                FgwSeviceNotificationHandler.guardLevel -= 1
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.UPWARD -> {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = true
-                FgwSeviceNotificationHandler.tmpGuardLevel += 1
+                FgwSeviceNotificationHandler.guardLevel += 1
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.CANCEL_LEVEL_CHANGE -> {
-                FgwSeviceNotificationHandler.tmpGuardLevel = FgwSeviceNotificationHandler.guardLevel.toInt()
+                FgwSeviceNotificationHandler.guardLevel = FgwServiceFlutterHandler.curGuardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.APPLY_LEVEL_CHANGE -> {
-                FgwSeviceNotificationHandler.guardLevel = FgwSeviceNotificationHandler.tmpGuardLevel.toString()
+                //FgwSeviceNotificationHandler.guardLevel = FgwSeviceNotificationHandler.guardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
+                FgwServiceFlutterHandler.syncNecessaryDataFromDart(context)
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.LOCK_UNLOCK -> {

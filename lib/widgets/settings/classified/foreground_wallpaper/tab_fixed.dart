@@ -82,7 +82,7 @@ class _ForegroundWallpaperFixedListTabState<T>
             itemBuilder: (context, index) {
               final item = widget.items[index];
               final isActive = _activeItems.contains(item);
-
+              debugPrint('$runtimeType ReorderableListView.builder localItems ${widget.items} load');
               void onToggleVisibility() {
                 if (isActive && _activeItems.length <= 1) {
                   // Show a message that at least one item must remain active
@@ -183,7 +183,13 @@ class _ForegroundWallpaperFixedListTabState<T>
               label: context.l10n.settingsForegroundWallpaperConfigApplyChanges,
               onPressed: () async {
                 if (widget.applyChangesAction != null) {
-                  widget.applyChangesAction!(context, widget.items, _activeItems);
+                  setState(() {
+                    List<T> tmpItems = [];
+                    tmpItems.addAll(widget.items);
+                    final Set<T> tmpActiveItems = {} ;
+                    tmpActiveItems.addAll(_activeItems );
+                    widget.applyChangesAction!(context, tmpItems, tmpActiveItems);
+                  });
                 } else {
                   _showDefaultAlert('applyReorderAction');
                 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../services/intent_service.dart';
 import '../../../../../theme/icons.dart';
 import '../../../../collection/filter_bar.dart';
 import '../../../../common/action_mixins/feedback.dart';
@@ -90,6 +91,31 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                       }
                     },
                     icon: const Icon(AIcons.settings),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      final curFilterSetRow = _selectedFilterSet.first;
+                      final curFilters = _selectedFilterSet.first.filters;
+                      debugPrint('$runtimeType:  _selectedFilterSet.first.filters $curFilters');
+                      debugPrint('$runtimeType: final selection = await IntentService.pickCollectionFilters(curFilters);');
+                      final selection = await IntentService.pickCollectionFilters(curFilters);
+                      debugPrint('$runtimeType: selection: $selection');
+                      if (selection != null) {
+                        final newFilterSetRow =  FilterSetRow(
+                          filterSetId: curFilterSetRow.filterSetId,
+                          filterSetNum: curFilterSetRow.filterSetNum,
+                          aliasName: curFilterSetRow.aliasName,
+                          filters: selection,
+                          isActive: curFilterSetRow.isActive,
+                        );
+                        await filterSet.setRows({newFilterSetRow});
+                        setState(() {
+                          widget.selectedFilterSet.removeWhere((item) => item.filterSetId == newFilterSetRow.filterSetId);
+                          widget.selectedFilterSet.add(newFilterSetRow);
+                        });
+                      }
+                    },
+                    icon: const Icon(AIcons.edit),
                   ),
                   IconButton(
                     onPressed: () async {

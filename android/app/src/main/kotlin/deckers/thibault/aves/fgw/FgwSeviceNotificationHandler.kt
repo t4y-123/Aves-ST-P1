@@ -153,6 +153,7 @@ object FgwSeviceNotificationHandler {
                 .setOngoing(true)
 
         val (normalLytType, bigLytType) = when {
+            // use !NOT to make the line not too long split by format code.
             isLevelGroup && !isChangingGuardLevel-> LayoutType.NORMAL_LEVEL to LayoutType.BIG_LEVEL
             isLevelGroup  -> LayoutType.NORMAL_LEVEL_CHANGING to LayoutType.BIG_LEVEL_CHANGING
             isScreenLocked(context) && !isChangingGuardLevel -> LayoutType.NORMAL_LEVEL to LayoutType.BIG_LEVEL

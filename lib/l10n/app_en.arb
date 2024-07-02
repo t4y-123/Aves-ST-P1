@@ -1073,12 +1073,16 @@
 
   "settingsClassifiedWallpaperAddDefaultScheduleTile": "Manage Default Group Schedules",
   "settingsWallpaperSchedulesManagerTitle": "Wallpaper Schedules Manager",
-  "settingsResetAllToDefault": "Reset All to Default",
-  "confirmResetAllToDefault": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
-  "settingsAddNewT3Group": "Add New T3 Group",
-  "confirmAddNewT3Group": "This will add a new set of three guard levels and corresponding filter sets and schedules.Continue?",
+  "settingsResetAllToDefault3L5F": "Reset All to Default",
+  "confirmResetAllToDefault3L5F": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
+  "settingsAddNew3L5FGroup": "Add New 3L5F Group",
+  "confirmAddNew3L5FGroup": "This will add a new set of three guard levels and corresponding 5 filter sets and schedules.Continue?",
   "settingsClearRecentUsedEntryRecord": "Clear wallpaper used record",
   "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries record\nContinue?",
+
+   "resetCompletedFeedback": "reset complete.",
+   "clearCompletedFeedback": "clear complete.",
+   "applyCompletedFeedback": "apply complete.",
 
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",

@@ -83,7 +83,7 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
       List<PrivacyGuardLevelRow?> allItems,
       Set<PrivacyGuardLevelRow?> activeItems) {
     //t4y: for the all items in Config page will not be the latest data.
-    final PrivacyGuardLevelRow currentItem = privacyGuardLevels.all.firstWhere((i) => i?.privacyGuardLevelID == item!.privacyGuardLevelID);
+    final PrivacyGuardLevelRow currentItem = privacyGuardLevels.all.firstWhere((i) => i.privacyGuardLevelID == item!.privacyGuardLevelID);
 
     Navigator.push(
       context,

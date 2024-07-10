@@ -63,6 +63,7 @@ class CollectionLens with ChangeNotifier {
       _subscriptions.add(sourceEvents.on<EntryMovedEvent>().listen((e) {
         switch (e.type) {
           case MoveType.copy:
+          case MoveType.shareByCopy:
           case MoveType.export:
             // refreshing new items is already handled via `EntryAddedEvent`s
             break;

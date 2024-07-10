@@ -19,7 +19,6 @@ import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler
 import deckers.thibault.aves.fgw.FgwServiceActionHandler
 import deckers.thibault.aves.fgw.FgwServiceFlutterHandler
 
-
 class ForegroundWallpaperService : Service() {
     private lateinit var screenStateReceiver: BroadcastReceiver
 
@@ -27,14 +26,19 @@ class ForegroundWallpaperService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.i(LOG_TAG, "Foreground wallpaper service started")
+
         createNotificationChannel()
-        startForeground(2, FgwSeviceNotificationHandler.createNotification(this))
         registerScreenStateReceiver()
         isRunning = true
-        ForegroundWallpaperTileService.upTile(this,true)
-        Log.i(LOG_TAG, "Foreground wallpaper service started")
-        // Call the Dart start method via FgwServiceFlutterHandler
+
         FgwServiceFlutterHandler.callDartStartMethod(serviceContext)
+        // first , sync necessary data.
+        startForeground(2, FgwSeviceNotificationHandler.createNotification(this))
+        ForegroundWallpaperTileService.upTile(this,true)
+        // Call the Dart start method via FgwServiceFlutterHandler
+//        FgwServiceFlutterHandler.callDartStartMethod(serviceContext)
+        Log.i(LOG_TAG, "Foreground wallpaper service  FgwServiceFlutterHandler.callDartStartMethod(serviceContext)")
     }
 
     // create update notification
@@ -51,18 +55,17 @@ class ForegroundWallpaperService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        FgwServiceFlutterHandler.syncNecessaryDataFromDart(serviceContext)
         FgwServiceActionHandler.handleStartCommand(serviceContext,intent,flags,startId)
         return START_STICKY
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
         FgwServiceFlutterHandler.callDartStopMethod(serviceContext)
         // Unregister receiver for screen events
         unregisterScreenStateReceiver()
         isRunning = false
+        super.onDestroy()
     }
 
     // Functionality of register and unregister for screen on, screen off, and screen unlock intents

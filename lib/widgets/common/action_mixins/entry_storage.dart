@@ -34,7 +34,10 @@ import 'package:aves/widgets/viewer/controls/notifications.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+
+import '../../../theme/format.dart';
 
 mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
   Future<void> convert(BuildContext context, Set<AvesEntry> targetEntries) async {
@@ -149,7 +152,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     assert(todoCount > 0);
 
     final toBin = moveType == MoveType.toBin;
-    final copy = moveType == MoveType.copy;
+    final copy = moveType == MoveType.copy || moveType == MoveType.shareByCopy;
 
     // permission for modification at destinations
     final destinationAlbums = entriesByDestination.keys.toSet();
@@ -329,6 +332,19 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
             entriesByDestination[originAlbum] = dirEntries.toSet();
           }
         });
+      case MoveType.shareByCopy:
+        final l10n = context.l10n;
+        final deleteTimeString = formatToLocalDuration(context,Duration(seconds: settings.shareByCopyRemoveInterval));
+        String dirName = pContext.basename(androidFileUtils.avesShareByCopyPath);
+        debugPrint('$runtimeType deleteTimeStrings:$deleteTimeString dirName:$dirName');
+
+        if (!await showSkippableConfirmationDialog(
+          context: context,
+          type: ConfirmationDialog.shareByCopy,
+          message: l10n.shareByCopyDialogMessage(androidFileUtils.avesShareByCopyPath,dirName,deleteTimeString),
+          confirmationButtonLabel: l10n.continueButtonLabel,
+        )) return;
+        entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
     }
 
     await doQuickMove(

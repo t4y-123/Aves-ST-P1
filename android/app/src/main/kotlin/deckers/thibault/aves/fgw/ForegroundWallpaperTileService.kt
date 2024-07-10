@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.startService
 import deckers.thibault.aves.fgw.FgwIntentAction
+import deckers.thibault.aves.fgw.FgwServiceFlutterHandler
 import android.os.Build
 import android.annotation.SuppressLint
 
@@ -64,6 +65,7 @@ class ForegroundWallpaperTileService : TileService() {
         } 
         if (getIsTileClickRunning(this)) {
             ForegroundWallpaperService.startForeground(this)
+            FgwServiceFlutterHandler.updateNotificationFromDart(this)
             tile.state = Tile.STATE_ACTIVE
             Log.d(LOG_TAG, "Service started, tile state: ${tile.state}")
         }

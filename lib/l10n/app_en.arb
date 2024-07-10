@@ -1065,6 +1065,24 @@
   "filePickerNoItems": "No items",
   "filePickerUseThisFolder": "Use this folder",
 
+
+
+
+  "entryActionShareByCopy": "share by copy",
+  "entryActionShareByDateNow": "set date now",
+  "entrySetActionShareByCopy": "share by copy",
+  "entrySetActionShareByDateNow": "set date now",
+
+  "albumPickPageTitleShareByCopy": "Share by Copy",
+  "settingsVideoShowAvesShareCopiedItems": "Show Aves share copied items",
+
+  "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
+  "settingsConfirmationSetDateToNowItems": "Ask before setting items' date to now",
+
+  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake them easier show in others APP recent items.\n\nItems in: \n{dirName}\nlive longer than {time} will auto removed.\n\nAre you sure continue?",
+  "settingsConfirmationShareByCopy": "Ask before share by copy items",
+
+  "filterFgwUsedLabel": "Fgw used entries",
   "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",
 
   "settingsClassifiedSectionTitle": "Classified",
@@ -1100,4 +1118,5 @@
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",
   "stopWallpaperService": "Stop Wallpaper Service"
+
 }

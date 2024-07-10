@@ -14,6 +14,10 @@ import androidx.core.app.NotificationManagerCompat
 import deckers.thibault.aves.MainActivity
 import deckers.thibault.aves.R
 import deckers.thibault.aves.ForegroundWallpaperService
+import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler.LayoutType
+import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler.isChangingGuardLevel
+import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler.isLevelGroup
+import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler.isScreenLocked
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.activityPendingIntent
 import deckers.thibault.aves.utils.servicePendingIntent
@@ -24,13 +28,18 @@ inline fun RemoteViews.setupButton(
     iconResId: Int,
     action: String,
     isInactiveButton: Boolean,
+    isActivityIntent: Boolean,
 ) {
     setImageViewResource(buttonId, iconResId)
+
     if (!isInactiveButton) {
-        setOnClickPendingIntent(
-            buttonId,
-            context.servicePendingIntent<ForegroundWallpaperService>(action)
-        )
+        val pendingIntent = when {
+            isActivityIntent -> {
+                context.activityPendingIntent<MainActivity>(action)
+            }
+            else -> {context.servicePendingIntent<ForegroundWallpaperService>(action)}
+        }
+        setOnClickPendingIntent(buttonId,pendingIntent )
         setViewVisibility(buttonId, View.VISIBLE)
         setInt(buttonId, "setAlpha", 255) // Fully opaque
     } else {
@@ -44,7 +53,8 @@ inline fun RemoteViews.setupButton(
 inline fun RemoteViews.setGroupBtns(
     context: Context,
     buttonActions: List<Triple<Int, Int, String>>,
-    inactiveButtonResIds: Set<Int>
+    inactiveButtonResIds: Set<Int>,
+    activityButtonResIds: Set<Int>,
 ) {
     buttonActions.forEach { (buttonId, iconResId, action) ->
         setupButton(
@@ -52,7 +62,8 @@ inline fun RemoteViews.setGroupBtns(
             buttonId,
             iconResId,
             action,
-            inactiveButtonResIds.contains(iconResId)
+            inactiveButtonResIds.contains(iconResId),
+            activityButtonResIds.contains(iconResId),
         )
     }
 }
@@ -76,13 +87,15 @@ object FgwSeviceNotificationHandler {
         R.drawable.baseline_arrow_upward_24, // UPWARD
         R.drawable.baseline_check_24, // APPLY_LEVEL_CHANGE
     )
-
+    private val activityButtonResIds = setOf(
+        R.drawable.baseline_auto_stories_24,
+    )
     // used for unlock screen, easily to make wallpaper next or go into the related collection.
     private val normalLytEntryBtns = listOf(
-        Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_navigate_before_24, FgwIntentAction.LEFT),
-        Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_navigate_next_24, FgwIntentAction.RIGHT),
-        Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_add_photo_24, FgwIntentAction.DUPLICATE),
-        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_auto_stories_24, FgwIntentAction.STORES)
+        Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_pre_24, FgwIntentAction.LEFT),
+        Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_next_24, FgwIntentAction.RIGHT),
+        Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_copy_all_24, FgwIntentAction.DUPLICATE),
+        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_auto_stories_24, FgwIntentAction.USED_RECORD)
     )
 
     // used for phone lock screen, easily to change privacy guard level.
@@ -90,7 +103,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
         Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
-        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_navigate_next_24, FgwIntentAction.RIGHT)
+        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_next_24, FgwIntentAction.RIGHT)
     )
     private val normalLytLevelChangingBtns = listOf(
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
@@ -102,10 +115,10 @@ object FgwSeviceNotificationHandler {
     // by default, expand unlocked entry type layout.
     private val bigLytEntryBtns = listOf(
         Triple(R.id.iv_big_lyt_btn_01, R.drawable.baseline_menu_open_24, FgwIntentAction.SWITCH_GROUP),
-        Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_navigate_before_24, FgwIntentAction.LEFT),
-        Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_navigate_next_24, FgwIntentAction.RIGHT),
-        Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_add_photo_24, FgwIntentAction.DUPLICATE),
-        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_auto_stories_24, FgwIntentAction.STORES)
+        Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_pre_24, FgwIntentAction.LEFT),
+        Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_next_24, FgwIntentAction.RIGHT),
+        Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_copy_all_24, FgwIntentAction.DUPLICATE),
+        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_auto_stories_24, FgwIntentAction.USED_RECORD)
     )
 
     // else, expand privacy guard level modify type layout.
@@ -114,7 +127,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
         Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
-        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_navigate_next_24, FgwIntentAction.RIGHT)
+        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_next_24, FgwIntentAction.RIGHT)
     )
 
     private val bigLytLevelBtnsChanging = listOf(
@@ -143,10 +156,7 @@ object FgwSeviceNotificationHandler {
             NotificationCompat.Builder(context, FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(
-                    context.activityPendingIntent<MainActivity>(
-                        MainActivity.OPEN_FROM_ANALYSIS_SERVICE,
-                        ""
-                    )
+                    context.activityPendingIntent<MainActivity>( FgwConstant.FGW_VIEW_OPEN)
                 )
                 .setTicker("Ticker text")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -261,7 +271,7 @@ object FgwSeviceNotificationHandler {
         }
 
         updateGuardLevel(remoteViews)
-        remoteViews.setGroupBtns(context, buttonActions, inactiveButtonResIds)
+        remoteViews.setGroupBtns(context, buttonActions, inactiveButtonResIds, activityButtonResIds)
         return remoteViews
     }
 

@@ -195,7 +195,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
     }
   }
 
-  Future<PrivacyGuardLevelRow> _getPrivacyGuardLevel() async {
+  Future<PrivacyGuardLevelRow> getPrivacyGuardLevel() async {
     final activeItems = privacyGuardLevels.all.where((e) => e.isActive).toSet();
     if (activeItems.isEmpty) {
       debugPrint('No active PrivacyGuardLevels found.');
@@ -209,7 +209,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
     return currentGuardLevel;
   }
 
-  Future<List<AvesEntry>> _getEntries(
+  Future<List<AvesEntry>> getEntries(
       PrivacyGuardLevelRow curLevel, WallpaperUpdateType updateType, int widgetId) async {
     debugPrint('_getEntries $curLevel $updateType $widgetId');
     final filterSetId = wallpaperSchedules.all
@@ -231,7 +231,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
     return entries;
   }
 
-  Future<List<FgwUsedEntryRecordRow>> _getRecentEntryRecord(
+  Future<List<FgwUsedEntryRecordRow>> getRecentEntryRecord(
       PrivacyGuardLevelRow curLevel, WallpaperUpdateType updateType, int widgetId) async {
     debugPrint('_getRecentEntryIds $curLevel $updateType $widgetId');
     final recentUsedEntryRecord = fgwUsedEntryRecord.all
@@ -275,9 +275,9 @@ class FgwServiceHelper with WidgetsBindingObserver {
     final widgetId = args['widgetId'] as int;
     debugPrint('preWallpaper $updateType $widgetId');
 
-    PrivacyGuardLevelRow _currentGuardLevel = await _getPrivacyGuardLevel();
-    final entries = await _getEntries(_currentGuardLevel, updateType, widgetId);
-    final recentUsedEntryRecord = await _getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
+    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
+    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
+    final recentUsedEntryRecord = await getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
     if(entries.isEmpty || recentUsedEntryRecord.isEmpty)return Future.value(false);
 
     AvesEntry? previousEntry, curEntry;
@@ -303,19 +303,25 @@ class FgwServiceHelper with WidgetsBindingObserver {
       }
     }
     await setFgWallpaper(previousEntry!, updateType: updateType, widgetId: widgetId);
-    settings.setFgwCurEntryId(updateType, widgetId, previousEntry.id);
+    updateCurEntrySettings(updateType, widgetId, previousEntry);
     return Future.value(true);
   }
-  
+
+  void updateCurEntrySettings(WallpaperUpdateType updateType, int widgetId, AvesEntry curEntry) {
+    settings.setFgwCurEntryId(updateType, widgetId, curEntry.id);
+    settings.setFgwCurEntryUri(updateType, widgetId, curEntry.uri);
+    settings.setFgwCurEntryMime(updateType, widgetId, curEntry.mimeType);
+  }
+
   Future<bool> nextWallpaper(dynamic args) async {
     await _waitForRunningState();
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
     debugPrint(' nextWallpaper $updateType $widgetId');
 
-    PrivacyGuardLevelRow _currentGuardLevel = await _getPrivacyGuardLevel();
-    final entries = await _getEntries(_currentGuardLevel, updateType, widgetId);
-    final recentUsedEntries = await _getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
+    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
+    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
+    final recentUsedEntries = await getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
 
     final nextEntry = entries.firstWhere(
       (entry) => !recentUsedEntries.any((usedEntry) => usedEntry.entryId == entry.id),
@@ -323,7 +329,7 @@ class FgwServiceHelper with WidgetsBindingObserver {
     debugPrint(' nextWallpaper nextEntry $nextEntry');
 
     await setFgWallpaper(nextEntry, updateType: updateType, widgetId: widgetId);
-    settings.setFgwCurEntryId(updateType, widgetId, nextEntry.id);
+    updateCurEntrySettings(updateType, widgetId, nextEntry);
 
     final FgwUsedEntryRecordRow newRow = FgwUsedEntryRecordRow(
       id: DateTime.now().millisecondsSinceEpoch,
@@ -354,8 +360,8 @@ class FgwServiceHelper with WidgetsBindingObserver {
     debugPrint('$runtimeType syncNecessaryData activeGuardLevels $activeGuardLevels');
 
     // Second, get curEntry.
-    PrivacyGuardLevelRow _currentGuardLevel = await _getPrivacyGuardLevel();
-    final entries = await _getEntries(_currentGuardLevel, updateType, widgetId);
+    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
+    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
     AvesEntry? curEntry = entries.firstWhere((entry) => entry.id == settings.getFgwCurEntryId(updateType,widgetId));
     String entryFilenameWithoutExtension = curEntry.filenameWithoutExtension ?? ':null in $updateType $widgetId';
     // Return the map

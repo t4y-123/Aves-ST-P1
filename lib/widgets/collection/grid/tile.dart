@@ -56,6 +56,8 @@ class InteractiveTile extends StatelessWidget {
           case AppMode.slideshow:
           case AppMode.view:
           case AppMode.edit:
+          case AppMode.fgwViewUsed:
+          case AppMode.fgwViewOpen:
             break;
         }
       },

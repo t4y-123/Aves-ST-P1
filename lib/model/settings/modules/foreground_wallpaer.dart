@@ -33,7 +33,7 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   static const resetPrivacyGuardLevelDurationKey = 'reset_privacy_guard_level';
 
   int get resetPrivacyGuardLevelDuration =>
-      getInt(resetPrivacyGuardLevelDurationKey) ?? SettingsDefaults.resetPrivacyGuardLevelDuraiont;
+      getInt(resetPrivacyGuardLevelDurationKey) ?? SettingsDefaults.resetPrivacyGuardLevelDuration;
 
   set resetPrivacyGuardLevelDuration(int newValue) => set(resetPrivacyGuardLevelDurationKey, newValue);
 
@@ -43,4 +43,33 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
       getInt('${fgwCurEntryIdKey}_${updateType}_$widgetId') ?? -1; // use -1 as not found
   void setFgwCurEntryId(WallpaperUpdateType updateType, int widgetId, int newValue) =>
       set('${fgwCurEntryIdKey}_${updateType}_$widgetId', newValue);
+
+  static const fgwCurEntryUriKey = 'fgw_current_entry_uri';
+
+  String getFgwCurEntryUri(WallpaperUpdateType updateType, int widgetId) =>
+      getString('${fgwCurEntryUriKey}_${updateType}_$widgetId') ?? '';
+  void setFgwCurEntryUri(WallpaperUpdateType updateType, int widgetId, String newValue) =>
+      set('${fgwCurEntryUriKey}_${updateType}_$widgetId', newValue);
+
+  static const fgwCurEntryMimeKey = 'fgw_current_entry_mime';
+
+  String getFgwCurEntryMime(WallpaperUpdateType updateType, int widgetId) =>
+      getString('${fgwCurEntryMimeKey}_${updateType}_$widgetId') ?? '';
+  void setFgwCurEntryMime(WallpaperUpdateType updateType, int widgetId, String newValue) =>
+      set('${fgwCurEntryMimeKey}_${updateType}_$widgetId', newValue);
+
+  static const confirmSetDateToNowKey = 'confirm_set_date_to_now';
+  set confirmSetDateToNow(bool newValue) => set(confirmSetDateToNowKey, newValue);
+  bool get confirmSetDateToNow => getBool(confirmSetDateToNowKey) ?? SettingsDefaults.confirmSetDateToNow;
+
+  static const confirmShareByCopyKey = 'confirm_share_by_copy';
+  set confirmShareByCopy(bool newValue) => set(confirmShareByCopyKey, newValue);
+  bool get confirmShareByCopy => getBool(confirmShareByCopyKey) ?? SettingsDefaults.confirmShareByCopy;
+
+  static const shareByCopyRemoveIntervalKey = 'share_by_copy_remove_interval';
+  int get shareByCopyRemoveInterval => getInt(SettingKeys.screenSaverIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
+  set shareByCopyRemoveInterval(int newValue) => set(SettingKeys.screenSaverIntervalKey, newValue);
+
+
+
 }

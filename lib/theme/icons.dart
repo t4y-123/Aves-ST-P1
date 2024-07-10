@@ -195,6 +195,9 @@ class AIcons {
   static const classified = Icons.security;
   static const active = Icons.lightbulb_outline;
   static const inactive = Icons.code_off_sharp;
+  static const fgwUsed = Icons.auto_stories;
+  static const shareByCopy = Icons.copy_all;
+  static const shareByDateNow = Icons.update;
 
   static final github = MdiIcons.github;
   static final legal = MdiIcons.scaleBalance;

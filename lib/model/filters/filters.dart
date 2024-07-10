@@ -18,12 +18,15 @@ import 'package:aves/model/filters/recent.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/filters/type.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+
+import 'fgw_used.dart';
 
 @immutable
 abstract class CollectionFilter extends Equatable implements Comparable<CollectionFilter> {
@@ -43,6 +46,7 @@ abstract class CollectionFilter extends Equatable implements Comparable<Collecti
     AspectRatioFilter.type,
     MissingFilter.type,
     PathFilter.type,
+    FgwUsedFilter.type,
   ];
 
   final bool reversed;
@@ -84,6 +88,8 @@ abstract class CollectionFilter extends Equatable implements Comparable<Collecti
         return TypeFilter.fromMap(jsonMap);
       case TrashFilter.type:
         return TrashFilter.fromMap(jsonMap);
+      case FgwUsedFilter.type:
+        return FgwUsedFilter.fromMap(jsonMap);
     }
     return null;
   }

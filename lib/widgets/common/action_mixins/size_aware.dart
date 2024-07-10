@@ -33,6 +33,7 @@ mixin SizeAwareMixin {
     int sumSize(int sum, AvesEntry entry) => sum + (entry.sizeBytes ?? 0);
     switch (moveType) {
       case MoveType.copy:
+      case MoveType.shareByCopy:
       case MoveType.export:
         needed = selection.fold(0, sumSize);
       case MoveType.move:

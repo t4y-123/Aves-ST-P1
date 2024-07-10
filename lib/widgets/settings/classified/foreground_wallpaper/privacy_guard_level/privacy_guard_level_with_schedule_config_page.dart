@@ -6,6 +6,7 @@ import '../../../../../model/foreground_wallpaper/filterSet.dart';
 import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
 import '../../../../../model/settings/settings.dart';
 import '../../../../../services/common/services.dart';
+import '../../../../../theme/format.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import '../../../../common/basic/list_tiles/color.dart';
 import '../../../../common/identity/buttons/outlined_button.dart';
@@ -454,29 +455,6 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
     );
   }
 
-  String _makeIntervalString(int inInterval) {
-    if (inInterval == 0) {
-      return '0 ${context.l10n.durationDialogSeconds}';
-    } else {
-      final int _hours = inInterval ~/ Duration.secondsPerHour;
-      final int _minutes = (inInterval - _hours * Duration.secondsPerHour) ~/
-          Duration.secondsPerMinute;
-      final int _seconds = inInterval % Duration.secondsPerMinute;
-
-      List<String> parts = [];
-      if (_hours > 0) {
-        parts.add('$_hours ${context.l10n.durationDialogHours}');
-      }
-      if (_minutes > 0) {
-        parts.add('$_minutes ${context.l10n.durationDialogMinutes}');
-      }
-      if (_seconds > 0) {
-        parts.add('$_seconds ${context.l10n.durationDialogSeconds}');
-      }
-      return parts.join('\n');
-    }
-  }
-
   Widget _buildIntervalSelectTile(WallpaperScheduleRow schedule) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,7 +470,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
 
   List<Widget> _buildIntervalOptions(WallpaperScheduleRow schedule) {
     final l10n = context.l10n;
-    String _curIntervalString = _makeIntervalString(schedule.intervalTime);
+    String _curIntervalString = formatToLocalDuration(context,Duration(seconds:schedule.intervalTime));
     var _useInterval = schedule.intervalTime == 0 ? false : true;
     return [false, true].map(
       (isCustom) {

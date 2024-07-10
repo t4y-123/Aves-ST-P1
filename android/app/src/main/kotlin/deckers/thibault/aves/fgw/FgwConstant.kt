@@ -11,7 +11,7 @@ object FgwIntentAction {
     const val LEFT = "FGW_LEFT"
     const val RIGHT = "FGW_RIGHT"
     const val DUPLICATE = "FGW_DUPLICATE"
-    const val STORES = "FGW_STORES"
+    const val USED_RECORD = "fgw_used_entry_record_open"
     const val DOWNWARD = "FGW_DOWNWARD"
     const val UPWARD = "FGW_UPWARD"
     const val LOCK_UNLOCK = "FGW_LOCK_UNLOCK"
@@ -28,4 +28,5 @@ object FgwConstant {
     const val CUR_TYPE_BOTH = "both"
     const val CUR_TYPE_WIDGET = "widget"
     const val NOT_WIDGET_ID:Int = 0
+    const val FGW_VIEW_OPEN = "fgw_view_open"
 }

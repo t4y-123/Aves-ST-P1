@@ -74,7 +74,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:contentDescription="pre wallpaper"
-            android:src="@drawable/baseline_navigate_before_24" />
+            android:src="@drawable/baseline_pre_24" />
 
         <ImageButton
             android:id="@+id/iv_big_lyt_btn_03"
@@ -83,7 +83,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:contentDescription="duplicate for share"
-            android:src="@drawable/baseline_add_photo_24" />
+            android:src="@drawable/baseline_copy_all_24" />
 
         <ImageButton
             android:id="@+id/iv_big_lyt_btn_04"
@@ -92,7 +92,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:contentDescription="next wallpaper"
-            android:src="@drawable/baseline_navigate_next_24" />
+            android:src="@drawable/baseline_next_24" />
 
         <ImageButton
             android:id="@+id/iv_big_lyt_btn_05"

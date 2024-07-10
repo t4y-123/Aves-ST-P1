@@ -6,7 +6,10 @@ import 'package:aves/model/apps.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -41,6 +44,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+
+import '../model/foreground_wallpaper/filterSet.dart';
+
 
 class HomePage extends StatefulWidget {
   static const routeName = '/';
@@ -143,6 +149,20 @@ class _HomePageState extends State<HomePage> {
               appMode = AppMode.view;
             }
           }
+        case IntentActions.fgwUsedRecordOpen:
+        case IntentActions.fgwUsedViewOpen:
+          debugPrint('$runtimeType get into IntentActions.fgwUsedRecordOpen');
+          _viewerEntry = await _initViewerEntry(
+            uri: settings.getFgwCurEntryUri(WallpaperUpdateType.home, 0),
+            mimeType: settings.getFgwCurEntryMime(WallpaperUpdateType.home, 0),
+          );
+          if (_viewerEntry != null) {
+            if(intentAction ==IntentActions.fgwUsedRecordOpen){
+              appMode = AppMode.fgwViewUsed;
+            }else{
+              appMode = AppMode.fgwViewOpen;
+            }
+          }
         case IntentActions.edit:
           _viewerEntry = await _initViewerEntry(
             uri: intentData[IntentDataKeys.uri],
@@ -217,6 +237,15 @@ class _HomePageState extends State<HomePage> {
         await source.init(
           canAnalyze: false,
         );
+      case AppMode.fgwViewUsed:
+      case AppMode.fgwViewOpen:
+        if (_isViewerSourceable(_viewerEntry)) {
+            unawaited(AnalysisService.registerCallback());
+            final source = context.read<CollectionSource>();
+            await source.init( canAnalyze: false);
+        } else {
+          await _initViewerEssentials();
+        }
       case AppMode.view:
         if (_isViewerSourceable(_viewerEntry)) {
           final directory = _viewerEntry?.directory;
@@ -323,7 +352,75 @@ class _HomePageState extends State<HomePage> {
             }
           }
         }
+        return DirectMaterialPageRoute(
+          settings: const RouteSettings(name: EntryViewerPage.routeName),
+          builder: (_) {
+            return EntryViewerPage(
+              collection: collection,
+              initialEntry: viewerEntry,
+            );
+          },
+        );
+      case AppMode.fgwViewUsed:
+      case AppMode.fgwViewOpen:
+        AvesEntry viewerEntry = _viewerEntry!;
+        CollectionLens? collection;
 
+        final source = context.read<CollectionSource>();
+        if (source.initState != SourceInitializationState.none) {
+            // wait for collection to pass the `loading` state
+            final completer = Completer();
+            void _onSourceStateChanged() {
+              if (source.state != SourceState.loading) {
+                source.stateNotifier.removeListener(_onSourceStateChanged);
+                completer.complete();
+              }
+            }
+
+            source.stateNotifier.addListener(_onSourceStateChanged);
+            await completer.future;
+
+            Set<CollectionFilter> filters = {};
+            if(appMode == AppMode.fgwViewUsed){
+              filters = {FgwUsedFilter.instance};
+            }else{
+              final activeItems = privacyGuardLevels.all.where((e) => e.isActive).toSet();
+              final currentGuardLevel = activeItems.firstWhere(
+                    (e) => e.guardLevel == settings.curPrivacyGuardLevel,
+                orElse: () => activeItems.first,
+              );
+              final filterSetId = wallpaperSchedules.all
+                  .firstWhere(
+                    (schedule) =>
+                schedule.updateType == WallpaperUpdateType.home &&
+                    schedule.widgetId == 0 &&
+                    schedule.privacyGuardLevelId == currentGuardLevel.privacyGuardLevelID,
+              )
+                  .filterSetId;
+              filters =
+                  filterSet.all.firstWhere((filterRow) => filterRow.filterSetId == filterSetId).filters ?? <CollectionFilter>{};
+
+            }
+            debugPrint('$runtimeType  AppMode.fgwViewUsed filters=$filters');
+            collection = CollectionLens(
+              source: source,
+              filters:filters,
+              listenToSource: false,
+              // if we group bursts, opening a burst sub-entry should:
+              // - identify and select the containing main entry,
+              // - select the sub-entry in the Viewer page.
+              groupBursts: false,
+            );
+            debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
+            final viewerEntryPath = viewerEntry.path;
+            final collectionEntry = collection.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+            if (collectionEntry != null) {
+              viewerEntry = collectionEntry;
+            } else {
+              debugPrint('collection does not contain viewerEntry=$viewerEntry');
+              collection = null;
+            }
+        }
         return DirectMaterialPageRoute(
           settings: const RouteSettings(name: EntryViewerPage.routeName),
           builder: (_) {

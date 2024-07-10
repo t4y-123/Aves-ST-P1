@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aves/model/filters/album.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -10,6 +11,8 @@ import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../model/settings/settings.dart';
+import '../../../utils/android_file_utils.dart';
 import 'foreground_wallpaper/default_scheduls_manage_page.dart';
 import 'foreground_wallpaper/foreground_wallpaper_config_page.dart';
 
@@ -31,6 +34,7 @@ class ClassifiedSection extends SettingsSection {
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
         SettingsTileForegroundWallpaperDrawer(),
         SettingsTileAddDefaultGroupsSchedules(),
+        SettingsTileShareShowCopiedItems(),
       ];
 }
 
@@ -58,4 +62,17 @@ class SettingsTileAddDefaultGroupsSchedules extends SettingsTile {
         routeName: NavigationDrawerEditorPage.routeName,
         builder: (context) => const ForegroundWallpaperDefaultSchedulesManagerPage(),
       );
+}
+
+
+class SettingsTileShareShowCopiedItems extends SettingsTile {
+  @override
+  String title(BuildContext context) => context.l10n.settingsVideoShowAvesShareCopiedItems;
+
+  @override
+  Widget build(BuildContext context) => SettingsSwitchListTile(
+    selector: (context, s) => !s.hiddenFilters.contains(AlbumFilter(androidFileUtils.avesShareByCopyPath, null)),
+    onChanged: (v) => settings.changeFilterVisibility({AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}, v),
+    title: title(context),
+  );
 }

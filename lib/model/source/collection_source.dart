@@ -11,6 +11,7 @@ import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
@@ -215,6 +216,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     final ids = entries.map((entry) => entry.id).toSet();
     await favourites.removeIds(ids);
     await covers.removeIds(ids);
+    await fgwUsedEntryRecord.removeEntryIds(ids);
     await metadataDb.removeIds(ids);
 
     ids.forEach((id) => _entryById.remove);
@@ -341,7 +343,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
     final fromAlbums = <String?>{};
     final movedEntries = <AvesEntry>{};
-    final copy = moveType == MoveType.copy;
+    final copy = moveType == MoveType.copy || moveType == MoveType.shareByCopy;
     if (copy) {
       movedOps.forEach((movedOp) {
         final sourceUri = movedOp.uri;
@@ -388,6 +390,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
     switch (moveType) {
       case MoveType.copy:
+      case MoveType.shareByCopy:
         addEntries(movedEntries);
       case MoveType.move:
       case MoveType.export:

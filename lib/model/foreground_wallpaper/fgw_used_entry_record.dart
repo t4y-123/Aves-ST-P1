@@ -81,6 +81,13 @@ class FgwUsedEntryRecord with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> removeEntryIds(Set<int> rowIds) async {
+    final removedRows = _rows.where((row) => rowIds.contains(row.entryId)).toSet();
+    await metadataDb.removeFgwUsedEntryRecord(removedRows);
+    removedRows.forEach(_rows.remove);
+    notifyListeners();
+  }
+
   Future<void> removeWidgetIds(Set<int> rowWidgetIds) async {
     final removedRows = _rows.where((row) => rowWidgetIds.contains(row.widgetId)).toSet();
     await metadataDb.removeFgwUsedEntryRecord(removedRows);

@@ -196,6 +196,7 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         val intent = Intent(MainActivity.INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN, Uri.parse("widget://$widgetId"), context, MainActivity::class.java)
             .putExtra(MainActivity.EXTRA_KEY_WIDGET_ID, widgetId)
         Log.d(LOG_TAG, "buildOpenAppIntent $intent")
+        Log.d(LOG_TAG, "intent.action [${intent.action}]" )
         return PendingIntent.getActivity(
            context,
            0,

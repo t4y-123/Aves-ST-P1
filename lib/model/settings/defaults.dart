@@ -51,10 +51,17 @@ class SettingsDefaults {
   static const collectionBrowsingQuickActions = [
     EntrySetAction.searchCollection,
   ];
+  // t4y: for some app, the share way never get the original as-si pic.They will compress the pic.
   static const collectionSelectionQuickActions = [
-    EntrySetAction.share,
+    EntrySetAction.shareByCopy,
+    EntrySetAction.shareByDateNow,
     EntrySetAction.delete,
   ];
+  // t4y: collectionSelectionQuickActions pre value
+  // static const collectionSelectionQuickActions = [
+  //   EntrySetAction.share,
+  //   EntrySetAction.delete,
+  // ];
   static const showThumbnailFavourite = true;
   static const showThumbnailHdr = true;
   static const thumbnailLocationIcon = ThumbnailOverlayLocationIcon.none;
@@ -68,13 +75,23 @@ class SettingsDefaults {
   static const albumGroupFactor = AlbumChipGroupFactor.importance;
   static const chipListSortFactor = ChipSortFactor.name;
 
-  // viewer
+  // viewer ,
+  // t4y: personal prefer value
   static const viewerQuickActions = [
     EntryAction.rotateScreen,
     EntryAction.toggleFavourite,
-    EntryAction.share,
+    EntryAction.shareByCopy,
+    EntryAction.shareByDateNow,
     EntryAction.delete,
   ];
+  // t4y: pre value.
+  // static const viewerQuickActions = [
+  //   EntryAction.rotateScreen,
+  //   EntryAction.toggleFavourite,
+  //   EntryAction.share,
+  //   EntryAction.delete,
+  // ];
+
   static const showOverlayOnOpening = false; // t4y : I prefer not show on Opening
   //static const showOverlayOnOpening = true;
   static const showOverlayMinimap = false;
@@ -145,6 +162,9 @@ class SettingsDefaults {
   static const int defaultPrivacyGuardLevel = 1;
   //
   static const int maxFgwUsedEntryRecord = 10;
-  static const int resetPrivacyGuardLevelDuraiont = 5; // second
-
+  static const int resetPrivacyGuardLevelDuration = 5; // second
+  // diff type share.
+  static const confirmSetDateToNow = true;
+  static const confirmShareByCopy = true;
+  static const shareByCopyRemoveInterval = 5;
 }

@@ -62,6 +62,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import deckers.thibault.aves.fgw.FgwIntentAction
+import deckers.thibault.aves.fgw.FgwConstant
 
 open class MainActivity : FlutterFragmentActivity() {
     private val defaultScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -383,7 +385,18 @@ open class MainActivity : FlutterFragmentActivity() {
             Intent.ACTION_RUN -> {
                 // flutter run
             }
-
+            FgwIntentAction.USED_RECORD -> {
+                Log.d(LOG_TAG, "FgwIntentAction.USED_RECORD in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to FgwIntentAction.USED_RECORD,
+                )
+            }
+            FgwConstant.FGW_VIEW_OPEN -> {
+                Log.d(LOG_TAG, "FgwConstant.FGW_VIEW_OPEN in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to  FgwConstant.FGW_VIEW_OPEN,
+                )
+            }
             else -> {
                 Log.w(LOG_TAG, "unhandled intent action=${intent?.action}")
             }

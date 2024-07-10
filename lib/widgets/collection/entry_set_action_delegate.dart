@@ -44,6 +44,7 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -106,6 +107,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
         return canWrite && isMain && isSelecting && !isTrash;
       case EntrySetAction.restore:
         return canWrite && isMain && isSelecting && isTrash;
@@ -160,6 +163,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
         return hasSelection;
     }
   }
@@ -227,6 +232,10 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         _editTags(context);
       case EntrySetAction.removeMetadata:
         _removeMetadata(context);
+      case EntrySetAction.shareByCopy:
+        _move(context, moveType: MoveType.shareByCopy);
+      case EntrySetAction.shareByDateNow:
+        setDateToNow(context);
     }
   }
 
@@ -509,6 +518,25 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     if (entries == null || entries.isEmpty) return;
 
     await _edit(context, entries, (entry) => entry.flip());
+  }
+
+  Future<void> setDateToNow(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {
+    entries ??= await _getEditableTargetItems(context, canEdit: (entry) => entry.canEditDate);
+    if (entries == null || entries.isEmpty) return;
+
+    final dateTime = DateTime.now();
+    final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(dateTime); // Format the date as needed
+
+    if (!await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.setDateToNow,
+      message: context.l10n.setDateToNowDialogMessage(formattedDateTime),
+      confirmationButtonLabel: context.l10n.continueButtonLabel,
+    )) return;
+
+    final modifier = DateModifier.setCustom(const {}, dateTime);
+    if (modifier == null) return;
+    await _edit(context, entries, (entry) => entry.editDate(modifier!), showResult: showResult);
   }
 
   Future<void> editDate(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {

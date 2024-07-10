@@ -239,7 +239,10 @@ object FgwServiceFlutterHandler {
 
     fun updateNotificationFromDart(context: Context) {
         Log.d(LOG_TAG, "start to updateNotificationFromDart")
-        syncNecessaryDataFromDart(context)
+        runBlocking{
+            syncNecessaryDataFromDart(context)
+            delay(500)
+        }
         FgwSeviceNotificationHandler.guardLevel = curGuardLevel
         Log.d(LOG_TAG, "start to FgwSeviceNotificationHandler.updateNotificationFromStoredValues($context)")
         FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)

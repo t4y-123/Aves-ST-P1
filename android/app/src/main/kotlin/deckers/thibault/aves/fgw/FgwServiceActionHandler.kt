@@ -21,18 +21,20 @@ object FgwServiceActionHandler {
             }
             FgwIntentAction.LEFT -> {
                 showToast(context, "Left arrow tapped")
-                FgwServiceFlutterHandler.preWallpaper(context)  // Add this line
+                FgwServiceFlutterHandler.preWallpaper(context)
+                FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
             }
             FgwIntentAction.RIGHT -> {
                 showToast(context, "Right arrow tapped")
-                FgwServiceFlutterHandler.nextWallpaper(context)  // Add this line
+                FgwServiceFlutterHandler.nextWallpaper(context)
+                FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
             }
             FgwIntentAction.DUPLICATE -> {
                 FgwServiceFlutterHandler.syncNecessaryDataFromDart(context)
                 showToast(context, "Duplicate icon tapped")
             }
-            FgwIntentAction.STORES -> {
-                showToast(context, "Reshuffle icon tapped")
+            FgwIntentAction.USED_RECORD -> {
+                showToast(context, "USED_RECORD icon tapped")
                 FgwServiceFlutterHandler.updateNotificationFromDart(context)
             }
             FgwIntentAction.DOWNWARD -> {

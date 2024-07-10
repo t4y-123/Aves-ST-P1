@@ -647,6 +647,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
         _actionDelegate.onActionSelected(context, action);
     }
   }

@@ -11,6 +11,8 @@ enum AppMode {
   slideshow,
   view,
   edit,
+  fgwViewUsed,
+  fgwViewOpen,
 }
 
 extension ExtraAppMode on AppMode {
@@ -24,6 +26,8 @@ extension ExtraAppMode on AppMode {
   bool get canEditEntry => {
         AppMode.main,
         AppMode.view,
+        AppMode.fgwViewUsed,
+        AppMode.fgwViewOpen,
       }.contains(this);
 
   bool get canSelectMedia => {

@@ -4,6 +4,7 @@ import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/entry/extensions/location.dart';
+import 'package:aves/model/entry/extensions/metadata_edition.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
@@ -12,6 +13,7 @@ import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
+import 'package:aves/model/foreground_wallpaper/shareCopiedEntry.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
@@ -31,6 +33,7 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
+import '../metadata/date_modifier.dart';
 
 enum SourceInitializationState { none, directory, full }
 
@@ -343,8 +346,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
     final fromAlbums = <String?>{};
     final movedEntries = <AvesEntry>{};
-    final copy = moveType == MoveType.copy || moveType == MoveType.shareByCopy;
-    if (copy) {
+    final copy = moveType == MoveType.copy ;
+    final shareByCopy = moveType == MoveType.shareByCopy;
+    if (copy ||  shareByCopy) {
       movedOps.forEach((movedOp) {
         final sourceUri = movedOp.uri;
         final newFields = movedOp.newFields;
@@ -369,6 +373,15 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       await metadataDb.saveEntries(movedEntries);
       await metadataDb.saveCatalogMetadata(movedEntries.map((entry) => entry.catalogMetadata).whereNotNull().toSet());
       await metadataDb.saveAddresses(movedEntries.map((entry) => entry.addressDetails).whereNotNull().toSet());
+      // t4y: for intuitively, the copied items should be the most recently.
+      // And for functionally, somme apps  will still swallows you pic making it not be able to send to others unless made some modified.
+      if(shareByCopy){
+        final dateTime = DateTime.now();
+        final modifier = DateModifier.setCustom(const {}, dateTime);
+        if (modifier != null) movedEntries.forEach((entry) => entry.editDate(modifier));
+        await shareCopiedEntries.add(movedEntries);
+      }
+
     } else {
       await Future.forEach<MoveOpEvent>(movedOps, (movedOp) async {
         final newFields = movedOp.newFields;

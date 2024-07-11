@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:aves/model/filters/album.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/settings/classified/share_by_copy.dart';
 import 'package:aves/widgets/settings/common/tile_leading.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:aves/widgets/settings/navigation/drawer.dart';
@@ -11,9 +11,7 @@ import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/settings/settings.dart';
-import '../../../utils/android_file_utils.dart';
-import 'foreground_wallpaper/default_scheduls_manage_page.dart';
+import 'foreground_wallpaper/default_schedules_manage_page.dart';
 import 'foreground_wallpaper/foreground_wallpaper_config_page.dart';
 
 class ClassifiedSection extends SettingsSection {
@@ -34,7 +32,7 @@ class ClassifiedSection extends SettingsSection {
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
         SettingsTileForegroundWallpaperDrawer(),
         SettingsTileAddDefaultGroupsSchedules(),
-        SettingsTileShareShowCopiedItems(),
+        SettingsTileShareByCopy(),
       ];
 }
 
@@ -64,15 +62,14 @@ class SettingsTileAddDefaultGroupsSchedules extends SettingsTile {
       );
 }
 
-
-class SettingsTileShareShowCopiedItems extends SettingsTile {
+class SettingsTileShareByCopy extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsVideoShowAvesShareCopiedItems;
+  String title(BuildContext context) => context.l10n.settingsShareByCopyTile;
 
   @override
-  Widget build(BuildContext context) => SettingsSwitchListTile(
-    selector: (context, s) => !s.hiddenFilters.contains(AlbumFilter(androidFileUtils.avesShareByCopyPath, null)),
-    onChanged: (v) => settings.changeFilterVisibility({AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}, v),
+  Widget build(BuildContext context) => SettingsSubPageTile(
     title: title(context),
+    routeName: ShareByCopyPage.routeName,
+    builder: (context) => const ShareByCopyPage(),
   );
 }

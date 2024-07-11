@@ -66,10 +66,16 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   set confirmShareByCopy(bool newValue) => set(confirmShareByCopyKey, newValue);
   bool get confirmShareByCopy => getBool(confirmShareByCopyKey) ?? SettingsDefaults.confirmShareByCopy;
 
+  static const shareByCopyExpiredAutoRemoveKey = 'share_by_copy_auto_remove';
+  bool get shareByCopyExpiredAutoRemove => getBool(shareByCopyExpiredAutoRemoveKey) ?? SettingsDefaults.shareByCopyExpiredAutoRemove;
+  set shareByCopyExpiredAutoRemove(bool newValue) => set(shareByCopyExpiredAutoRemoveKey, newValue);
+
+  static const shareByCopyExpiredRemoveUseBinKey = 'share_by_copy_auto_remove_use_bin';
+  bool get shareByCopyExpiredRemoveUseBin => getBool(shareByCopyExpiredRemoveUseBinKey) ?? SettingsDefaults.shareByCopyExpiredRemoveUseBin;
+  set shareByCopyExpiredRemoveUseBin(bool newValue) => set(shareByCopyExpiredRemoveUseBinKey, newValue);
+
   static const shareByCopyRemoveIntervalKey = 'share_by_copy_remove_interval';
   int get shareByCopyRemoveInterval => getInt(SettingKeys.screenSaverIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
   set shareByCopyRemoveInterval(int newValue) => set(SettingKeys.screenSaverIntervalKey, newValue);
-
-
 
 }

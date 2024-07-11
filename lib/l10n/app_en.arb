@@ -1073,13 +1073,19 @@
   "entrySetActionShareByCopy": "share by copy",
   "entrySetActionShareByDateNow": "set date now",
 
+  "settingsShareByCopyTile": "Share by Copy",
+  "settingsShareByCopyPageTitle": "Share by Copy",
   "albumPickPageTitleShareByCopy": "Share by Copy",
-  "settingsVideoShowAvesShareCopiedItems": "Show Aves share copied items",
+  "settingsShowAvesShareCopiedItems": "Show Aves share copied items dir",
+  "settingsShareByCopyAutoRemove": "Auto remove expired copied items",
+  "settingsShareByCopyAutoRemoveUseBin": "Use bin when remove expired copied items",
+  "settingsShareByCopyExpiredInterval": "Expired Interval",
+
 
   "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
   "settingsConfirmationSetDateToNowItems": "Ask before setting items' date to now",
 
-  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake them easier show in others APP recent items.\n\nItems in: \n{dirName}\nlive longer than {time} will auto removed.\n\nAre you sure continue?",
+  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake them easier show in others APP recent items.\n\nEverytime make a new share copy, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin is enabled).\n\nYou can change this in settings.\n\nAre you sure continue?",
   "settingsConfirmationShareByCopy": "Ask before share by copy items",
 
   "filterFgwUsedLabel": "Fgw used entries",

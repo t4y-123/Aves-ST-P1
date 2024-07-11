@@ -520,14 +520,14 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     await _edit(context, entries, (entry) => entry.flip());
   }
 
-  Future<void> setDateToNow(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {
+  Future<void> setDateToNow(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true,bool showConfirm = true,}) async {
     entries ??= await _getEditableTargetItems(context, canEdit: (entry) => entry.canEditDate);
     if (entries == null || entries.isEmpty) return;
 
     final dateTime = DateTime.now();
     final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(dateTime); // Format the date as needed
 
-    if (!await showSkippableConfirmationDialog(
+    if (showConfirm && !await showSkippableConfirmationDialog(
       context: context,
       type: ConfirmationDialog.setDateToNow,
       message: context.l10n.setDateToNowDialogMessage(formattedDateTime),

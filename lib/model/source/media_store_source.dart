@@ -6,6 +6,7 @@ import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/foreground_wallpaper/foreground_wallpaper_helper.dart';
+import 'package:aves/model/foreground_wallpaper/shareCopiedEntry.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -61,7 +62,7 @@ class MediaStoreSource extends CollectionSource {
 
     //t4y: for foreground wallpaper initialize.
     await foregroundWallpaperHelper.initWallpaperSchedules();
-
+    await shareCopiedEntries.init();
 
     final currentTimeZoneOffset = await deviceService.getDefaultTimeZoneRawOffsetMillis();
     if (currentTimeZoneOffset != null) {

@@ -162,9 +162,12 @@ class SettingsDefaults {
   static const int defaultPrivacyGuardLevel = 1;
   //
   static const int maxFgwUsedEntryRecord = 10;
-  static const int resetPrivacyGuardLevelDuration = 5; // second
+  static const int resetPrivacyGuardLevelDuration = 5; // seconds
   // diff type share.
   static const confirmSetDateToNow = true;
   static const confirmShareByCopy = true;
-  static const shareByCopyRemoveInterval = 5;
+  static const shareByCopyExpiredAutoRemove = true;
+  static const shareByCopyExpiredRemoveUseBin = true;
+  static const shareByCopyRemoveInterval = 5; // seconds
+
 }

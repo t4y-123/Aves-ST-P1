@@ -11,6 +11,7 @@ import 'package:aves/model/video_playback.dart';
 import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacyGuardLevel.dart';
 import '../foreground_wallpaper/filterSet.dart';
+import '../foreground_wallpaper/shareCopiedEntry.dart';
 import '../foreground_wallpaper/wallpaperSchedule.dart';
 
 abstract class MetadataDb {
@@ -173,4 +174,15 @@ abstract class MetadataDb {
 
   Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows);
 
+  //
+  // share copied entries
+  Future<void> clearShareCopiedEntries();
+
+  Future<Set<ShareCopiedEntryRow>> loadAllShareCopiedEntries();
+
+  Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows);
+
+  Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row);
+
+  Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows);
 }

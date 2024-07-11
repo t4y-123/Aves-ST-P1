@@ -20,6 +20,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacyGuardLevel.dart';
+import '../foreground_wallpaper/shareCopiedEntry.dart';
 
 
 class SqfliteMetadataDb implements MetadataDb {
@@ -44,6 +45,9 @@ class SqfliteMetadataDb implements MetadataDb {
   static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
   static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
   static const fgwUsedEntryTable = 'foregroundWallpaperUsedEntry';
+
+  //t4y share by copy:
+  static const shareCopiedEntryTable = 'shareCopiedEntry';
 
   //End
 
@@ -161,6 +165,10 @@ class SqfliteMetadataDb implements MetadataDb {
             ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
             ', entryId INTEGER'
+            ', dateMillis INTEGER'
+            ')');
+        await db.execute('CREATE TABLE $shareCopiedEntryTable('
+            'id INTEGER PRIMARY KEY'
             ', dateMillis INTEGER'
             ')');
       },
@@ -863,6 +871,54 @@ class SqfliteMetadataDb implements MetadataDb {
   void _batchInsertFgwUsedEntryRecord(Batch batch, FgwUsedEntryRecordRow row) {
     batch.insert(
       fgwUsedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  //t4y: share by copy copied entries
+  @override
+  Future<void> clearShareCopiedEntries() async {
+    final count = await _db.delete(shareCopiedEntryTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<ShareCopiedEntryRow>> loadAllShareCopiedEntries() async {
+    final rows = await _db.query(shareCopiedEntryTable);
+    return rows.map(ShareCopiedEntryRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertShareCopiedEntries(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row) async {
+    final batch = _db.batch();
+    batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertShareCopiedEntries(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertShareCopiedEntries(Batch batch, ShareCopiedEntryRow row) {
+    batch.insert(
+      shareCopiedEntryTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

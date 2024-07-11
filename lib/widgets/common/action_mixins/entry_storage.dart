@@ -37,6 +37,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
+import '../../../model/foreground_wallpaper/shareCopiedEntry.dart';
 import '../../../theme/format.dart';
 
 mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
@@ -138,6 +139,77 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       },
     );
     transientMultiPageInfo.forEach((v) => v.dispose());
+  }
+
+  static Duration shareCopiedKeepDuration = Duration(seconds: settings.shareByCopyRemoveInterval);
+
+  Future<void> deleteExpiredShareCopied(BuildContext context) async {
+    final source = context.read<CollectionSource>();
+    await shareCopiedEntries.init();
+    final todoEntries = source.allEntries.where((entry) =>
+        {AlbumFilter(androidFileUtils.avesShareByCopyPath,null)}.any((f) => f.test(entry))).toSet();
+    final expiredEntries = todoEntries.where(shareCopiedEntries.isExpiredCopied).toSet();
+    if (expiredEntries.isEmpty) return ;
+    debugPrint('$runtimeType deleteExpiredShareCopied\n'
+        'todoEntries $todoEntries \n'
+        'expiredEntries $expiredEntries\n');
+
+    final entriesByDestination = <String, Set<AvesEntry>>{};
+    entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
+    source.pauseMonitoring();
+    final destinationAlbums = entriesByDestination.keys.toSet();
+    if(settings.enableBin && settings.shareByCopyExpiredRemoveUseBin){
+      final processed = <MoveOpEvent>{};
+      final completer = Completer<Set<String>>();
+      final opId = mediaEditService.newOpId;
+      mediaEditService.move(
+        opId: opId,
+        entriesByDestination: entriesByDestination,
+        copy: false,
+        // there should be no file conflict, as the target directory itself does not exist
+        nameConflictStrategy: NameConflictStrategy.rename,
+      ).listen(
+        processed.add,
+        onError: completer.completeError,
+        onDone: () async {
+          final successOps = processed.where((e) => e.success).toSet();
+
+          // move
+          final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
+          final movedEntries = movedOps.map((v) => v.uri).map((uri) => expiredEntries.firstWhereOrNull((entry) => entry.uri == uri)).whereNotNull().toSet();
+          await source.updateAfterMove(
+            todoEntries: expiredEntries,
+            moveType: MoveType.toBin,
+            destinationAlbums: destinationAlbums,
+            movedOps: movedOps,
+          );
+          // delete (when trying to move to bin obsolete entries)
+          final deletedOps = successOps.where((v) => v.deleted).toSet();
+          final deletedUris = deletedOps.map((event) => event.uri).toSet();
+          await source.removeEntries(deletedUris, includeTrash: true);
+          source.resumeMonitoring();
+          completer.complete(deletedUris);
+        },
+      );
+      await completer.future;
+    }else{
+      final processed = <ImageOpEvent>{};
+      final completer = Completer<Set<String>>();
+      mediaEditService.delete(entries: expiredEntries).listen(
+        processed.add,
+        onError: completer.completeError,
+        onDone: () async {
+          final successOps = processed.where((e) => e.success).toSet();
+          final deletedOps = successOps.where((e) => !e.skipped).toSet();
+          final deletedUris = deletedOps.map((event) => event.uri).toSet();
+          source.resumeMonitoring();
+          completer.complete(deletedUris);
+        },
+      );
+      await completer.future;
+    }
+   // return await completer.future;
+    return;
   }
 
   Future<void> doQuickMove(
@@ -353,6 +425,10 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       entriesByDestination: entriesByDestination,
       onSuccess: onSuccess,
     );
+
+    if (moveType == MoveType.shareByCopy && settings.shareByCopyExpiredAutoRemove) {
+      await deleteExpiredShareCopied(context);
+    }
   }
 
   Future<void> rename(

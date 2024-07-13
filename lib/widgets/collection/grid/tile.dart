@@ -35,6 +35,7 @@ class InteractiveTile extends StatelessWidget {
         final appMode = context.read<ValueNotifier<AppMode>>().value;
         switch (appMode) {
           case AppMode.main:
+          case AppMode.fgwHidden:
             final selection = context.read<Selection<AvesEntry>>();
             if (selection.isSelecting) {
               selection.toggleSelection(entry);

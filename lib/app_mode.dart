@@ -13,6 +13,7 @@ enum AppMode {
   edit,
   fgwViewUsed,
   fgwViewOpen,
+  fgwHidden,
 }
 
 extension ExtraAppMode on AppMode {

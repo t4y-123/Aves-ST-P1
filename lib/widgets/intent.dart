@@ -14,6 +14,7 @@ class IntentActions {
   static const foregroundWallpaperWidgetOpen = 'foreground_wallpaper_widget_open';
   static const fgwUsedRecordOpen = 'fgw_used_entry_record_open';
   static const fgwUsedViewOpen = 'fgw_view_open';
+  static const fgwDuplicateOpen = 'FGW_DUPLICATE';
 }
 
 class IntentDataKeys {
@@ -26,4 +27,5 @@ class IntentDataKeys {
   static const safeMode = 'safeMode';
   static const uri = 'uri';
   static const widgetId = 'widgetId';
+
 }

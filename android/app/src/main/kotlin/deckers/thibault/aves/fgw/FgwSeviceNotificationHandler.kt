@@ -89,6 +89,7 @@ object FgwSeviceNotificationHandler {
     )
     private val activityButtonResIds = setOf(
         R.drawable.baseline_auto_stories_24,
+        R.drawable.baseline_copy_all_24,
     )
     // used for unlock screen, easily to make wallpaper next or go into the related collection.
     private val normalLytEntryBtns = listOf(

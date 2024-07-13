@@ -46,6 +46,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../model/foreground_wallpaper/filterSet.dart';
+import '../model/foreground_wallpaper/shareCopiedEntry.dart';
+import '../services/common/image_op_events.dart';
+import '../services/media/enums.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -110,6 +113,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (intentData.isNotEmpty) {
+
       await reportService.log('Intent data=$intentData');
       switch (intentAction) {
         case IntentActions.view:
@@ -151,18 +155,25 @@ class _HomePageState extends State<HomePage> {
           }
         case IntentActions.fgwUsedRecordOpen:
         case IntentActions.fgwUsedViewOpen:
-          debugPrint('$runtimeType get into IntentActions.fgwUsedRecordOpen');
+        case IntentActions.fgwDuplicateOpen:
+          debugPrint('$runtimeType get into IntentActions $IntentActions');
           _viewerEntry = await _initViewerEntry(
             uri: settings.getFgwCurEntryUri(WallpaperUpdateType.home, 0),
             mimeType: settings.getFgwCurEntryMime(WallpaperUpdateType.home, 0),
           );
           if (_viewerEntry != null) {
-            if(intentAction ==IntentActions.fgwUsedRecordOpen){
-              appMode = AppMode.fgwViewUsed;
-            }else{
-              appMode = AppMode.fgwViewOpen;
+            switch (intentAction){
+              case IntentActions.fgwUsedRecordOpen:
+                appMode = AppMode.fgwViewUsed;
+              case IntentActions.fgwUsedViewOpen:
+                appMode = AppMode.fgwViewOpen;
+              case IntentActions.fgwDuplicateOpen:
+                appMode = AppMode.fgwHidden;
+              default:
+                break;
             }
           }
+          debugPrint('$runtimeType fgw appMode $appMode');
         case IntentActions.edit:
           _viewerEntry = await _initViewerEntry(
             uri: intentData[IntentDataKeys.uri],
@@ -223,6 +234,9 @@ class _HomePageState extends State<HomePage> {
       case AppMode.pickCollectionFiltersExternal:
       case AppMode.pickSingleMediaExternal:
       case AppMode.pickMultipleMediaExternal:
+      case AppMode.fgwViewUsed:
+      case AppMode.fgwViewOpen:
+      case AppMode.fgwHidden:
         unawaited(GlobalSearch.registerCallback());
         unawaited(AnalysisService.registerCallback());
         final source = context.read<CollectionSource>();
@@ -232,20 +246,24 @@ class _HomePageState extends State<HomePage> {
             canAnalyze: !safeMode,
           );
         }
+        switch(appMode){
+          case AppMode.fgwViewUsed:
+          case AppMode.fgwViewOpen:
+          case AppMode.fgwHidden:
+            if (_isViewerSourceable(_viewerEntry)) {
+              unawaited(AnalysisService.registerCallback());
+              final source = context.read<CollectionSource>();
+              await source.init( canAnalyze: false);
+            } else {
+              await _initViewerEssentials();
+            }
+          default:break;
+        }
       case AppMode.screenSaver:
         final source = context.read<CollectionSource>();
         await source.init(
           canAnalyze: false,
         );
-      case AppMode.fgwViewUsed:
-      case AppMode.fgwViewOpen:
-        if (_isViewerSourceable(_viewerEntry)) {
-            unawaited(AnalysisService.registerCallback());
-            final source = context.read<CollectionSource>();
-            await source.init( canAnalyze: false);
-        } else {
-          await _initViewerEssentials();
-        }
       case AppMode.view:
         if (_isViewerSourceable(_viewerEntry)) {
           final directory = _viewerEntry?.directory;
@@ -430,6 +448,72 @@ class _HomePageState extends State<HomePage> {
             );
           },
         );
+      case AppMode.fgwHidden:
+        AvesEntry curEntry = _viewerEntry!;
+        CollectionLens? collection;
+        debugPrint('AppMode.fgwHidden _viewerEntry $_viewerEntry');
+        debugPrint('AppMode.fgwHidden curEntry $curEntry');
+        final source = context.read<CollectionSource>();
+        if (source.initState != SourceInitializationState.none) {
+          // wait for collection to pass the `loading` state
+          final completer = Completer();
+          void _onSourceStateChanged() {
+            if (source.state != SourceState.loading) {
+              source.stateNotifier.removeListener(_onSourceStateChanged);
+              completer.complete();
+            }
+          }
+
+          source.stateNotifier.addListener(_onSourceStateChanged);
+          await completer.future;
+          debugPrint('AppMode.fgwHidden for share by copy cur entry');
+
+          if(curEntry != null){
+            await shareCopiedEntries.init();
+            debugPrint('AppMode.fgwHidden shareCopiedEntries $shareCopiedEntries');
+            source.pauseMonitoring();
+            final entriesByDestination = <String, Set<AvesEntry>>{};
+            final entries =  {curEntry};
+            entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
+            final destinationAlbums = entriesByDestination.keys.toSet();
+
+            final processed = <MoveOpEvent>{};
+            final completer = Completer<Set<String>>();
+            final opId = mediaEditService.newOpId;
+            mediaEditService.move(
+              opId: opId,
+              entriesByDestination: entriesByDestination,
+              copy: true,
+              // there should be no file conflict, as the target directory itself does not exist
+              nameConflictStrategy: NameConflictStrategy.rename,
+            ).listen(
+              processed.add,
+              onError: completer.completeError,
+              onDone: () async {
+                final successOps = processed.where((e) => e.success).toSet();
+                // mov
+                final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
+                await source.updateAfterMove(
+                  todoEntries: entries,
+                  moveType: MoveType.shareByCopy,
+                  destinationAlbums: destinationAlbums,
+                  movedOps: movedOps,
+                );
+                // delete (when trying to move to bin obsolete entries)
+                final deletedOps = successOps.where((v) => v.deleted).toSet();
+                final deletedUris = deletedOps.map((event) => event.uri).toSet();
+                await source.removeEntries(deletedUris, includeTrash: true);
+                source.resumeMonitoring();
+                completer.complete(deletedUris);
+              },
+            );
+            filters = {AlbumFilter(androidFileUtils.avesShareByCopyPath,null)};
+            await completer.future;
+            await shareCopiedEntries.add({curEntry});
+            debugPrint('AppMode.fgwHidden shareCopiedEntries $shareCopiedEntries');
+          }
+        }
+        routeName =_initialRouteName ?? CollectionPage.routeName;
       case AppMode.edit:
         return DirectMaterialPageRoute(
           settings: const RouteSettings(name: EntryViewerPage.routeName),

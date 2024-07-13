@@ -29,10 +29,6 @@ object FgwServiceActionHandler {
                 FgwServiceFlutterHandler.nextWallpaper(context)
                 FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
             }
-            FgwIntentAction.DUPLICATE -> {
-                FgwServiceFlutterHandler.syncNecessaryDataFromDart(context)
-                showToast(context, "Duplicate icon tapped")
-            }
             FgwIntentAction.USED_RECORD -> {
                 showToast(context, "USED_RECORD icon tapped")
                 FgwServiceFlutterHandler.updateNotificationFromDart(context)

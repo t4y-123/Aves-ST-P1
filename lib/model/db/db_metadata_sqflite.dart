@@ -209,6 +209,7 @@ class SqfliteMetadataDb implements MetadataDb {
       if (_dataTypes.contains(EntryDataType.basic)) {
         batch.delete(entryTable, where: where, whereArgs: whereArgs);
         batch.delete(fgwUsedEntryTable, where: 'entryId = ?', whereArgs: whereArgs);
+        batch.delete(shareCopiedEntryTable, where: where, whereArgs: whereArgs);
       }
       if (_dataTypes.contains(EntryDataType.catalog)) {
         batch.delete(dateTakenTable, where: where, whereArgs: whereArgs);

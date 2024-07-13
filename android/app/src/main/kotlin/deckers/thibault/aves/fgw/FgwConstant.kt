@@ -29,4 +29,7 @@ object FgwConstant {
     const val CUR_TYPE_WIDGET = "widget"
     const val NOT_WIDGET_ID:Int = 0
     const val FGW_VIEW_OPEN = "fgw_view_open"
+    // for both will be used in flutter side, so use Camelcase not Snakecase。
+    const val FGW_UPDATE_TYPE_EXTRA = "updateType"
+    const val FGW_WIDGET_ID_EXTRA = "widgetId"
 }

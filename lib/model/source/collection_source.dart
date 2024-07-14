@@ -13,7 +13,7 @@ import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
-import 'package:aves/model/foreground_wallpaper/shareCopiedEntry.dart';
+import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
@@ -379,6 +379,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         final dateTime = DateTime.now();
         final modifier = DateModifier.setCustom(const {}, dateTime);
         if (modifier != null)  movedEntries.forEach((entry) async => await entry.editDate(modifier));
+        debugPrint('shareCopiedEntries.add(movedEntries:\n${movedEntries}');
         await shareCopiedEntries.add(movedEntries);
       }
 

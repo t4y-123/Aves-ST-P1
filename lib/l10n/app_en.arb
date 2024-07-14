@@ -1066,7 +1066,7 @@
   "filePickerUseThisFolder": "Use this folder",
 
 
-
+  "appExportForegroundWallpaper": "ForegroundWallpaper",
 
   "entryActionShareByCopy": "share by copy",
   "entryActionShareByDateNow": "set date now",
@@ -1079,6 +1079,9 @@
   "settingsShowAvesShareCopiedItems": "Show Aves share copied items dir",
   "settingsShareByCopyAutoRemove": "Auto remove expired copied items",
   "settingsShareByCopyAutoRemoveUseBin": "Use bin when remove expired copied items",
+  "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
+  "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
+
   "settingsShareByCopyExpiredInterval": "Expired Interval",
 
 
@@ -1101,8 +1104,8 @@
   "confirmResetAllToDefault3L5F": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
   "settingsAddNew3L5FGroup": "Add New 3L5F Group",
   "confirmAddNew3L5FGroup": "This will add a new set of three guard levels and corresponding 5 filter sets and schedules.Continue?",
-  "settingsClearRecentUsedEntryRecord": "Clear wallpaper used record",
-  "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries record\nContinue?",
+  "settingsClearRecentUsedEntryRecord": "Clear wallpaper used records",
+  "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries {num} record \nContinue?",
 
    "resetCompletedFeedback": "reset complete.",
    "clearCompletedFeedback": "clear complete.",

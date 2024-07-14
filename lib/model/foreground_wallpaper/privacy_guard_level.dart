@@ -96,10 +96,59 @@ class PrivacyGuardLevel with ChangeNotifier {
     );
   }
 
-  int getValidGuardLevel() {
-    // final activeItems = widget.allItems.where((item) => item?.isActive ?? false).toList();
-    final int maxLevelNow = privacyGuardLevels.all.where((item) => item.isActive).length;
-    return maxLevelNow + 1;
+  PrivacyGuardLevelRow newRow(int existLevelOffset, String alias,{ Color? newColor, bool isActive = true}) {
+    final relevantItems = isActive
+        ? privacyGuardLevels.all.where((item) => item.isActive).toList()
+        : privacyGuardLevels.all.toList();
+    final maxGuardLevel = relevantItems.isEmpty
+        ? 0
+        : relevantItems.map((item) => item.guardLevel).reduce((a, b) => a > b ? a : b);
+
+    return PrivacyGuardLevelRow(
+      privacyGuardLevelID: metadataDb.nextId,
+      guardLevel: maxGuardLevel + existLevelOffset,
+      aliasName: alias,
+      color:  newColor ?? getRandomColor(),
+      isActive: isActive,
+    );
+  }
+
+  // import/export
+  Map<String, Map<String, dynamic>>? export() {
+    final rows = privacyGuardLevels.all;
+    final jsonMap = Map.fromEntries(rows.map((row) {
+      return MapEntry(
+        row.privacyGuardLevelID.toString(),
+        row.toMap(),
+      );
+    }));
+    return jsonMap.isNotEmpty ? jsonMap : null;
+  }
+
+  Future<void> import (dynamic jsonMap) async {
+    if (jsonMap is! Map) {
+      debugPrint('failed to import privacy guard levels for jsonMap=$jsonMap');
+      return;
+    }
+
+    final foundRows = <PrivacyGuardLevelRow>{};
+    jsonMap.forEach((id, attributes) {
+      if (id is String && attributes is Map<String, dynamic>) {
+        try {
+          final row = PrivacyGuardLevelRow.fromMap(attributes);
+          foundRows.add(row);
+        } catch (e) {
+          debugPrint('failed to import privacy guard level for id=$id, attributes=$attributes, error=$e');
+        }
+      } else {
+        debugPrint('failed to import privacy guard level for id=$id, attributes=${attributes.runtimeType}');
+      }
+    });
+
+    if (foundRows.isNotEmpty) {
+      await privacyGuardLevels.clear();
+      await privacyGuardLevels.add(foundRows);
+    }
   }
 }
 
@@ -128,7 +177,7 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
     debugPrint('$PrivacyGuardLevelRow map $map');
     final colorValue = map['color'] as String?;
     debugPrint('$PrivacyGuardLevelRow colorValue $colorValue ${colorValue!.toColor}');
-    final color = colorValue!.toColor;
+    final color = colorValue.toColor;
     debugPrint('$PrivacyGuardLevelRow  color $color');
 
     return PrivacyGuardLevelRow(

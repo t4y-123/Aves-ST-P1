@@ -18,6 +18,8 @@ import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import kotlinx.coroutines.*
 import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.resume
@@ -32,10 +34,10 @@ object FgwServiceFlutterHandler {
     private var flutterEngine: FlutterEngine? = null
     private val defaultScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    var curUpdateType :String = FgwConstant.CUR_TYPE_HOME
-    var curWidgetId: Int= FgwConstant.NOT_WIDGET_ID
-    var curGuardLevel:Int = -1
-    var entryFilename  = ""
+    var curUpdateType: String = FgwConstant.CUR_TYPE_HOME
+    var curWidgetId: Int = FgwConstant.NOT_WIDGET_ID
+    var curGuardLevel: Int = -1
+    var entryFilename = ""
     var activeLevelsList: List<Triple<Int, String, Int>> = listOf()
 
     private suspend fun initFlutterEngine(context: Context) {
@@ -74,6 +76,16 @@ object FgwServiceFlutterHandler {
         MethodChannel(messenger, MediaFetchObjectHandler.CHANNEL).setMethodCallHandler(MediaFetchObjectHandler(context))
         MethodChannel(messenger, StorageHandler.CHANNEL).setMethodCallHandler(StorageHandler(context))
 
+        MethodChannel(
+            messenger,
+            FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            Log.i(LOG_TAG, "${FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL} setMethodCallHandler: ${call}")
+            when (call.method) {
+                "syncDataToKotlin" -> handleSyncDataToKotlin(call, result)
+                else -> result.notImplemented()
+            }
+        }
         // result streaming: dart -> platform ->->-> dart
         // - need Context
         StreamsChannel(
@@ -118,9 +130,32 @@ object FgwServiceFlutterHandler {
         }
     }
 
+    private fun handleSyncDataToKotlin(call: MethodCall, result: MethodChannel.Result) {
+        Log.i(LOG_TAG, "handleSyncDataToKotlin:start $call")
+        Log.i(LOG_TAG, "handleSyncDataToKotlin:start ${call.arguments}")
+        defaultScope.launch {
+            var tmpUpdateType = call.argument<String>("updateType")
+            var tmpWidgetId = call.argument<Int>("widgetId")
+            var tmpCurGuardLevel = call.argument<Int>("curGuardLevel")
+            var activeLevelsString = call.argument<String>("activeLevels") ?: ""
+            var tmpEntryFileName = call.argument<String>("entryFileName")
+            Log.i(LOG_TAG, "handleSyncDataToKotlin:tmpEntryFileName ${tmpEntryFileName}")
+            Log.i(LOG_TAG, "handleSyncDataToKotlin:tmpCurGuardLevel ${tmpCurGuardLevel}")
+            curUpdateType = tmpUpdateType ?: FgwConstant.CUR_TYPE_HOME
+            curWidgetId = tmpWidgetId ?: FgwConstant.NOT_WIDGET_ID
+            curGuardLevel = tmpCurGuardLevel ?: 0
+            entryFilename = tmpEntryFileName ?: ""
+            Log.d(LOG_TAG, "syncNecessaryDataFromDart activeLevelsString $activeLevelsString")
+            activeLevelsList = parseActiveLevelsString(activeLevelsString)
+
+            Log.i(LOG_TAG, "handleSyncDataToKotlin:activeLevelsList ${activeLevelsList}")
+            result.success(true)
+        }
+    }
+
     fun callDartStartMethod(context: Context) {
         Log.i(LOG_TAG, "callDartStartMethod:start")
-        defaultScope.launch{
+        defaultScope.launch {
             suspendCoroutine<Any?> { continuation ->
                 runBlocking {
                     Log.d(LOG_TAG, "callDartStartMethod invokeFlutterMethod:start")
@@ -137,7 +172,7 @@ object FgwServiceFlutterHandler {
 
     fun callDartStopMethod(context: Context) {
         Log.i(LOG_TAG, "callDartStopMethod:start")
-        defaultScope.launch{
+        defaultScope.launch {
             suspendCoroutine<Any?> { continuation ->
                 runBlocking {
                     Log.d(LOG_TAG, "callDartStopMethod invokeFlutterMethod:stop")
@@ -180,6 +215,7 @@ object FgwServiceFlutterHandler {
 
     fun syncNecessaryDataFromDart(context: Context) {
         Log.d(LOG_TAG, "start to syncNecessaryDataFromDart")
+        return
         defaultScope.launch {
             try {
                 val props = syncNecessaryData(context, curUpdateType, curWidgetId)
@@ -206,7 +242,7 @@ object FgwServiceFlutterHandler {
         Log.d(LOG_TAG, "start to syncNecessaryData")
         return try {
             suspendCoroutine<FieldMap?> { continuation ->
-                defaultScope.launch{
+                defaultScope.launch {
                     invokeFlutterMethod<FieldMap>(context,
                         FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL,
                         "syncNecessaryData",
@@ -239,7 +275,7 @@ object FgwServiceFlutterHandler {
 
     fun updateNotificationFromDart(context: Context) {
         Log.d(LOG_TAG, "start to updateNotificationFromDart")
-        runBlocking{
+        runBlocking {
             syncNecessaryDataFromDart(context)
             delay(500)
         }
@@ -251,16 +287,16 @@ object FgwServiceFlutterHandler {
     private fun parseColorString(colorString: String?): Int? {
         if (colorString == null) return null
 
-    // Updated regex to match both "Color(0xff112233)" and "0xff112233"
-    val regex = Regex("^(?:Color\\()?(0x[0-9a-fA-F]{8})\\)?\$")
-    val matchResult = regex.find(colorString) ?: return null
+        // Updated regex to match both "Color(0xff112233)" and "0xff112233"
+        val regex = Regex("^(?:Color\\()?(0x[0-9a-fA-F]{8})\\)?\$")
+        val matchResult = regex.find(colorString) ?: return null
 
-    return try {
-        val hexColor = matchResult.groupValues[1]
-        val alpha = hexColor.substring(2, 4).toInt(16) // Alpha component
-        val red = hexColor.substring(4, 6).toInt(16) // Red component
-        val green = hexColor.substring(6, 8).toInt(16) // Green component
-        val blue = hexColor.substring(8, 10).toInt(16) // Blue component
+        return try {
+            val hexColor = matchResult.groupValues[1]
+            val alpha = hexColor.substring(2, 4).toInt(16) // Alpha component
+            val red = hexColor.substring(4, 6).toInt(16) // Red component
+            val green = hexColor.substring(6, 8).toInt(16) // Green component
+            val blue = hexColor.substring(8, 10).toInt(16) // Blue component
 
             // Combine components into ARGB color format (alpha in highest byte)
             (alpha shl 24) or (red shl 16) or (green shl 8) or blue

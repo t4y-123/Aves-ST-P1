@@ -1,7 +1,7 @@
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/wallpaper_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
+import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../common/action_mixins/feedback.dart';
 
 class WallpaperScheduleConfigActions with FeedbackMixin {

@@ -1,7 +1,7 @@
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_with_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../model/foreground_wallpaper/privacyGuardLevel.dart';
+import '../../../../../model/foreground_wallpaper/privacy_guard_level.dart';
 import '../../../../common/action_mixins/feedback.dart';
 
 class PrivacyGuardLevelConfigActions with FeedbackMixin {

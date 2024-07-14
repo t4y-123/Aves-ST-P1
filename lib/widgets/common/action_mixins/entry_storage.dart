@@ -37,7 +37,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/foreground_wallpaper/shareCopiedEntry.dart';
+import '../../../model/foreground_wallpaper/share_copied_entry.dart';
 import '../../../theme/format.dart';
 
 mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {

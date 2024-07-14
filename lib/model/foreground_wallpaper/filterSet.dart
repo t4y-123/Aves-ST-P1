@@ -6,6 +6,9 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
+import '../filters/aspect_ratio.dart';
+import '../filters/mime.dart';
+
 final FilterSet filterSet = FilterSet._private();
 
 class FilterSet with ChangeNotifier{
@@ -84,7 +87,62 @@ class FilterSet with ChangeNotifier{
     _rows.clear();
     notifyListeners();
   }
-   // import/export
+
+  FilterSetRow newRow(int existActiveMaxLevelOffset, {String? aliasName,  Set<CollectionFilter>? filters,bool isActive = true}) {
+    final relevantItems = isActive
+        ? filterSet.all.where((item) => item.isActive).toList()
+        : filterSet.all.toList();
+    final maxFilterSetNum = relevantItems.isEmpty
+        ? 0
+        : relevantItems.map((item) => item.filterSetNum).reduce((a, b) => a > b ? a : b);
+    final newId = metadataDb.nextId;
+    final filterSetSuqNum = maxFilterSetNum + existActiveMaxLevelOffset;
+    return FilterSetRow(
+      filterSetId: newId,
+      filterSetNum: filterSetSuqNum,
+      aliasName: aliasName ?? 'F-$filterSetSuqNum-$newId',
+      filters: filters ?? {AspectRatioFilter.portrait, MimeFilter.image},
+      isActive: isActive,
+    );
+  }
+
+  // import/export
+  Map<String, Map<String, dynamic>>? export() {
+    final rows = filterSet.all;
+    final jsonMap = Map.fromEntries(rows.map((row) {
+      return MapEntry(
+        row.filterSetId.toString(),
+        row.toMap(),
+      );
+    }));
+    return jsonMap.isNotEmpty ? jsonMap : null;
+  }
+
+  Future<void> import(dynamic jsonMap) async{
+    if (jsonMap is! Map) {
+      debugPrint('failed to import filter sets for jsonMap=$jsonMap');
+      return;
+    }
+
+    final foundRows = <FilterSetRow>{};
+    jsonMap.forEach((id, attributes) {
+      if (id is String && attributes is Map) {
+        try {
+          final row = FilterSetRow.fromMap(attributes);
+          foundRows.add(row);
+        } catch (e) {
+          debugPrint('failed to import filter set for id=$id, attributes=$attributes, error=$e');
+        }
+      } else {
+        debugPrint('failed to import filter set for id=$id, attributes=${attributes.runtimeType}');
+      }
+    });
+
+    if (foundRows.isNotEmpty) {
+      await filterSet.clear();
+      await filterSet.add(foundRows);
+    }
+  }
 }
 
 @immutable

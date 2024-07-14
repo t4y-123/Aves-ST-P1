@@ -56,7 +56,7 @@ class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
               onPressed: () => _showConfirmationDialog(
                 context,
                 l10n.settingsClearRecentUsedEntryRecord,
-                l10n.confirmClearRecentUsedEntryRecord,
+                l10n.confirmClearRecentUsedEntryRecord(fgwUsedEntryRecord.all.length),
                     () {
                       _clearAllFgwUsedRecord(context);
                 },
@@ -73,7 +73,7 @@ class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
       String content, VoidCallback onConfirm) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
@@ -104,7 +104,7 @@ class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
   }
 
   Future<void> _addNew3L5FGroup(BuildContext context) async {
-    await foregroundWallpaperHelper.addDynamicSets();
+    await foregroundWallpaperHelper.addType346Schedules();
     showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
   }
 

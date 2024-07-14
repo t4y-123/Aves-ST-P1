@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';

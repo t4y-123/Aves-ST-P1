@@ -8,8 +8,8 @@ import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
-import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -46,7 +46,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../model/foreground_wallpaper/filterSet.dart';
-import '../model/foreground_wallpaper/shareCopiedEntry.dart';
+import '../model/foreground_wallpaper/share_copied_entry.dart';
 import '../services/common/image_op_events.dart';
 import '../services/media/enums.dart';
 
@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage> {
               case IntentActions.fgwUsedViewOpen:
                 appMode = AppMode.fgwViewOpen;
               case IntentActions.fgwDuplicateOpen:
-                appMode = AppMode.fgwHidden;
+                appMode = AppMode.fgwShareCopy;
               default:
                 break;
             }
@@ -236,7 +236,7 @@ class _HomePageState extends State<HomePage> {
       case AppMode.pickMultipleMediaExternal:
       case AppMode.fgwViewUsed:
       case AppMode.fgwViewOpen:
-      case AppMode.fgwHidden:
+      case AppMode.fgwShareCopy:
         unawaited(GlobalSearch.registerCallback());
         unawaited(AnalysisService.registerCallback());
         final source = context.read<CollectionSource>();
@@ -249,7 +249,7 @@ class _HomePageState extends State<HomePage> {
         switch(appMode){
           case AppMode.fgwViewUsed:
           case AppMode.fgwViewOpen:
-          case AppMode.fgwHidden:
+          case AppMode.fgwShareCopy:
             if (_isViewerSourceable(_viewerEntry)) {
               unawaited(AnalysisService.registerCallback());
               final source = context.read<CollectionSource>();
@@ -448,7 +448,7 @@ class _HomePageState extends State<HomePage> {
             );
           },
         );
-      case AppMode.fgwHidden:
+      case AppMode.fgwShareCopy:
         AvesEntry curEntry = _viewerEntry!;
         CollectionLens? collection;
         debugPrint('AppMode.fgwHidden _viewerEntry $_viewerEntry');

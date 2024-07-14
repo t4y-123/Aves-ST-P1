@@ -22,12 +22,12 @@ object FgwServiceActionHandler {
             FgwIntentAction.LEFT -> {
                 showToast(context, "Left arrow tapped")
                 FgwServiceFlutterHandler.preWallpaper(context)
-                FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
+                //FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
             }
             FgwIntentAction.RIGHT -> {
                 showToast(context, "Right arrow tapped")
                 FgwServiceFlutterHandler.nextWallpaper(context)
-                FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
+                //FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
             }
             FgwIntentAction.USED_RECORD -> {
                 showToast(context, "USED_RECORD icon tapped")

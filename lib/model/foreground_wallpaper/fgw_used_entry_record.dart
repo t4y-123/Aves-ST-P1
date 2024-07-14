@@ -1,10 +1,14 @@
 import 'dart:async';
-import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_schedule_helper.dart';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+
+import '../entry/entry.dart';
 
 final FgwUsedEntryRecord fgwUsedEntryRecord = FgwUsedEntryRecord._private();
 
@@ -94,6 +98,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
     removedRows.forEach(_rows.remove);
     notifyListeners();
   }
+
   Future<void> _removeOldestEntries() async {
     debugPrint('_removeOldestEntries start');
     final Map<String, List<FgwUsedEntryRecordRow>> groupedRows = {};
@@ -143,11 +148,39 @@ class FgwUsedEntryRecord with ChangeNotifier {
     }
   }
 
-
   Future<void> clear() async {
     await metadataDb.clearFgwUsedEntryRecord();
     _rows.clear();
     notifyListeners();
+  }
+
+  Future<FgwUsedEntryRecordRow> newRow(int privacyGuardLevelId, WallpaperUpdateType updateType, int entryId,
+      {int widgetId = 0}) async {
+    final int id = DateTime.now().millisecondsSinceEpoch;
+    final int dateMillis = DateTime.now().millisecondsSinceEpoch;
+
+    return FgwUsedEntryRecordRow(
+      id: id,
+      privacyGuardLevelId: privacyGuardLevelId,
+      updateType: updateType,
+      widgetId: widgetId,
+      entryId: entryId,
+      dateMillis: dateMillis,
+    );
+  }
+
+  Future<void> addAvesEntry(AvesEntry entry, WallpaperUpdateType updateType,
+      {int widgetId = 0, PrivacyGuardLevelRow? curLevel}) async {
+    debugPrint('addAvesEntry newRow $entry \n $updateType ');
+    curLevel ??= await fgwScheduleHelper.getPrivacyGuardLevel();
+    debugPrint('addAvesEntry curLevel $curLevel');
+    final FgwUsedEntryRecordRow newRecord = await newRow(
+      curLevel!.privacyGuardLevelID,
+      updateType,
+      entry.id,
+    );
+    debugPrint('nextWallpaper newRow $newRecord');
+    await add({newRecord});
   }
 }
 

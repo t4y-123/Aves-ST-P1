@@ -1,7 +1,7 @@
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/privacyGuardLevel.dart';
+import '../../../../../model/foreground_wallpaper/privacy_guard_level.dart';
 import 'dart:collection';
 
 class PrivacyGuardLevelSelectionPage extends StatefulWidget {

@@ -1,30 +1,26 @@
 import 'dart:async';
-import 'package:aves/l10n/l10n.dart';
-import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/media_store_source.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:aves_model/aves_model.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wallpaper_handler/wallpaper_handler.dart';
-
 import '../model/device.dart';
 import '../model/entry/entry.dart';
 import '../model/entry/sort.dart';
-import '../model/filters/filters.dart';
+import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
 import '../model/foreground_wallpaper/fgw_used_entry_record.dart';
-import '../model/foreground_wallpaper/filterSet.dart';
 import '../model/foreground_wallpaper/foreground_wallpaper_helper.dart';
-import '../model/foreground_wallpaper/wallpaperSchedule.dart';
-import '../model/source/collection_lens.dart';
+import '../model/foreground_wallpaper/wallpaper_schedule.dart';
 
 const _channel = MethodChannel('deckers.thibault/aves/foreground_wallpaper_notification_service');
 
+enum FgwServiceWallpaperType {next, pre}
 Future<void> fgwNotificationServiceAsync() async {
   WidgetsFlutterBinding.ensureInitialized();
   initPlatformServices();
@@ -46,9 +42,9 @@ Future<void> fgwNotificationServiceAsync() async {
         fgwServiceHelper.stop();
         return Future.value(true);
       case 'nextWallpaper':
-        return fgwServiceHelper.nextWallpaper(call.arguments);
+        return fgwServiceHelper.handleWallpaper(call.arguments, FgwServiceWallpaperType.next);
       case 'preWallpaper':
-        return fgwServiceHelper.preWallpaper(call.arguments);
+        return fgwServiceHelper.handleWallpaper(call.arguments, FgwServiceWallpaperType.pre);
       case 'syncNecessaryData':
         return fgwServiceHelper.syncNecessaryData(call.arguments);
       case 'updateCurGuardLevel':
@@ -56,13 +52,13 @@ Future<void> fgwNotificationServiceAsync() async {
       default:
         throw PlatformException(code: 'not-implemented', message: 'failed to handle method=${call.method}');
     }
+
   });
 }
 
 enum FgwServiceState { starting, running, stopped }
 
 class FgwServiceHelper with WidgetsBindingObserver {
-  late AppLocalizations _l10n;
   final ValueNotifier<FgwServiceState> _serviceStateNotifier = ValueNotifier<FgwServiceState>(FgwServiceState.stopped);
   Timer? _notificationUpdateTimer;
   final _source = MediaStoreSource();
@@ -122,7 +118,6 @@ class FgwServiceHelper with WidgetsBindingObserver {
     debugPrint('FgwServiceHelper readyCompleter.future, $serviceState');
 
     settings.systemLocalesFallback = await deviceService.getLocales();
-    _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
   }
 
   Future<void> start() async {
@@ -195,56 +190,6 @@ class FgwServiceHelper with WidgetsBindingObserver {
     }
   }
 
-  Future<PrivacyGuardLevelRow> getPrivacyGuardLevel() async {
-    final activeItems = privacyGuardLevels.all.where((e) => e.isActive).toSet();
-    if (activeItems.isEmpty) {
-      debugPrint('No active PrivacyGuardLevels found.');
-      throw ('PrivacyGuardLevels.all active items is empty ');
-    }
-    final currentGuardLevel = activeItems.firstWhere(
-      (e) => e.guardLevel == settings.curPrivacyGuardLevel,
-      orElse: () => activeItems.first,
-    );
-    debugPrint('Updated PrivacyGuardLevel: $currentGuardLevel');
-    return currentGuardLevel;
-  }
-
-  Future<List<AvesEntry>> getEntries(
-      PrivacyGuardLevelRow curLevel, WallpaperUpdateType updateType, int widgetId) async {
-    debugPrint('_getEntries $curLevel $updateType $widgetId');
-    final filterSetId = wallpaperSchedules.all
-        .firstWhere(
-          (schedule) =>
-              schedule.updateType == updateType &&
-              schedule.widgetId == widgetId &&
-              schedule.privacyGuardLevelId == curLevel.privacyGuardLevelID,
-        )
-        .filterSetId;
-    final filters =
-        filterSet.all.firstWhere((filterRow) => filterRow.filterSetId == filterSetId).filters ?? <CollectionFilter>{};
-    debugPrint('$runtimeType _getEntries filterSetId  $filterSetId ');
-    debugPrint('$runtimeType _getEntries filters :$filters');
-    final entries = CollectionLens(source: _source, filters: filters).sortedEntries;
-    //entries.shuffle(); // TODO: for random
-    entries.sort(AvesEntrySort.compareByDate);
-    debugPrint('_getEntries entries: $entries');
-    return entries;
-  }
-
-  Future<List<FgwUsedEntryRecordRow>> getRecentEntryRecord(
-      PrivacyGuardLevelRow curLevel, WallpaperUpdateType updateType, int widgetId) async {
-    debugPrint('_getRecentEntryIds $curLevel $updateType $widgetId');
-    final recentUsedEntryRecord = fgwUsedEntryRecord.all
-        .where(
-          (row) =>
-              row.updateType == updateType &&
-              row.widgetId == widgetId &&
-              row.privacyGuardLevelId == curLevel.privacyGuardLevelID,
-        )
-        .toList();
-    return recentUsedEntryRecord;
-  }
-
   Future<void> setFgWallpaper(AvesEntry entry,
       {WallpaperUpdateType updateType = WallpaperUpdateType.home, int widgetId = 0}) async {
     debugPrint(' setFgWallpaper');
@@ -269,79 +214,54 @@ class FgwServiceHelper with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> preWallpaper(dynamic args) async {
+  Future<void> syncDataToKotlin(WallpaperUpdateType updateType,int widgetId,{AvesEntry? curEntry}) async {
+    debugPrint('$runtimeType syncDataToKotlin start');
+    // First, get all active items in privacyGuardLevels.all,Sort activeGuardLevels by guardLevel
+    final activeGuardLevels = privacyGuardLevels.all
+        .where((level) => level.isActive)
+        .map((level) => (level.guardLevel, level.aliasName, level.color.toString()))
+        .toList()
+      ..sort((a, b) => a.$1.compareTo(b.$1));
+    debugPrint('$runtimeType syncNecessaryData activeGuardLevels $activeGuardLevels');
+
+    final result = await _channel.invokeMethod('syncDataToKotlin', {
+      'updateType': updateType.toString(),  // Replace with your actual data
+      'widgetId': widgetId,
+      'curGuardLevel': settings.curPrivacyGuardLevel,
+      'activeLevels': activeGuardLevels.toString(),
+      'entryFileName': curEntry?.filenameWithoutExtension ?? '',
+    });
+
+    debugPrint('$runtimeType syncDataToKotlin result: $result');
+  }
+
+  Future<bool> handleWallpaper(dynamic args, FgwServiceWallpaperType fgwWallpaperType) async {
+    debugPrint('handleWallpaper $args $fgwWallpaperType');
     await _waitForRunningState();
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
-    debugPrint('preWallpaper $updateType $widgetId');
 
-    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
-    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
-    final recentUsedEntryRecord = await getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
-    if(entries.isEmpty || recentUsedEntryRecord.isEmpty)return Future.value(false);
+    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType);
+    final recentUsedEntryRecord = await fgwScheduleHelper.getRecentEntryRecord(updateType);
+    entries.sort(AvesEntrySort.compareByDate);
 
-    AvesEntry? previousEntry, curEntry;
-    curEntry = entries.firstWhereOrNull((entry) => entry.id ==settings.getFgwCurEntryId(updateType, widgetId));
-    final mostRecentUsedEntryRecord = recentUsedEntryRecord.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b) ;
-    if (curEntry == null) {
-      // If curEntry is null, find the most recent entry from recentUsedEntries
-        previousEntry = entries.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord.entryId);
-    } else {
-      // If curEntry is not null, find the most recent but older entry than curEntry from recentUsedEntries
-      FgwUsedEntryRecordRow? curUsedRecord =
-        recentUsedEntryRecord.firstWhereOrNull((usedEntry) => usedEntry.entryId == settings.getFgwCurEntryId(updateType, widgetId));
-
-      if (curUsedRecord != null) {
-        final olderEntries = recentUsedEntryRecord.where((usedEntry) => usedEntry.dateMillis < curUsedRecord.dateMillis);
-        final mostRecentOlderEntry =
-            olderEntries.isNotEmpty ? olderEntries.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b) : null;
-        if (entries.isNotEmpty) {
-          previousEntry = entries.firstWhere((entry) => entry.id == mostRecentOlderEntry?.entryId);
-        }
-      }else{  // if curEntryRecord, get the most Recent Used.
-        previousEntry = entries.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord.entryId);
-      }
+    AvesEntry? targetEntry;
+    switch(fgwWallpaperType){
+      case FgwServiceWallpaperType.next:
+        targetEntry = entries.firstWhere(
+              (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
+        );
+      case FgwServiceWallpaperType.pre:
+        targetEntry = await fgwScheduleHelper.getPreviousEntry(_source,updateType,entries: entries,recentUsedEntryRecord:recentUsedEntryRecord);
     }
-    await setFgWallpaper(previousEntry!, updateType: updateType, widgetId: widgetId);
-    updateCurEntrySettings(updateType, widgetId, previousEntry);
-    return Future.value(true);
-  }
 
-  void updateCurEntrySettings(WallpaperUpdateType updateType, int widgetId, AvesEntry curEntry) {
-    settings.setFgwCurEntryId(updateType, widgetId, curEntry.id);
-    settings.setFgwCurEntryUri(updateType, widgetId, curEntry.uri);
-    settings.setFgwCurEntryMime(updateType, widgetId, curEntry.mimeType);
-  }
+    await setFgWallpaper(targetEntry!, updateType: updateType, widgetId: widgetId);
 
-  Future<bool> nextWallpaper(dynamic args) async {
-    await _waitForRunningState();
-    final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
-    final widgetId = args['widgetId'] as int;
-    debugPrint(' nextWallpaper $updateType $widgetId');
+    fgwScheduleHelper.updateCurEntrySettings(updateType, widgetId, targetEntry);
 
-    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
-    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
-    final recentUsedEntries = await getRecentEntryRecord(_currentGuardLevel, updateType, widgetId);
-
-    final nextEntry = entries.firstWhere(
-      (entry) => !recentUsedEntries.any((usedEntry) => usedEntry.entryId == entry.id),
-    );
-    debugPrint(' nextWallpaper nextEntry $nextEntry');
-
-    await setFgWallpaper(nextEntry, updateType: updateType, widgetId: widgetId);
-    updateCurEntrySettings(updateType, widgetId, nextEntry);
-
-    final FgwUsedEntryRecordRow newRow = FgwUsedEntryRecordRow(
-      id: DateTime.now().millisecondsSinceEpoch,
-      //id: metadataDb.nextId,will be forever the same value.
-      privacyGuardLevelId: _currentGuardLevel.privacyGuardLevelID,
-      updateType: updateType,
-      widgetId: widgetId,
-      entryId: nextEntry.id,
-      dateMillis: DateTime.now().millisecondsSinceEpoch,
-    );
-    debugPrint(' nextWallpaper newRow $newRow');
-    await fgwUsedEntryRecord.add({newRow});
+    if (fgwWallpaperType == FgwServiceWallpaperType.next) await fgwUsedEntryRecord.addAvesEntry(targetEntry, updateType);
+    //await syncDataToKotlin(updateType,widgetId);
+    unawaited(syncDataToKotlin(updateType, widgetId,curEntry: targetEntry));
     return Future.value(true);
   }
 
@@ -355,13 +275,13 @@ class FgwServiceHelper with WidgetsBindingObserver {
     final activeGuardLevels = privacyGuardLevels.all
         .where((level) => level.isActive)
         .map((level) => (level.guardLevel, level.aliasName, level.color.toString()))
-        .toList();
-    activeGuardLevels.sort((a, b) => a.$1.compareTo(b.$1));
+        .toList()
+        ..sort((a, b) => a.$1.compareTo(b.$1));
     debugPrint('$runtimeType syncNecessaryData activeGuardLevels $activeGuardLevels');
 
     // Second, get curEntry.
-    PrivacyGuardLevelRow _currentGuardLevel = await getPrivacyGuardLevel();
-    final entries = await getEntries(_currentGuardLevel, updateType, widgetId);
+    final entries = await fgwScheduleHelper.getScheduleEntries(_source,updateType);
+
     AvesEntry? curEntry = entries.firstWhere((entry) => entry.id == settings.getFgwCurEntryId(updateType,widgetId));
     String entryFilenameWithoutExtension = curEntry.filenameWithoutExtension ?? ':null in $updateType $widgetId';
     // Return the map

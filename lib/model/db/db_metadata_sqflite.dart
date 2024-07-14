@@ -12,15 +12,15 @@ import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../foreground_wallpaper/fgw_used_entry_record.dart';
-import '../foreground_wallpaper/privacyGuardLevel.dart';
-import '../foreground_wallpaper/shareCopiedEntry.dart';
+import '../foreground_wallpaper/privacy_guard_level.dart';
+import '../foreground_wallpaper/share_copied_entry.dart';
 
 
 class SqfliteMetadataDb implements MetadataDb {
@@ -881,7 +881,7 @@ class SqfliteMetadataDb implements MetadataDb {
   @override
   Future<void> clearShareCopiedEntries() async {
     final count = await _db.delete(shareCopiedEntryTable, where: '1');
-    debugPrint('clearFilterSet deleted $count rows');
+    debugPrint('clearShareCopiedEntries $shareCopiedEntryTable deleted $count rows');
   }
 
   @override

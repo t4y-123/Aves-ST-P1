@@ -1,9 +1,9 @@
-import 'package:aves/model/foreground_wallpaper/privacyGuardLevel.dart';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filterSet.dart';
-import '../../../../../model/foreground_wallpaper/wallpaperSchedule.dart';
+import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../../model/settings/settings.dart';
 import '../../../../../services/common/services.dart';
 import '../../../../../theme/format.dart';

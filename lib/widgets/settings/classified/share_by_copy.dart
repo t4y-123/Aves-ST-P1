@@ -1,3 +1,4 @@
+import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -6,8 +7,9 @@ import 'package:flutter/material.dart';
 
 import '../../../model/filters/album.dart';
 import '../../../utils/android_file_utils.dart';
+import '../../common/action_mixins/feedback.dart';
 
-class ShareByCopyPage extends StatelessWidget {
+class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
   static const routeName = '/settings/classify/share_by_copy';
 
   const ShareByCopyPage({super.key});
@@ -43,9 +45,55 @@ class ShareByCopyPage extends StatelessWidget {
               onChanged: (v) => settings.shareByCopyRemoveInterval = v,
               title: l10n.settingsShareByCopyExpiredInterval,
             ),
+            ListTile(
+              title: Text('${l10n.settingsClearShareCopiedItemsRecord} '),
+              trailing: ElevatedButton(
+                onPressed: () => _showConfirmationDialog(
+                  context,
+                  l10n.settingsClearShareCopiedItemsRecord,
+                  l10n.confirmClearShareCopiedItemsRecord(shareCopiedEntries.all.length),
+                      () {
+                        _clearAllShareByCopyRecord(context);
+                  },
+                ),
+                child: Text(l10n.applyButtonLabel),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+  void _showConfirmationDialog(BuildContext context, String title,
+      String content, VoidCallback onConfirm) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+              child: Text(MaterialLocalizations.of(context).okButtonLabel),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _clearAllShareByCopyRecord(BuildContext context) async {
+    await shareCopiedEntries.clear();
+    showFeedback(context, FeedbackType.info,context.l10n.clearCompletedFeedback );
   }
 }

@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+
+import '../settings/settings.dart';
 
 enum WallpaperUpdateType { home, lock, both, widget }
 
@@ -127,6 +131,65 @@ class WallpaperSchedules with ChangeNotifier {
     _rows.clear();
     notifyListeners();
   }
+
+  WallpaperScheduleRow newRow(int existActiveMaxLevelOffset, int privacyGuardLevelId, int filterSetId,
+      WallpaperUpdateType updateType,{ String? aliasName, int? widgetId, int? intervalTime , bool isActive = true}) {
+    var thisGuardLevel = privacyGuardLevels.all.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId);
+    thisGuardLevel ??= privacyGuardLevels.all.first;
+    final relevantItems = isActive ? all.where((item) => item.isActive).toList() : all.toList();
+    final maxScheduleNum =
+        relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.scheduleNum).reduce((a, b) => a > b ? a : b);
+
+    return WallpaperScheduleRow(
+      id: metadataDb.nextId,
+      scheduleNum: maxScheduleNum + existActiveMaxLevelOffset,
+      aliasName: aliasName ??  'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-$updateType' ,
+      privacyGuardLevelId: privacyGuardLevelId,
+      filterSetId: filterSetId,
+      updateType: updateType,
+      widgetId: widgetId ?? 0,
+      intervalTime: intervalTime ?? settings.defaultNewUpdateInterval,
+      isActive: isActive,
+    );
+  }
+
+  // import/export
+  Map<String, Map<String, dynamic>>? export() {
+    final rows = wallpaperSchedules.all;
+    final jsonMap = Map.fromEntries(rows.map((row) {
+      return MapEntry(
+        row.id.toString(),
+        row.toMap(),
+      );
+    }));
+    return jsonMap.isNotEmpty ? jsonMap : null;
+  }
+
+  Future<void> import (dynamic jsonMap) async {
+    if (jsonMap is! Map) {
+      debugPrint('failed to import wallpaper schedules for jsonMap=$jsonMap');
+      return;
+    }
+
+    final foundRows = <WallpaperScheduleRow>{};
+    jsonMap.forEach((id, attributes) {
+      if (id is String && attributes is Map) {
+        try {
+          final row = WallpaperScheduleRow.fromMap(attributes);
+          foundRows.add(row);
+        } catch (e) {
+          debugPrint('failed to import wallpaper schedule for id=$id, attributes=$attributes, error=$e');
+        }
+      } else {
+        debugPrint('failed to import wallpaper schedule for id=$id, attributes=${attributes.runtimeType}');
+      }
+    });
+
+    if (foundRows.isNotEmpty) {
+      await wallpaperSchedules.clear();
+      await wallpaperSchedules.add(foundRows);
+    }
+  }
 }
 
 @immutable
@@ -138,7 +201,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
   final int filterSetId;
   final WallpaperUpdateType updateType;
   final int widgetId;
-  final int intervalTime;
+  final int intervalTime; // in seconds
   final bool isActive;
 
   @override

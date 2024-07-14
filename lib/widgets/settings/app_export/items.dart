@@ -5,7 +5,9 @@ import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/widgets.dart';
 
-enum AppExportItem { covers, favourites, settings }
+import '../../../model/foreground_wallpaper/foreground_wallpaper_helper.dart';
+
+enum AppExportItem { covers, favourites, settings,foregroundWallpaper }
 
 extension ExtraAppExportItem on AppExportItem {
   String getText(BuildContext context) {
@@ -14,6 +16,7 @@ extension ExtraAppExportItem on AppExportItem {
       AppExportItem.covers => l10n.appExportCovers,
       AppExportItem.favourites => l10n.appExportFavourites,
       AppExportItem.settings => l10n.appExportSettings,
+    AppExportItem.foregroundWallpaper => l10n.appExportForegroundWallpaper,
     };
   }
 
@@ -22,6 +25,7 @@ extension ExtraAppExportItem on AppExportItem {
       AppExportItem.covers => covers.export(source),
       AppExportItem.favourites => favourites.export(source),
       AppExportItem.settings => settings.export(),
+      AppExportItem.foregroundWallpaper => foregroundWallpaperHelper.export(),
     };
   }
 
@@ -33,6 +37,8 @@ extension ExtraAppExportItem on AppExportItem {
         favourites.import(jsonMap, source);
       case AppExportItem.settings:
         await settings.import(jsonMap);
+      case AppExportItem.foregroundWallpaper:
+        foregroundWallpaperHelper.import(jsonMap);
     }
   }
 }

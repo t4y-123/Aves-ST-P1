@@ -1,8 +1,6 @@
-import 'package:aves/model/device.dart';
-import 'package:aves/model/entry/entry.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaperSchedule.dart';
+
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/defaults.dart';
-import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves_model/aves_model.dart';
 
 mixin ForegroundWallpaperSettings on SettingsAccess {

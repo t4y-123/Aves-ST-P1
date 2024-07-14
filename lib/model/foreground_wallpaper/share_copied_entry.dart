@@ -14,7 +14,10 @@ class ShareCopiedEntries with ChangeNotifier {
   ShareCopiedEntries._private();
 
   Future<void> init() async {
+    _rows.clear();
     _rows = await metadataDb.loadAllShareCopiedEntries();
+    debugPrint('$runtimeType ShareCopiedEntries _rows'
+        '[$_rows]  start');
   }
 
   int get count => _rows.length;
@@ -24,9 +27,14 @@ class ShareCopiedEntries with ChangeNotifier {
   bool isShareCopied(AvesEntry entry) => _rows.any((row) => row.id == entry.id);
 
   bool isExpiredCopied(AvesEntry entry) {
+    debugPrint('[$entry] isExpiredCopied start');
     if(!isShareCopied(entry))return false;
     final dateMillis = _rows.firstWhereOrNull((row) => row.id == entry.id)?.dateMillis;
     if (dateMillis == null) return false;
+    debugPrint('$runtimeType [$entry] isExpiredCopied dateMillis $dateMillis');
+    debugPrint('dateMillis add ${settings.shareByCopyRemoveInterval} : $runtimeType '
+        '${DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval))}');
+    debugPrint('(${DateTime.now()}');
     return DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval)).isBefore(DateTime.now());
   }
 
@@ -53,7 +61,7 @@ class ShareCopiedEntries with ChangeNotifier {
   }
 
   Future<void> clear() async {
-    await metadataDb.clearFavourites();
+    await metadataDb.clearShareCopiedEntries();
     _rows.clear();
     notifyListeners();
   }

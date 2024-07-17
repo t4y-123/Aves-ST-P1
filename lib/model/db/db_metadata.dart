@@ -10,7 +10,7 @@ import 'package:aves/model/video_playback.dart';
 
 import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacy_guard_level.dart';
-import '../foreground_wallpaper/filterSet.dart';
+import '../foreground_wallpaper/filtersSet.dart';
 import '../foreground_wallpaper/share_copied_entry.dart';
 import '../foreground_wallpaper/wallpaper_schedule.dart';
 
@@ -142,13 +142,13 @@ abstract class MetadataDb {
 
   Future<void> clearFilterSet();
 
-  Future<Set<FilterSetRow>> loadAllFilterSet();
+  Future<Set<FiltersSetRow>> loadAllFilterSet();
 
-  Future<void> addFilterSet(Set<FilterSetRow> rows);
+  Future<void> addFilterSet(Set<FiltersSetRow> rows);
 
-  Future<void> updateFilterSetId(int id, FilterSetRow row);
+  Future<void> updateFilterSetId(int id, FiltersSetRow row);
 
-  Future<void> removeFilterSet(Set<FilterSetRow> rows);
+  Future<void> removeFilterSet(Set<FiltersSetRow> rows);
 
   // wallpaperScheduleTable
 

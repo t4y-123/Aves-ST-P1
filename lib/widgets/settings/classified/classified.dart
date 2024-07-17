@@ -14,19 +14,19 @@ import 'package:provider/provider.dart';
 import 'foreground_wallpaper/default_schedules_manage_page.dart';
 import 'foreground_wallpaper/foreground_wallpaper_config_page.dart';
 
-class ClassifiedSection extends SettingsSection {
+class PresentationSection extends SettingsSection {
   @override
-  String get key => 'classified';
+  String get key => 'presentation';
 
   @override
   Widget icon(BuildContext context) => SettingsTileLeading(
-        icon: AIcons.classified,
-        color: context.select<AvesColorsData, Color>((v) => v.classified),
+        icon: AIcons.presentation,
+        color: context.select<AvesColorsData, Color>((v) => v.presentation),
       );
 
   @override
   String title(BuildContext context) =>
-      context.l10n.settingsClassifiedSectionTitle;
+      context.l10n.settingsPresentationSectionTitle;
 
   @override
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
@@ -39,7 +39,7 @@ class ClassifiedSection extends SettingsSection {
 class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
   @override
   String title(BuildContext context) =>
-      context.l10n.settingsClassifiedForegroundWallpaperConfigTile;
+      context.l10n.settingsPresentationForegroundWallpaperConfigTile;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
@@ -52,7 +52,7 @@ class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
 class SettingsTileAddDefaultGroupsSchedules extends SettingsTile {
   @override
   String title(BuildContext context) =>
-      context.l10n.settingsClassifiedWallpaperAddDefaultScheduleTile;
+      context.l10n.settingsPresentationWallpaperAddDefaultScheduleTile;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(

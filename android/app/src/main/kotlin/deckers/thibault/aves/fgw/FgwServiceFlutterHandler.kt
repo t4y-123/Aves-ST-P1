@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import android.widget.Toast
 import app.loup.streams_channel.StreamsChannel
 import deckers.thibault.aves.channel.AvesByteSendingMethodCodec
 import deckers.thibault.aves.channel.calls.*
@@ -12,7 +13,7 @@ import deckers.thibault.aves.channel.streams.MediaStoreStreamHandler
 import deckers.thibault.aves.model.FieldMap
 import deckers.thibault.aves.utils.FlutterUtils
 import deckers.thibault.aves.utils.LogUtils
-import deckers.thibault.aves.fgw.FgwConstant
+import deckers.thibault.aves.fgw.*
 import deckers.thibault.aves.R
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -25,10 +26,13 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+
 object FgwServiceFlutterHandler {
     val LOG_TAG = LogUtils.createTag<FgwServiceFlutterHandler>()
-    private const val FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL =
-        "deckers.thibault/aves/foreground_wallpaper_notification_service"
+    private const val FGWN_SERVICE_OP_CHANNEL =
+        "deckers.thibault/aves/fgw_service_notification_op"
+    private const val FGWN_SERVICE_SYNC_CHANNEL =
+        "deckers.thibault/aves/fgw_service_notification_sync"
     private const val FOREGROUND_WALLPAPER_SERVICE_DART_ENTRYPOINT = "fgwNotificationService"
 
     private var flutterEngine: FlutterEngine? = null
@@ -38,7 +42,8 @@ object FgwServiceFlutterHandler {
     var curWidgetId: Int = FgwConstant.NOT_WIDGET_ID
     var curGuardLevel: Int = -1
     var entryFilename = ""
-    var activeLevelsList: List<Triple<Int, String, Int>> = listOf()
+    var activeLevelsList: List<PrivacyGuardLevelRow> = listOf()
+    var scheduleList: List<WallpaperScheduleRow> = listOf()
 
     private suspend fun initFlutterEngine(context: Context) {
         if (flutterEngine != null) return
@@ -60,7 +65,7 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    private fun initChannels(context: Context) {
+    fun initChannels(context: Context) {
         val engine = flutterEngine ?: throw Exception("Flutter engine is not initialized")
         val messenger = engine.dartExecutor
 
@@ -76,13 +81,24 @@ object FgwServiceFlutterHandler {
         MethodChannel(messenger, MediaFetchObjectHandler.CHANNEL).setMethodCallHandler(MediaFetchObjectHandler(context))
         MethodChannel(messenger, StorageHandler.CHANNEL).setMethodCallHandler(StorageHandler(context))
 
+        // sync data from dart side.
         MethodChannel(
             messenger,
-            FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL
+            FGWN_SERVICE_SYNC_CHANNEL
         ).setMethodCallHandler { call, result ->
-            Log.i(LOG_TAG, "${FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL} setMethodCallHandler: ${call}")
+            Log.i(LOG_TAG, "${FGWN_SERVICE_SYNC_CHANNEL} setMethodCallHandler: ${call}")
             when (call.method) {
-                "syncDataToKotlin" -> handleSyncDataToKotlin(call, result)
+                "syncDataToKotlin" ->
+                    handleSyncFromDartToNative(context,call, result)
+                "showToast" ->  {
+                    val message = call.argument<String>("message")
+                    if (message != null) {
+                        showToast(context,message)
+                        result.success(null)
+                    } else {
+                        result.error("ERROR", "Message is null", null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }
@@ -130,158 +146,58 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    private fun handleSyncDataToKotlin(call: MethodCall, result: MethodChannel.Result) {
-        Log.i(LOG_TAG, "handleSyncDataToKotlin:start $call")
-        Log.i(LOG_TAG, "handleSyncDataToKotlin:start ${call.arguments}")
+    private fun handleSyncFromDartToNative(context: Context,call: MethodCall, result: MethodChannel.Result) {
+        Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call")
+        Log.d(LOG_TAG, "handleSyncFromDartToNative:start ${call.arguments}")
         defaultScope.launch {
-            var tmpUpdateType = call.argument<String>("updateType")
-            var tmpWidgetId = call.argument<Int>("widgetId")
-            var tmpCurGuardLevel = call.argument<Int>("curGuardLevel")
-            var activeLevelsString = call.argument<String>("activeLevels") ?: ""
-            var tmpEntryFileName = call.argument<String>("entryFileName")
-            Log.i(LOG_TAG, "handleSyncDataToKotlin:tmpEntryFileName ${tmpEntryFileName}")
-            Log.i(LOG_TAG, "handleSyncDataToKotlin:tmpCurGuardLevel ${tmpCurGuardLevel}")
-            curUpdateType = tmpUpdateType ?: FgwConstant.CUR_TYPE_HOME
-            curWidgetId = tmpWidgetId ?: FgwConstant.NOT_WIDGET_ID
-            curGuardLevel = tmpCurGuardLevel ?: 0
-            entryFilename = tmpEntryFileName ?: ""
-            Log.d(LOG_TAG, "syncNecessaryDataFromDart activeLevelsString $activeLevelsString")
-            activeLevelsList = parseActiveLevelsString(activeLevelsString)
+            // Current guard level
+            val tmpCurGuardLevel = call.argument<String>(FgwConstant.CUR_LEVEL)
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpCurGuardLevel ${tmpCurGuardLevel}")
 
-            Log.i(LOG_TAG, "handleSyncDataToKotlin:activeLevelsList ${activeLevelsList}")
+            // Active levels
+            val activeLevelsString = call.argument<String>(FgwConstant.ACTIVE_LEVELS)
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString ${activeLevelsString}")
+            if (tmpCurGuardLevel != null && activeLevelsString != null) {
+                curGuardLevel = tmpCurGuardLevel.toInt()
+                activeLevelsList = parseActiveLevelsString(activeLevelsString)
+            }
+
+            // Current entry file name
+            val tmpEntryFileName = call.argument<String>(FgwConstant.CUR_ENTRY_NAME)
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpEntryFileName ${tmpEntryFileName}")
+            if (tmpEntryFileName != null) {
+                entryFilename = tmpEntryFileName
+            }
+
+            // Schedules
+            val schedulesString = call.argument<String>(FgwConstant.SCHEDULES)
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:schedulesString $schedulesString")
+            if (schedulesString != null) {
+                scheduleList =  parseSchedulesString(schedulesString)
+                WallpaperScheduleHelper.handleSchedules(context,scheduleList)
+            }
+
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel")
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsList $activeLevelsList")
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:entryFilename $entryFilename")
+            Log.d(LOG_TAG, "handleSyncFromDartToNative:scheduleList $scheduleList")
+
+            FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             result.success(true)
         }
     }
 
-    fun callDartStartMethod(context: Context) {
-        Log.i(LOG_TAG, "callDartStartMethod:start")
-        defaultScope.launch {
-            suspendCoroutine<Any?> { continuation ->
-                runBlocking {
-                    Log.d(LOG_TAG, "callDartStartMethod invokeFlutterMethod:start")
-                    invokeFlutterMethod<Any>(context, FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL, "start",
-                        onSuccess = { result -> Log.d(LOG_TAG, "Dart start method invoked successfully: $result") },
-                        onError = { e -> Log.e(LOG_TAG, "Failed to invoke Dart start method", e) }
-                    )
-                }
-                Log.d(LOG_TAG, "callDartStartMethod:runBlocking end")
-            }
-        }
-        Log.i(LOG_TAG, "callDartStartMethod:end")
-    }
-
-    fun callDartStopMethod(context: Context) {
-        Log.i(LOG_TAG, "callDartStopMethod:start")
-        defaultScope.launch {
-            suspendCoroutine<Any?> { continuation ->
-                runBlocking {
-                    Log.d(LOG_TAG, "callDartStopMethod invokeFlutterMethod:stop")
-                    invokeFlutterMethod<Any>(context, FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL, "stop",
-                        onSuccess = { result -> Log.d(LOG_TAG, "Dart stop method invoked successfully: $result") },
-                        onError = { e -> Log.e(LOG_TAG, "Failed to invoke Dart stop method", e) }
-                    )
-                }
-                Log.d(LOG_TAG, "callDartStopMethod:runBlocking end")
-            }
-        }
-        Log.i(LOG_TAG, "callDartStopMethod:end")
-    }
-
-    fun preWallpaper(context: Context) {
-        runBlocking {
-            invokeFlutterMethod<Any>(context, FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL, "preWallpaper",
-                arguments = hashMapOf(
-                    "updateType" to curUpdateType,  // Replace with actual data
-                    "widgetId" to curWidgetId,
-                ),
-                onSuccess = { result -> Log.d(LOG_TAG, "preWallpaper success: $result") },
-                onError = { e -> Log.e(LOG_TAG, "Failed to invoke preWallpaper", e) }
-            )
-        }
-    }
-
-    fun nextWallpaper(context: Context) {
-        runBlocking {
-            invokeFlutterMethod<Any>(context, FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL, "nextWallpaper",
-                arguments = hashMapOf(
-                    "updateType" to curUpdateType,  // Replace with actual data
-                    "widgetId" to curWidgetId,
-                ),
-                onSuccess = { result -> Log.d(LOG_TAG, "nextWallpaper success: $result") },
-                onError = { e -> Log.e(LOG_TAG, "Failed to invoke nextWallpaper", e) }
-            )
-        }
-    }
-
-    fun syncNecessaryDataFromDart(context: Context) {
-        Log.d(LOG_TAG, "start to syncNecessaryDataFromDart")
-        return
-        defaultScope.launch {
-            try {
-                val props = syncNecessaryData(context, curUpdateType, curWidgetId)
-                Log.d(LOG_TAG, "syncNecessaryDataFromDart props: $props")
-                props?.let {
-                    curGuardLevel =
-                        it["curGuardLevel"] as? Int ?: context.getString(R.string.fgw_init_guard_level).toInt()
-                    Log.d(LOG_TAG, "syncNecessaryDataFromDart curGuardLevel $curGuardLevel")
-                    val activeLevelsString =
-                        it["activeLevels"] as? String ?: ""
-                    Log.d(LOG_TAG, "syncNecessaryDataFromDart activeLevelsString $activeLevelsString")
-                    activeLevelsList = parseActiveLevelsString(activeLevelsString)
-                    Log.d(LOG_TAG, "syncNecessaryDataFromDart activeLevelsList $activeLevelsList")
-                    entryFilename = it["entryFileName"] as? String ?: context.getString(R.string.fgw_init_colorString)
-                    Log.d(LOG_TAG, "syncNecessaryDataFromDart entryFilename $entryFilename")
-                }
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, "Failed to get update notification props", e)
-            }
-        }
-    }
-
-    private suspend fun syncNecessaryData(context: Context, updateType: String, widgetId: Int): FieldMap? {
-        Log.d(LOG_TAG, "start to syncNecessaryData")
-        return try {
-            suspendCoroutine<FieldMap?> { continuation ->
-                defaultScope.launch {
-                    invokeFlutterMethod<FieldMap>(context,
-                        FOREGROUND_WALLPAPER_NOTIFICATION_SERVICE_CHANNEL,
-                        "syncNecessaryData",
-                        arguments = hashMapOf(
-                            "updateType" to curUpdateType,  // Replace with actual data
-                            "widgetId" to curWidgetId,
-                        ),
-                        onSuccess = { result -> continuation.resume(result) },
-                        onError = { e -> continuation.resumeWithException(e) }
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(LOG_TAG, "failed to syncNecessaryData", e)
-            null
-        }
-    }
-
-    private fun parseActiveLevelsString(activeLevelsString: String): List<Triple<Int, String, Int>> {
+    private fun parseActiveLevelsString(activeLevelsString: String): List<PrivacyGuardLevelRow> {
         return activeLevelsString.removePrefix("[").removeSuffix("]")
-            .split("), (")
+            .split("), ")
             .map { item ->
-                val parts = item.removePrefix("(").removeSuffix(")").split(", ")
-                val level = parts[0].toInt()
-                val name = parts[1]
-                val color = parseColorString(parts[2]) ?: 0
-                Triple(level, name, color)
+                val parts = item.removePrefix("PrivacyGuardLevelRow(").removeSuffix(")").split(", ")
+                val id = parts[0].toInt()
+                val level = parts[1].toInt()
+                val name = parts[2]
+                val color = parseColorString(parts[3]) ?: 0
+                PrivacyGuardLevelRow(id, level, name, color)
             }
-    }
-
-    fun updateNotificationFromDart(context: Context) {
-        Log.d(LOG_TAG, "start to updateNotificationFromDart")
-        runBlocking {
-            syncNecessaryDataFromDart(context)
-            delay(500)
-        }
-        FgwSeviceNotificationHandler.guardLevel = curGuardLevel
-        Log.d(LOG_TAG, "start to FgwSeviceNotificationHandler.updateNotificationFromStoredValues($context)")
-        FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
     }
 
     private fun parseColorString(colorString: String?): Int? {
@@ -304,5 +220,68 @@ object FgwServiceFlutterHandler {
             e.printStackTrace()
             null
         }
+    }
+
+    private fun parseSchedulesString(schedulesString: String): List<WallpaperScheduleRow> {
+        return schedulesString.removePrefix("[").removeSuffix("]")
+            .split("), ")
+            .map { item ->
+                val parts = item.removePrefix("WallpaperScheduleRow(").removeSuffix(")").split(", ")
+                val id = parts[0].toInt()
+                val order = parts[1].toInt()
+                val label = parts[2]
+                val guardLevelId = parts[3].toInt()
+                val scheduleId = parts[4].toInt()
+                val updateType = parts[5]
+                val startTime = parts[6].toInt()
+                val endTime = parts[7].toInt()
+                val enabled = parts[8].toBoolean()
+                WallpaperScheduleRow(
+                    id,
+                    order,
+                    label,
+                    guardLevelId,
+                    scheduleId,
+                    updateType,
+                    startTime,
+                    endTime,
+                    enabled
+                )
+            }
+    }
+
+    fun callDartNoArgsMethod(context: Context, opString: String) {
+        Log.i(LOG_TAG, "callDartNoArgsMethod:start")
+        defaultScope.launch {
+            Log.d(LOG_TAG, " callDartNoArgsMethod $opString")
+            invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL, opString,
+                onSuccess = { result -> Log.i(LOG_TAG, "Dart [$opString] method invoked successfully: $result") },
+                onError = { e -> Log.e(LOG_TAG, "Failed to invoke Dart method [$opString]", e) }
+            )
+        }
+        Log.d(LOG_TAG, "callDartNoArgsMethod [$opString]:end")
+    }
+
+    fun handleWallpaper(context: Context, opString: String) {
+        Log.d(LOG_TAG, "handleWallpaper: opString=$opString, updateType=$curUpdateType, widgetId=$curWidgetId")
+        runBlocking {
+            invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL, opString,
+                arguments = hashMapOf(
+                    "updateType" to curUpdateType,  // Replace with actual data
+                    "widgetId" to curWidgetId,
+                ),
+                onSuccess = { result -> Log.d(LOG_TAG, "$opString success: $result") },
+                onError = { e -> Log.e(LOG_TAG, "Failed to invoke $opString", e) }
+            )
+        }
+    }
+
+    fun changeGuardLevel(context: Context) {
+        Log.d(LOG_TAG, "changeGuardLevel [$context]:RUN")
+    }
+
+    private fun showToast(context:Context, message: String) {
+        Log.i(LOG_TAG, "FgwServiceActionHandler $context : $message")
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }

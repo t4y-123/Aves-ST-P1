@@ -9,11 +9,11 @@ import 'package:flutter/foundation.dart';
 import '../filters/aspect_ratio.dart';
 import '../filters/mime.dart';
 
-final FilterSet filterSet = FilterSet._private();
+final FilterSet filtersSets = FilterSet._private();
 
 class FilterSet with ChangeNotifier{
 
-  Set<FilterSetRow> _rows = {};
+  Set<FiltersSetRow> _rows = {};
 
   FilterSet._private();
 
@@ -21,7 +21,7 @@ class FilterSet with ChangeNotifier{
     _rows = await metadataDb.loadAllFilterSet();
   }
 
-  Future<void> add(Set<FilterSetRow> newRows) async {
+  Future<void> add(Set<FiltersSetRow> newRows) async {
     await metadataDb.addFilterSet(newRows);
     _rows.addAll(newRows);
 
@@ -30,15 +30,15 @@ class FilterSet with ChangeNotifier{
 
   int get count => _rows.length;
 
-  Set<FilterSetRow> get all => Set.unmodifiable(_rows);
+  Set<FiltersSetRow> get all => Set.unmodifiable(_rows);
 
-  Future<void> setRows(Set<FilterSetRow> newRows) async {
+  Future<void> setRows(Set<FiltersSetRow> newRows) async {
     await removeEntries(newRows);
     for (var row in newRows) {
       await set(
-        filterSetId: row.filterSetId,
-        filterSetNum: row.filterSetNum,
-        aliasName: row.aliasName,
+        id: row.id,
+        orderNum: row.orderNum,
+        labelName: row.labelName,
         filters: row.filters,
         isActive: row.isActive,
       );
@@ -47,21 +47,21 @@ class FilterSet with ChangeNotifier{
   }
 
   Future<void> set({
-    required int filterSetId,
-    required int filterSetNum,
-    required String aliasName,
+    required int id,
+    required int orderNum,
+    required String labelName,
     required Set<CollectionFilter>? filters,
     required bool isActive,
   }) async {
     // erase contextual properties from filters before saving them
-    final oldRows = _rows.where((row) => row.filterSetId == filterSetId).toSet();
+    final oldRows = _rows.where((row) => row.id == id).toSet();
     _rows.removeAll(oldRows);
     await metadataDb.removeFilterSet(oldRows);
 
-    final row = FilterSetRow(
-      filterSetId: filterSetId,
-      filterSetNum: filterSetNum,
-      aliasName: aliasName,
+    final row = FiltersSetRow(
+      id: id,
+      orderNum: orderNum,
+      labelName: labelName,
       filters: filters,
       isActive: isActive,
     );
@@ -70,10 +70,10 @@ class FilterSet with ChangeNotifier{
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<FilterSetRow> rows) => removeIds(rows.map((row) => row.filterSetId).toSet());
+  Future<void> removeEntries(Set<FiltersSetRow> rows) => removeIds(rows.map((row) => row.id).toSet());
 
   Future<void> removeIds(Set<int> rowIds) async {
-    final removedRows = _rows.where((row) => rowIds.contains(row.filterSetId)).toSet();
+    final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();
 
     await metadataDb.removeFilterSet(removedRows);
     removedRows.forEach(_rows.remove);
@@ -88,19 +88,19 @@ class FilterSet with ChangeNotifier{
     notifyListeners();
   }
 
-  FilterSetRow newRow(int existActiveMaxLevelOffset, {String? aliasName,  Set<CollectionFilter>? filters,bool isActive = true}) {
+  FiltersSetRow newRow(int existActiveMaxLevelOffset, {String? labelName,  Set<CollectionFilter>? filters,bool isActive = true}) {
     final relevantItems = isActive
-        ? filterSet.all.where((item) => item.isActive).toList()
-        : filterSet.all.toList();
+        ? filtersSets.all.where((item) => item.isActive).toList()
+        : filtersSets.all.toList();
     final maxFilterSetNum = relevantItems.isEmpty
         ? 0
-        : relevantItems.map((item) => item.filterSetNum).reduce((a, b) => a > b ? a : b);
+        : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
     final newId = metadataDb.nextId;
     final filterSetSuqNum = maxFilterSetNum + existActiveMaxLevelOffset;
-    return FilterSetRow(
-      filterSetId: newId,
-      filterSetNum: filterSetSuqNum,
-      aliasName: aliasName ?? 'F-$filterSetSuqNum-$newId',
+    return FiltersSetRow(
+      id: newId,
+      orderNum: filterSetSuqNum,
+      labelName: labelName ?? 'F-$filterSetSuqNum-$newId',
       filters: filters ?? {AspectRatioFilter.portrait, MimeFilter.image},
       isActive: isActive,
     );
@@ -108,10 +108,10 @@ class FilterSet with ChangeNotifier{
 
   // import/export
   Map<String, Map<String, dynamic>>? export() {
-    final rows = filterSet.all;
+    final rows = filtersSets.all;
     final jsonMap = Map.fromEntries(rows.map((row) {
       return MapEntry(
-        row.filterSetId.toString(),
+        row.id.toString(),
         row.toMap(),
       );
     }));
@@ -124,11 +124,11 @@ class FilterSet with ChangeNotifier{
       return;
     }
 
-    final foundRows = <FilterSetRow>{};
+    final foundRows = <FiltersSetRow>{};
     jsonMap.forEach((id, attributes) {
       if (id is String && attributes is Map) {
         try {
-          final row = FilterSetRow.fromMap(attributes);
+          final row = FiltersSetRow.fromMap(attributes);
           foundRows.add(row);
         } catch (e) {
           debugPrint('failed to import filter set for id=$id, attributes=$attributes, error=$e');
@@ -139,72 +139,72 @@ class FilterSet with ChangeNotifier{
     });
 
     if (foundRows.isNotEmpty) {
-      await filterSet.clear();
-      await filterSet.add(foundRows);
+      await filtersSets.clear();
+      await filtersSets.add(foundRows);
     }
   }
 }
 
 @immutable
-class FilterSetRow extends Equatable implements Comparable<FilterSetRow> {
-  final int filterSetId;
-  final int filterSetNum;
-  final String aliasName;
+class FiltersSetRow extends Equatable implements Comparable<FiltersSetRow> {
+  final int id;
+  final int orderNum;
+  final String labelName;
   final Set<CollectionFilter>? filters;
   final bool isActive;
 
   @override
-  List<Object?> get props => [filterSetId, filterSetNum, aliasName, filters,];
+  List<Object?> get props => [id, orderNum, labelName, filters,];
 
-  const FilterSetRow({
-    required this.filterSetId,
-    required this.filterSetNum,
-    required this.aliasName,
+  const FiltersSetRow({
+    required this.id,
+    required this.orderNum,
+    required this.labelName,
     required this.filters,
     required this.isActive,
   });
 
-  static FilterSetRow fromMap(Map map) {
+  static FiltersSetRow fromMap(Map map) {
     final List<dynamic> decodedFilters = jsonDecode(map['filters']);
     final filters = decodedFilters.map((e) => CollectionFilter.fromJson(e as String)).whereNotNull().toSet();
 
-    return FilterSetRow(
-      filterSetId:map['id'] as int,
-      filterSetNum:map['filterSetNum'] as int,
-      aliasName: map['aliasName'] as String,
+    return FiltersSetRow(
+      id:map['id'] as int,
+      orderNum:map['orderNum'] as int,
+      labelName: map['labelName'] as String,
       filters: filters,
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'id': filterSetId,
-        'filterSetNum': filterSetNum,
-        'aliasName': aliasName,
+        'id': id,
+        'orderNum': orderNum,
+        'labelName': labelName,
         'filters': jsonEncode(filters?.map((filter) => filter.toJson()).toList()),
         'isActive' : isActive ? 1 : 0,
   };
 
   @override
-  int compareTo(FilterSetRow other) {
+  int compareTo(FiltersSetRow other) {
     // Sorting logic
     if (isActive != other.isActive) {
       // Sort by isActive, true (1) comes before false (0)
       return isActive ? -1 : 1;
     }
-    // If sort by filterSetNum
-    final filterSetNumComparison = filterSetNum.compareTo(other.filterSetNum);
-    if (filterSetNumComparison != 0) {
-      return filterSetNumComparison;
+    // If sort by orderNum
+    final orderNumComparison = orderNum.compareTo(other.orderNum);
+    if (orderNumComparison != 0) {
+      return orderNumComparison;
     }
 
-    // If filterSetNum is the same, sort by aliasName
-    final aliasNameComparison = aliasName.compareTo(other.aliasName);
-    if (aliasNameComparison != 0) {
-      return aliasNameComparison;
+    // If orderNum is the same, sort by labelName
+    final labelNameComparison = labelName.compareTo(other.labelName);
+    if (labelNameComparison != 0) {
+      return labelNameComparison;
     }
 
-    // If aliasName is the same, sort by filterSetId
-    return filterSetId.compareTo(other.filterSetId);
+    // If labelName is the same, sort by id
+    return id.compareTo(other.id);
   }
 }

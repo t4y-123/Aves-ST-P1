@@ -39,11 +39,11 @@ class _PrivacyGuardLevelConfigPageState extends State<PrivacyGuardLevelConfigPag
     _currentItem = widget.item ?? PrivacyGuardLevelRow(
       privacyGuardLevelID: newId,
       guardLevel: newLevel,
-      aliasName: 'Level $newLevel Id:$newId',
+      labelName: 'Level $newLevel Id:$newId',
       color: _getRandomColor(), // Assign a random color
       isActive: true,
     );
-    _aliasNameController = TextEditingController(text: _currentItem!.aliasName);
+    _aliasNameController = TextEditingController(text: _currentItem!.labelName);
     _selectedColor = _currentItem!.color;
     _isActive = _currentItem!.isActive;
   }
@@ -91,7 +91,7 @@ class _PrivacyGuardLevelConfigPageState extends State<PrivacyGuardLevelConfigPag
       final updatedItem = PrivacyGuardLevelRow(
         privacyGuardLevelID: _currentItem!.privacyGuardLevelID,
         guardLevel: _currentItem!.guardLevel,
-        aliasName: _aliasNameController.text,
+        labelName: _aliasNameController.text,
         color: _selectedColor,
         isActive: _isActive,
       );

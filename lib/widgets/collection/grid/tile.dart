@@ -35,7 +35,6 @@ class InteractiveTile extends StatelessWidget {
         final appMode = context.read<ValueNotifier<AppMode>>().value;
         switch (appMode) {
           case AppMode.main:
-          case AppMode.fgwShareCopy:
             final selection = context.read<Selection<AvesEntry>>();
             if (selection.isSelecting) {
               selection.toggleSelection(entry);
@@ -57,8 +56,6 @@ class InteractiveTile extends StatelessWidget {
           case AppMode.slideshow:
           case AppMode.view:
           case AppMode.edit:
-          case AppMode.fgwViewUsed:
-          case AppMode.fgwViewOpen:
             break;
         }
       },

@@ -192,7 +192,7 @@ class AIcons {
 
   // t4y for classified personal features.
   // classified setttings
-  static const classified = Icons.security;
+  static const presentation = Icons.security;
   static const active = Icons.lightbulb_outline;
   static const inactive = Icons.code_off_sharp;
   static const fgwUsed = Icons.auto_stories;

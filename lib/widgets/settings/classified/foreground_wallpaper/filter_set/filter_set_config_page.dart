@@ -1,7 +1,7 @@
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../../../model/filters/aspect_ratio.dart';
 import '../../../../../model/filters/filters.dart';
 import '../../../../../model/filters/mime.dart';
@@ -11,9 +11,9 @@ import '../../../common/collection_tile.dart';
 
 class FilterSetConfigPage extends StatefulWidget {
   static const routeName = '/settings/classified/filter_set_config';
-  final FilterSetRow? item;
-  final List<FilterSetRow?> allItems;
-  final Set<FilterSetRow?> activeItems;
+  final FiltersSetRow? item;
+  final List<FiltersSetRow?> allItems;
+  final Set<FiltersSetRow?> activeItems;
 
   const FilterSetConfigPage({
     super.key,
@@ -28,7 +28,7 @@ class FilterSetConfigPage extends StatefulWidget {
 class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _aliasNameController;
-  late FilterSetRow? _currentItem;
+  late FiltersSetRow? _currentItem;
   late Set<CollectionFilter> _collectionFilters;
   bool _isActive = false;
 
@@ -37,14 +37,14 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
     super.initState();
     final int newFilterSetNum = _generateFilterSetNum();
     final int newId = metadataDb.nextId;
-    _currentItem = widget.item ?? FilterSetRow(
-      filterSetId: newId,
-      filterSetNum: newFilterSetNum,
-      aliasName: 'N$newFilterSetNum id:$newId',
+    _currentItem = widget.item ?? FiltersSetRow(
+      id: newId,
+      orderNum: newFilterSetNum,
+      labelName: 'N$newFilterSetNum id:$newId',
       filters: {AspectRatioFilter.portrait, MimeFilter.image},
       isActive: true,
     );
-    _aliasNameController = TextEditingController(text: _currentItem!.aliasName);
+    _aliasNameController = TextEditingController(text: _currentItem!.labelName);
     _collectionFilters = _currentItem?.filters ?? {};
     _isActive = _currentItem!.isActive;
   }
@@ -57,10 +57,10 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
 
   void _applyChanges() {
     if (_formKey.currentState?.validate() ?? false) {
-      final updatedItem = FilterSetRow(
-        filterSetId: _currentItem!.filterSetId,
-        filterSetNum: _currentItem!.filterSetNum,
-        aliasName: _aliasNameController.text,
+      final updatedItem = FiltersSetRow(
+        id: _currentItem!.id,
+        orderNum: _currentItem!.orderNum,
+        labelName: _aliasNameController.text,
         filters:_collectionFilters,
         isActive: _isActive,
       );
@@ -81,9 +81,9 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
           child: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              Text('ID: ${_currentItem?.filterSetId ?? ''}'),
+              Text('ID: ${_currentItem?.id ?? ''}'),
               const SizedBox(height: 8),
-              Text('Sequence Number: ${_currentItem?.filterSetNum ?? ''}'),
+              Text('Sequence Number: ${_currentItem?.orderNum ?? ''}'),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _aliasNameController,

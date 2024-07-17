@@ -5,7 +5,7 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
-import 'package:aves/model/foreground_wallpaper/filterSet.dart';
+import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
@@ -40,7 +40,7 @@ class SqfliteMetadataDb implements MetadataDb {
 
   // t4y for foreground Wallpaper
   static const privacyGuardLevelTable = 'privacyGuardLevel';
-  static const filterSetTable = 'filterSet';
+  static const filtersSetTable = 'filtersSet';
   static const wallpaperScheduleTable = 'wallpaperSchedule';
   static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
   static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
@@ -71,7 +71,7 @@ class SqfliteMetadataDb implements MetadataDb {
             'id INTEGER PRIMARY KEY'
             ', contentId INTEGER'
             ', uri TEXT'
-            ', path TEXT'
+            ', path TEXT UNIQUE'
             ', sourceMimeType TEXT'
             ', width INTEGER'
             ', height INTEGER'
@@ -137,26 +137,26 @@ class SqfliteMetadataDb implements MetadataDb {
         await db.execute('CREATE TABLE $privacyGuardLevelTable('
             'id INTEGER PRIMARY KEY'
             ', guardLevel INTEGER'
-            ', aliasName TEXT'
+            ', labelName TEXT'
             ', color INTEGER'
             ', isActive INTEGER DEFAULT 0'
             ')');
-        await db.execute('CREATE TABLE $filterSetTable('
+        await db.execute('CREATE TABLE $filtersSetTable('
             'id INTEGER PRIMARY KEY'
-            ', filterSetNum INTEGER'
-            ', aliasName TEXT'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
             ', filters TEXT'
             ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $wallpaperScheduleTable('
             'id INTEGER PRIMARY KEY'
-            ', scheduleNum INTEGER'
-            ', aliasName TEXT'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
             ', privacyGuardLevelId INTEGER'
-            ', filterSetId INTEGER'
+            ', filtersSetId INTEGER'
             ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
-            ', intervalTime INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
+            ', interval INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
             ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $fgwUsedEntryTable('
@@ -735,18 +735,18 @@ class SqfliteMetadataDb implements MetadataDb {
   // Filter Set for wallpaper,
   @override
   Future<void> clearFilterSet() async {
-    final count = await _db.delete(filterSetTable, where: '1');
+    final count = await _db.delete(filtersSetTable, where: '1');
     debugPrint('clearFilterSet deleted $count rows');
   }
 
   @override
-  Future<Set<FilterSetRow>> loadAllFilterSet() async {
-    final rows = await _db.query(filterSetTable);
-    return rows.map(FilterSetRow.fromMap).where((row) => row != null).toSet();
+  Future<Set<FiltersSetRow>> loadAllFilterSet() async {
+    final rows = await _db.query(filtersSetTable);
+    return rows.map(FiltersSetRow.fromMap).where((row) => row != null).toSet();
   }
 
   @override
-  Future<void> addFilterSet(Set<FilterSetRow> rows) async {
+  Future<void> addFilterSet(Set<FiltersSetRow> rows) async {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
@@ -755,27 +755,27 @@ class SqfliteMetadataDb implements MetadataDb {
   }
 
   @override
-  Future<void> updateFilterSetId(int id, FilterSetRow row) async {
+  Future<void> updateFilterSetId(int id, FiltersSetRow row) async {
     final batch = _db.batch();
-    batch.delete(filterSetTable, where: 'id = ?', whereArgs: [id]);
+    batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [id]);
     _batchInsertFilterSet(batch, row);
     await batch.commit(noResult: true);
   }
 
   @override
-  Future<void> removeFilterSet(Set<FilterSetRow> rows) async {
+  Future<void> removeFilterSet(Set<FiltersSetRow> rows) async {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
     rows.forEach((row) {
-      batch.delete(filterSetTable, where: 'id = ?', whereArgs: [row.filterSetId]);
+      batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [row.id]);
     });
     await batch.commit(noResult: true);
   }
 
-  void _batchInsertFilterSet(Batch batch, FilterSetRow row) {
+  void _batchInsertFilterSet(Batch batch, FiltersSetRow row) {
     batch.insert(
-      filterSetTable,
+      filtersSetTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

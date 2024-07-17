@@ -9,12 +9,12 @@ import android.content.SharedPreferences
 import android.content.IntentFilter;
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.startService
-import deckers.thibault.aves.fgw.FgwIntentAction
-import deckers.thibault.aves.fgw.FgwServiceFlutterHandler
+import deckers.thibault.aves.fgw.*
 import android.os.Build
 import android.annotation.SuppressLint
 
 class ForegroundWallpaperTileService : TileService() {
+    private var tileServiceContext = this
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
@@ -37,6 +37,7 @@ class ForegroundWallpaperTileService : TileService() {
         Log.d(LOG_TAG, "Tile clicked, current state: ${tile.state}")
 
         if (tile.state == Tile.STATE_ACTIVE) {
+            WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(tileServiceContext)
             ForegroundWallpaperService.stop(this)
             tile.state = Tile.STATE_INACTIVE
             setIsTileClickRunning(this, false)
@@ -65,7 +66,6 @@ class ForegroundWallpaperTileService : TileService() {
         } 
         if (getIsTileClickRunning(this)) {
             ForegroundWallpaperService.startForeground(this)
-            FgwServiceFlutterHandler.updateNotificationFromDart(this)
             tile.state = Tile.STATE_ACTIVE
             Log.d(LOG_TAG, "Service started, tile state: ${tile.state}")
         }

@@ -2,7 +2,7 @@ import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../../model/settings/settings.dart';
 import '../../../../../services/common/services.dart';
@@ -55,12 +55,12 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
         PrivacyGuardLevelRow(
           privacyGuardLevelID: newId,
           guardLevel: newLevel,
-          aliasName: 'Level $newLevel Id:$newId',
+          labelName: 'Level $newLevel Id:$newId',
           color: privacyGuardLevels.getRandomColor(),
           // Assign a random color
           isActive: true,
         );
-    _aliasNameController = TextEditingController(text: _currentItem!.aliasName);
+    _aliasNameController = TextEditingController(text: _currentItem!.labelName);
     _selectedColor = _currentItem!.color;
     _isActive = _currentItem!.isActive;
 
@@ -87,14 +87,14 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
           newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
           _templateSchedules.add(WallpaperScheduleRow(
             id: newScheduleId++,
-            scheduleNum: newScheduleNum++,
-            aliasName:
+            orderNum: newScheduleNum++,
+            labelName:
                 'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-            filterSetId: filterSet.all.first.filterSetId,
+            filtersSetId: filtersSets.all.first.id,
             privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
             updateType: type,
             widgetId: 0,
-            intervalTime: type == WallpaperUpdateType.home
+            interval: type == WallpaperUpdateType.home
                 ? settings.defaultNewUpdateInterval
                 : 0,
             isActive: _isActive,
@@ -107,7 +107,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
 
   int _generateUniqueScheduleNum(int scheduleNum) {
     while (
-        wallpaperSchedules.all.any((row) => row.scheduleNum == scheduleNum)) {
+        wallpaperSchedules.all.any((row) => row.orderNum == scheduleNum)) {
       scheduleNum++;
     }
     return scheduleNum;
@@ -149,17 +149,17 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
                   ? existingSchedule.id
                   : newScheduleId++,
               // Generate new unique ID
-              scheduleNum: (_currentItem!.privacyGuardLevelID == privacyId)
-                  ? existingSchedule.scheduleNum
+              orderNum: (_currentItem!.privacyGuardLevelID == privacyId)
+                  ? existingSchedule.orderNum
                   : newScheduleNum++,
               // Generate new sequence number
               privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
-              aliasName:
+              labelName:
                   'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-              filterSetId: existingSchedule.filterSetId,
+              filtersSetId: existingSchedule.filtersSetId,
               updateType: existingSchedule.updateType,
               widgetId: existingSchedule.widgetId,
-              intervalTime: existingSchedule.intervalTime,
+              interval: existingSchedule.interval,
               isActive: _isActive,
             );
             _currentUpdateTypes.add(type); // only exist item need to add type.
@@ -170,15 +170,15 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
             scheduleRow = WallpaperScheduleRow(
               id: newScheduleId++,
               // Generate new unique ID
-              scheduleNum: newScheduleNum++,
+              orderNum: newScheduleNum++,
               // Generate new sequence number
-              aliasName:
+              labelName:
                   'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-              filterSetId: filterSet.all.first.filterSetId,
+              filtersSetId: filtersSets.all.first.id,
               privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
               updateType: type,
               widgetId: 0,
-              intervalTime: type == WallpaperUpdateType.home
+              interval: type == WallpaperUpdateType.home
                   ? settings.defaultNewUpdateInterval
                   : 0,
               isActive: _isActive,
@@ -203,14 +203,14 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
               newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
               _templateSchedules.add(WallpaperScheduleRow(
                 id: newScheduleId++,
-                scheduleNum: newScheduleNum++,
-                aliasName:
+                orderNum: newScheduleNum++,
+                labelName:
                     'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${WallpaperUpdateType.widget.name.toUpperCase()}',
-                filterSetId: widgetSchedule.filterSetId,
+                filtersSetId: widgetSchedule.filtersSetId,
                 privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
                 updateType: WallpaperUpdateType.widget,
                 widgetId: widgetSchedule.widgetId,
-                intervalTime: widgetSchedule.intervalTime,
+                interval: widgetSchedule.interval,
                 isActive: _isActive,
               ));
             }
@@ -289,7 +289,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
                   allItems:
                       privacyGuardLevels.all.where((e) => e.isActive).toList(),
                   displayString: (item) =>
-                      'L${item.guardLevel}: ${item.aliasName}',
+                      'L${item.guardLevel}: ${item.labelName}',
                   itemId: (item) => item.guardLevel,
                 ),
               ),
@@ -317,7 +317,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       final updatedItem = PrivacyGuardLevelRow(
         privacyGuardLevelID: _currentItem!.privacyGuardLevelID,
         guardLevel: _currentItem!.guardLevel,
-        aliasName: _aliasNameController.text,
+        labelName: _aliasNameController.text,
         color: _selectedColor,
         isActive: _isActive,
       );
@@ -413,7 +413,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${schedule.updateType.name} Filter Set: ${schedule.filterSetId} ',
+          '${schedule.updateType.name} Filter Set: ${schedule.filtersSetId} ',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
@@ -426,10 +426,10 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
   }
 
   Widget _buildFilterSetSelectTile(WallpaperScheduleRow schedule) {
-    Set<FilterSetRow> _selectedFilterSet = {};
+    Set<FiltersSetRow> _selectedFilterSet = {};
     _selectedFilterSet.clear();
     _selectedFilterSet.addAll(
-        filterSet.all.where((e) => (e.filterSetId == schedule.filterSetId)));
+        filtersSets.all.where((e) => (e.id == schedule.filtersSetId)));
     debugPrint(
         '$runtimeType _buildFilterSetSelectTile FilterSetRow: $_selectedFilterSet');
     return ScheduleCollectionTile(
@@ -440,13 +440,13 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
           // Create a new schedule with the updated interval time
           final updatedSchedule = WallpaperScheduleRow(
             id: schedule.id,
-            scheduleNum: schedule.scheduleNum,
-            aliasName: schedule.aliasName,
+            orderNum: schedule.orderNum,
+            labelName: schedule.labelName,
             privacyGuardLevelId: schedule.privacyGuardLevelId,
-            filterSetId: selectedFilterSet.first.filterSetId,
+            filtersSetId: selectedFilterSet.first.id,
             updateType: schedule.updateType,
             widgetId: schedule.widgetId,
-            intervalTime: schedule.intervalTime,
+            interval: schedule.interval,
             isActive: schedule.isActive,
           );
           _templateSchedules.add(updatedSchedule); // Add the new schedule
@@ -470,8 +470,8 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
 
   List<Widget> _buildIntervalOptions(WallpaperScheduleRow schedule) {
     final l10n = context.l10n;
-    String _curIntervalString = formatToLocalDuration(context,Duration(seconds:schedule.intervalTime));
-    var _useInterval = schedule.intervalTime == 0 ? false : true;
+    String _curIntervalString = formatToLocalDuration(context,Duration(seconds:schedule.interval));
+    var _useInterval = schedule.interval == 0 ? false : true;
     return [false, true].map(
       (isCustom) {
         final title = Text(
@@ -524,7 +524,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
     final v = await showDialog<int>(
       context: context,
       builder: (context) =>
-          HmsDurationDialog(initialSeconds: schedule.intervalTime),
+          HmsDurationDialog(initialSeconds: schedule.interval),
     );
     if (v != null) {
       setState(() {
@@ -532,13 +532,13 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
         // Create a new schedule with the updated interval time
         final updatedSchedule = WallpaperScheduleRow(
           id: schedule.id,
-          scheduleNum: schedule.scheduleNum,
-          aliasName: schedule.aliasName,
+          orderNum: schedule.orderNum,
+          labelName: schedule.labelName,
           privacyGuardLevelId: schedule.privacyGuardLevelId,
-          filterSetId: schedule.filterSetId,
+          filtersSetId: schedule.filtersSetId,
           updateType: schedule.updateType,
           widgetId: schedule.widgetId,
-          intervalTime: v,
+          interval: v,
           isActive: schedule.isActive,
         );
         _templateSchedules.add(updatedSchedule); // Add the new schedule

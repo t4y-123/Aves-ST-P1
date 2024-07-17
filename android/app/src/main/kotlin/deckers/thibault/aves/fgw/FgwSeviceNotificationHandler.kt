@@ -93,8 +93,8 @@ object FgwSeviceNotificationHandler {
     )
     // used for unlock screen, easily to make wallpaper next or go into the related collection.
     private val normalLytEntryBtns = listOf(
-        Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_pre_24, FgwIntentAction.LEFT),
-        Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_next_24, FgwIntentAction.RIGHT),
+        Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_pre_24, FgwIntentAction.PRE),
+        Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_next_24, FgwIntentAction.NEXT),
         Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_copy_all_24, FgwIntentAction.DUPLICATE),
         Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_auto_stories_24, FgwIntentAction.USED_RECORD)
     )
@@ -104,7 +104,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
         Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
-        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_next_24, FgwIntentAction.RIGHT)
+        Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_next_24, FgwIntentAction.NEXT)
     )
     private val normalLytLevelChangingBtns = listOf(
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
@@ -116,8 +116,8 @@ object FgwSeviceNotificationHandler {
     // by default, expand unlocked entry type layout.
     private val bigLytEntryBtns = listOf(
         Triple(R.id.iv_big_lyt_btn_01, R.drawable.baseline_menu_open_24, FgwIntentAction.SWITCH_GROUP),
-        Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_pre_24, FgwIntentAction.LEFT),
-        Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_next_24, FgwIntentAction.RIGHT),
+        Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_pre_24, FgwIntentAction.PRE),
+        Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_next_24, FgwIntentAction.NEXT),
         Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_copy_all_24, FgwIntentAction.DUPLICATE),
         Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_auto_stories_24, FgwIntentAction.USED_RECORD)
     )
@@ -128,7 +128,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
         Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
-        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_next_24, FgwIntentAction.RIGHT)
+        Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_next_24, FgwIntentAction.NEXT)
     )
 
     private val bigLytLevelBtnsChanging = listOf(
@@ -190,24 +190,23 @@ object FgwSeviceNotificationHandler {
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
+
     private fun updateGuardLevel(remoteViews: RemoteViews) {
         Log.d(LOG_TAG, "updateGuardLevel($remoteViews) $guardLevel")
         Log.d(LOG_TAG, "updateGuardLevel(${FgwServiceFlutterHandler.activeLevelsList})")
 
-        val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.first }?.first ?: 1
-        val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.first }?.first ?: 1
+        val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.level }?.level ?: 1
+        val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.level }?.level ?: 1
 
         guardLevel = when {
             guardLevel >= maxLevel -> {
                 inactiveButtonResIds.add(R.drawable.baseline_arrow_upward_24)
                 maxLevel
             }
-
             guardLevel <= minLevel -> {
                 inactiveButtonResIds.add(R.drawable.baseline_arrow_downward_24)
                 minLevel
             }
-
             else -> {
                 inactiveButtonResIds.remove(R.drawable.baseline_arrow_upward_24)
                 inactiveButtonResIds.remove(R.drawable.baseline_arrow_downward_24)
@@ -216,20 +215,17 @@ object FgwSeviceNotificationHandler {
         }
         Log.d(LOG_TAG, "updateGuardLevel inactiveButtonResIds: ($inactiveButtonResIds)")
 
-        val matchingTriple = FgwServiceFlutterHandler.activeLevelsList.find { it.first == guardLevel }
-        Log.d(LOG_TAG, "updateGuardLevel matchingTriple ($matchingTriple)")
+        val matchingLevel = FgwServiceFlutterHandler.activeLevelsList.find { it.level == guardLevel }
+        Log.d(LOG_TAG, "updateGuardLevel matchingLevel ($matchingLevel)")
 
-        matchingTriple?.let { triple ->
-            Log.d(LOG_TAG, "updateGuardLevel triple.first.toString() (${triple.first.toString()})")
-            remoteViews.setTextViewText(R.id.tv_status, triple.first.toString())
-            Log.d(LOG_TAG, "updateGuardLevel triple.second (${triple.second})")
-            remoteViews.setTextViewText(R.id.tv_title, triple.second)
-            Log.d(LOG_TAG, "updateGuardLevel triple.third (${triple.third})")
-            remoteViews.setInt(R.id.tv_status, "setBackgroundColor", triple.third)
-            Log.d(
-                LOG_TAG,
-                "updateGuardLevel remoteViews.setTextViewText(${R.id.tv_text}, (${FgwServiceFlutterHandler.entryFilename})"
-            )
+        matchingLevel?.let { level ->
+            Log.d(LOG_TAG, "updateGuardLevel level.level (${level.level})")
+            remoteViews.setTextViewText(R.id.tv_status, level.level.toString())
+            Log.d(LOG_TAG, "updateGuardLevel level.name (${level.name})")
+            remoteViews.setTextViewText(R.id.tv_title, level.name)
+            Log.d(LOG_TAG, "updateGuardLevel level.color int: (${level.color})")
+            remoteViews.setInt(R.id.tv_status, "setBackgroundColor", level.color)
+            Log.d(LOG_TAG, "updateGuardLevel remoteViews.setTextViewText(${R.id.tv_text}, (${FgwServiceFlutterHandler.entryFilename}))")
             remoteViews.setTextViewText(R.id.tv_text, FgwServiceFlutterHandler.entryFilename)
         }
     }

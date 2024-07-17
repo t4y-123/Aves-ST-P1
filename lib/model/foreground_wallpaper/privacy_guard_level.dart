@@ -35,7 +35,7 @@ class PrivacyGuardLevel with ChangeNotifier {
       await set(
         privacyGuardLevelID: row.privacyGuardLevelID,
         guardLevel: row.guardLevel,
-        aliasName: row.aliasName,
+        labelName: row.labelName,
         color: row.color!,
         isActive: row.isActive,
       );
@@ -46,7 +46,7 @@ class PrivacyGuardLevel with ChangeNotifier {
   Future<void> set({
     required int privacyGuardLevelID,
     required int guardLevel,
-    required String aliasName,
+    required String labelName,
     required Color color,
     required bool isActive,
   }) async {
@@ -58,7 +58,7 @@ class PrivacyGuardLevel with ChangeNotifier {
     final row = PrivacyGuardLevelRow(
       privacyGuardLevelID: privacyGuardLevelID,
       guardLevel: guardLevel,
-      aliasName: aliasName,
+      labelName: labelName,
       color: color,
       isActive: isActive,
     );
@@ -107,7 +107,7 @@ class PrivacyGuardLevel with ChangeNotifier {
     return PrivacyGuardLevelRow(
       privacyGuardLevelID: metadataDb.nextId,
       guardLevel: maxGuardLevel + existLevelOffset,
-      aliasName: alias,
+      labelName: alias,
       color:  newColor ?? getRandomColor(),
       isActive: isActive,
     );
@@ -158,17 +158,17 @@ class PrivacyGuardLevel with ChangeNotifier {
 class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuardLevelRow>{
   final int privacyGuardLevelID;
   final int guardLevel;
-  final String aliasName;
+  final String labelName;
   final Color? color;
   final bool isActive;
 
   @override
-  List<Object?> get props => [privacyGuardLevelID, guardLevel, aliasName, color];
+  List<Object?> get props => [privacyGuardLevelID, guardLevel, labelName, color];
 
   const PrivacyGuardLevelRow({
     required this.privacyGuardLevelID,
     required this.guardLevel,
-    required this.aliasName,
+    required this.labelName,
     required this.color,
     required this.isActive,
   });
@@ -183,7 +183,7 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
     return PrivacyGuardLevelRow(
       privacyGuardLevelID: map['id'] as int,
       guardLevel: map['guardLevel'] as int,
-      aliasName: map['aliasName'] as String,
+      labelName: map['labelName'] as String,
       color: color,
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
@@ -192,7 +192,7 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
   Map<String, dynamic> toMap() => {
     'id': privacyGuardLevelID,
     'guardLevel': guardLevel,
-    'aliasName': aliasName,
+    'labelName': labelName,
     'color':'0x${color?.value.toRadixString(16).padLeft(8, '0')}',
     'isActive' : isActive ? 1 : 0,
   };

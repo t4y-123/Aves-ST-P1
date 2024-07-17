@@ -42,13 +42,13 @@ class WallpaperSchedules with ChangeNotifier {
     for (var row in newRows) {
       await set(
         id: row.id,
-        scheduleNum: row.scheduleNum,
-        aliasName: row.aliasName,
+        scheduleNum: row.orderNum,
+        aliasName: row.labelName,
         privacyGuardLevelId: row.privacyGuardLevelId,
-        filterSetId: row.filterSetId,
+        filtersSetId: row.filtersSetId,
         updateType: row.updateType,
         widgetId: row.widgetId,
-        intervalTime: row.intervalTime,
+        intervalTime: row.interval,
         isActive: row.isActive,
       );
     }
@@ -60,7 +60,7 @@ class WallpaperSchedules with ChangeNotifier {
     required scheduleNum,
     required aliasName,
     required privacyGuardLevelId,
-    required filterSetId,
+    required filtersSetId,
     required updateType,
     required widgetId,
     required intervalTime,
@@ -73,13 +73,13 @@ class WallpaperSchedules with ChangeNotifier {
     await metadataDb.removeWallpaperSchedules(oldRows);
     final row = WallpaperScheduleRow(
       id: id,
-      scheduleNum: scheduleNum,
-      filterSetId: filterSetId,
-      aliasName: aliasName,
+      orderNum: scheduleNum,
+      filtersSetId: id,
+      labelName: aliasName,
       privacyGuardLevelId: privacyGuardLevelId,
       updateType: updateType,
       widgetId: widgetId,
-      intervalTime: intervalTime,
+      interval: intervalTime,
       isActive: isActive,
     );
     debugPrint('$runtimeType set  WallpaperScheduleRow  $row');
@@ -92,7 +92,7 @@ class WallpaperSchedules with ChangeNotifier {
   Future<void> removeEntries(Set<WallpaperScheduleRow> rows) => removeIds(rows.map((row) => row.id).toSet());
 
   Future<void> removeNumbers(Set<int> rowNums) async {
-    final removedRows = _rows.where((row) => rowNums.contains(row.scheduleNum)).toSet();
+    final removedRows = _rows.where((row) => rowNums.contains(row.orderNum)).toSet();
     await metadataDb.removeWallpaperSchedules(removedRows);
     removedRows.forEach(_rows.remove);
     notifyListeners();
@@ -132,23 +132,23 @@ class WallpaperSchedules with ChangeNotifier {
     notifyListeners();
   }
 
-  WallpaperScheduleRow newRow(int existActiveMaxLevelOffset, int privacyGuardLevelId, int filterSetId,
+  WallpaperScheduleRow newRow(int existActiveMaxLevelOffset, int privacyGuardLevelId, int id,
       WallpaperUpdateType updateType,{ String? aliasName, int? widgetId, int? intervalTime , bool isActive = true}) {
     var thisGuardLevel = privacyGuardLevels.all.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId);
     thisGuardLevel ??= privacyGuardLevels.all.first;
     final relevantItems = isActive ? all.where((item) => item.isActive).toList() : all.toList();
     final maxScheduleNum =
-        relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.scheduleNum).reduce((a, b) => a > b ? a : b);
+        relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
 
     return WallpaperScheduleRow(
       id: metadataDb.nextId,
-      scheduleNum: maxScheduleNum + existActiveMaxLevelOffset,
-      aliasName: aliasName ??  'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-$updateType' ,
+      orderNum: maxScheduleNum + existActiveMaxLevelOffset,
+      labelName: aliasName ??  'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-$updateType' ,
       privacyGuardLevelId: privacyGuardLevelId,
-      filterSetId: filterSetId,
+      filtersSetId: id,
       updateType: updateType,
       widgetId: widgetId ?? 0,
-      intervalTime: intervalTime ?? settings.defaultNewUpdateInterval,
+      interval: intervalTime ?? settings.defaultNewUpdateInterval,
       isActive: isActive,
     );
   }
@@ -195,63 +195,63 @@ class WallpaperSchedules with ChangeNotifier {
 @immutable
 class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperScheduleRow> {
   final int id;
-  final int scheduleNum;
-  final String aliasName;
+  final int orderNum;
+  final String labelName;
   final int privacyGuardLevelId;
-  final int filterSetId;
+  final int filtersSetId;
   final WallpaperUpdateType updateType;
   final int widgetId;
-  final int intervalTime; // in seconds
+  final int interval; // in seconds
   final bool isActive;
 
   @override
   List<Object?> get props => [
         id,
-        scheduleNum,
-        aliasName,
+        orderNum,
+        labelName,
         privacyGuardLevelId,
-        filterSetId,
+        filtersSetId,
         updateType,
         widgetId,
-        intervalTime,
+        interval,
         isActive,
       ];
 
   const WallpaperScheduleRow({
     required this.id,
-    required this.scheduleNum,
-    required this.aliasName,
+    required this.orderNum,
+    required this.labelName,
     required this.privacyGuardLevelId,
-    required this.filterSetId,
+    required this.filtersSetId,
     required this.updateType,
     required this.widgetId,
-    required this.intervalTime,
+    required this.interval,
     required this.isActive,
   });
 
   static WallpaperScheduleRow fromMap(Map map) {
     return WallpaperScheduleRow(
       id: map['id'] as int,
-      scheduleNum: map['scheduleNum'] as int,
-      aliasName: map['aliasName'] as String,
+      orderNum: map['orderNum'] as int,
+      labelName: map['labelName'] as String,
       privacyGuardLevelId: map['privacyGuardLevelId'] as int,
-      filterSetId: map['filterSetId'] as int,
+      filtersSetId: map['filtersSetId'] as int,
       updateType: WallpaperUpdateType.values.safeByName(map['updateType'] as String, WallpaperUpdateType.home),
       widgetId: map['widgetId'] as int,
-      intervalTime: map['intervalTime'] as int,
+      interval: map['interval'] as int,
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
 
   Map<String, dynamic> toMap() => {
         'id': id,
-        'scheduleNum': scheduleNum,
-        'aliasName': aliasName,
+        'orderNum': orderNum,
+        'labelName': labelName,
         'privacyGuardLevelId': privacyGuardLevelId,
-        'filterSetId': filterSetId,
+        'filtersSetId': filtersSetId,
         'updateType': updateType.name,
         'widgetId': widgetId,
-        'intervalTime': intervalTime,
+        'interval': interval,
         'isActive': isActive ? 1 : 0,
       };
 
@@ -264,7 +264,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
     }
 
     // If isActive is the same, sort by scheduleNum
-    final scheduleNumComparison = scheduleNum.compareTo(other.scheduleNum);
+    final scheduleNumComparison = orderNum.compareTo(other.orderNum);
     if (scheduleNumComparison != 0) {
       return scheduleNumComparison;
     }

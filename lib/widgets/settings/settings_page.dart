@@ -33,7 +33,7 @@ class SettingsPage extends StatelessWidget {
     AccessibilitySection(),
     DisplaySection(),
     LanguageSection(),
-    ClassifiedSection(),
+    PresentationSection(),
   ];
 
   const SettingsPage({super.key});

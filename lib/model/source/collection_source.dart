@@ -378,7 +378,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       if(shareByCopy){
         final dateTime = DateTime.now();
         final modifier = DateModifier.setCustom(const {}, dateTime);
-        if (modifier != null)  movedEntries.forEach((entry) async => await entry.editDate(modifier));
+        if (modifier != null)  movedEntries.forEach((entry)  => unawaited(entry.editDate(modifier)));
         debugPrint('shareCopiedEntries.add(movedEntries:\n${movedEntries}');
         await shareCopiedEntries.add(movedEntries);
       }

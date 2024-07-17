@@ -1094,11 +1094,12 @@
   "filterFgwUsedLabel": "Fgw used entries",
   "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",
 
-  "settingsClassifiedSectionTitle": "Classified",
-  "settingsClassifiedForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
-  "settingsClassifiedForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
 
-  "settingsClassifiedWallpaperAddDefaultScheduleTile": "Manage Default Group Schedules",
+  "settingsPresentationSectionTitle": "Presentation",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
+  "settingsPresentationForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
+
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage Default Group Schedules",
   "settingsWallpaperSchedulesManagerTitle": "Wallpaper Schedules Manager",
   "settingsResetAllToDefault3L5F": "Reset All to Default",
   "confirmResetAllToDefault3L5F": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
@@ -1123,6 +1124,8 @@
   "settingsSelectOneGuardLevelTitle": "Select one guard level",
   "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
   "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
+
+  "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,check your settings.",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

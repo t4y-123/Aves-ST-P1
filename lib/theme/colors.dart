@@ -138,7 +138,7 @@ abstract class AvesColorsData {
 
   Color get thumbnails => fromHue(87);
 
-  Color get classified => fromHue(001);
+  Color get presentation => fromHue(001);
 
   // debug
   static const debugGradient = LinearGradient(

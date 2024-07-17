@@ -7,7 +7,7 @@ import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_gu
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/tab_fixed.dart';
 
 import 'package:flutter/material.dart';
-import '../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../common/action_mixins/feedback.dart';
 import 'filter_set/filter_set_config_actions.dart';
 import 'schedule/wallpaper_schedule_config_actions.dart';
@@ -26,8 +26,8 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
   final Set<PrivacyGuardLevelRow?> _activePrivacyGuardLevelsTypes = {};
   late PrivacyGuardLevelConfigActions _privacyGuardLevelActions;
 
-  final List<FilterSetRow?> _filterSet = [];
-  final Set<FilterSetRow?> _activeFilterSet = {};
+  final List<FiltersSetRow?> _filterSet = [];
+  final Set<FiltersSetRow?> _activeFilterSet = {};
   late FilterSetConfigActions _filterSetActions;
 
   final List<WallpaperScheduleRow?> _wallpaperSchedules = [];
@@ -43,7 +43,7 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
     _activePrivacyGuardLevelsTypes.addAll(_privacyGuardLevels.where((v) => v?.isActive ?? false));
     _privacyGuardLevelActions = PrivacyGuardLevelConfigActions(context: context,setState: setState,);
 
-    _filterSet.addAll(filterSet.all);
+    _filterSet.addAll(filtersSets.all);
     _filterSet.sort();// to sort make it show active item first.
     _activeFilterSet.addAll(_filterSet.where((v) => v?.isActive ?? false));
     _filterSetActions = FilterSetConfigActions(context: context, setState: setState);
@@ -65,7 +65,7 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
         ForegroundWallpaperFixedListTab<PrivacyGuardLevelRow?>(
           items: _privacyGuardLevels,
           activeItems: _activePrivacyGuardLevelsTypes,
-          title: (item) => Text(item?.aliasName ?? 'Empty'),
+          title: (item) => Text(item?.labelName ?? 'Empty'),
           editAction:_privacyGuardLevelActions.editPrivacyGuardLevel,
           applyChangesAction: _privacyGuardLevelActions.applyPrivacyGuardLevelReorder,
           addItemAction: _privacyGuardLevelActions.addPrivacyGuardLevel,
@@ -74,10 +74,10 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
       ),
       (
       Tab(text: l10n.settingsFilterSetTabTypes),
-        ForegroundWallpaperFixedListTab<FilterSetRow?>(
+        ForegroundWallpaperFixedListTab<FiltersSetRow?>(
           items: _filterSet,
           activeItems: _activeFilterSet,
-          title: (item) => Text(item?.aliasName ?? 'Empty'),
+          title: (item) => Text(item?.labelName ?? 'Empty'),
           editAction:_filterSetActions.editFilterSet,
           applyChangesAction: _filterSetActions.applyFilterSet,
           addItemAction: _filterSetActions.addFilterSet,
@@ -90,7 +90,7 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
       child: AvesScaffold(
         appBar: AppBar(
           automaticallyImplyLeading: !settings.useTvLayout,
-          title: Text(l10n.settingsClassifiedForegroundWallpaperConfigTile),
+          title: Text(l10n.settingsPresentationForegroundWallpaperConfigTile),
           bottom: TabBar(
             tabs: tabs.map((t) => t.$1).toList(),
           ),

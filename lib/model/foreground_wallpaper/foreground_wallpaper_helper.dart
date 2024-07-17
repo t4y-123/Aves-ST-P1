@@ -1,39 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:aves/model/foreground_wallpaper/filterSet.dart';
+import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/painting.dart';
+import 'enum/fgw_export_item.dart';
 import 'fgw_used_entry_record.dart';
 
 final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();
 
-enum FgwExportItem { privacyGuardLevel, filterSet, schedule }
 
-extension ExtraAppExportItem on FgwExportItem {
-
-  dynamic export() {
-    return switch (this) {
-      FgwExportItem.privacyGuardLevel => privacyGuardLevels.export(),
-      FgwExportItem.filterSet => filterSet.export(),
-      FgwExportItem.schedule => wallpaperSchedules.export(),
-    };
-  }
-
-  Future<void> import(dynamic jsonMap) async {
-    switch (this) {
-      case FgwExportItem.privacyGuardLevel:
-        await privacyGuardLevels.import(jsonMap);
-      case FgwExportItem.filterSet:
-        await filterSet.import(jsonMap);
-      case FgwExportItem.schedule:
-        await wallpaperSchedules.import(jsonMap);
-    }
-  }
-}
 
 class ForegroundWallpaperHelper {
   ForegroundWallpaperHelper._private();
@@ -41,7 +19,7 @@ class ForegroundWallpaperHelper {
   Future<void> initWallpaperSchedules() async {
     final currentWallpaperSchedules = await metadataDb.loadAllWallpaperSchedules();
     await privacyGuardLevels.init();
-    await filterSet.init();
+    await filtersSets.init();
     await wallpaperSchedules.init();
     if (currentWallpaperSchedules.isEmpty) {
       await addType346Schedules();
@@ -51,7 +29,7 @@ class ForegroundWallpaperHelper {
 
   Future<void> clearWallpaperSchedules() async {
     await privacyGuardLevels.clear();
-    await filterSet.clear();
+    await filtersSets.clear();
     await wallpaperSchedules.clear();
     await fgwUsedEntryRecord.clear();
   }
@@ -70,18 +48,18 @@ class ForegroundWallpaperHelper {
   Future<void> addType346Schedules() async {
     final newLevels = commonType3GuardLevels();
 
-    Set<FilterSetRow> type346FilterSets = {
-      filterSet.newRow(1, aliasName: filterSet.all.isEmpty ? 'Home: Exposure' : null),
-      filterSet.newRow(2, aliasName: filterSet.all.isEmpty ? 'Home: Moderate' : null),
-      filterSet.newRow(3, aliasName: filterSet.all.isEmpty ? 'Lock: Moderate & Exposure' : null),
-      filterSet.newRow(4, aliasName: filterSet.all.isEmpty ? 'Home & Lock: Safe' : null),
+    Set<FiltersSetRow> type346FilterSets = {
+      filtersSets.newRow(1, labelName: filtersSets.all.isEmpty ? 'Home: Exposure' : null),
+      filtersSets.newRow(2, labelName: filtersSets.all.isEmpty ? 'Home: Moderate' : null),
+      filtersSets.newRow(3, labelName: filtersSets.all.isEmpty ? 'Lock: Moderate & Exposure' : null),
+      filtersSets.newRow(4, labelName: filtersSets.all.isEmpty ? 'Home & Lock: Safe' : null),
     };
     // must add first, for wallpaperSchedules.newRow will try to get item form them.
     await privacyGuardLevels.add(newLevels);
-    await filterSet.add(type346FilterSets);
+    await filtersSets.add(type346FilterSets);
 
     final glIds = privacyGuardLevels.all.map((e) => e.privacyGuardLevelID).toList();
-    final fsIds = type346FilterSets.map((e) => e.filterSetId).toList();
+    final fsIds = type346FilterSets.map((e) => e.id).toList();
 
     List<WallpaperScheduleRow> type346Schedules = [
       wallpaperSchedules.newRow(1, glIds[0], fsIds[0], WallpaperUpdateType.home),
@@ -113,8 +91,5 @@ class ForegroundWallpaperHelper {
       debugPrint('\nFgwExportItem item $item ${jsonMap[item.name]}');
       return item.import(jsonDecode(jsonMap[item.name].toList().first));
     });
-    // final privacyGuardlevelMap = jsonDecode(jsonMap['privacyGuardLevel'].toList().first);
-    // debugPrint('privacyGuardlevelMap = \n$privacyGuardlevelMap');
-    // privacyGuardLevels.import(privacyGuardlevelMap);
   }
 }

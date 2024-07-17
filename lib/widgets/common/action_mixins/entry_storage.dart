@@ -141,8 +141,6 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     transientMultiPageInfo.forEach((v) => v.dispose());
   }
 
-  static Duration shareCopiedKeepDuration = Duration(seconds: settings.shareByCopyRemoveInterval);
-
   Future<void> deleteExpiredShareCopied(BuildContext context) async {
     final source = context.read<CollectionSource>();
     await shareCopiedEntries.init();
@@ -158,7 +156,11 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
     source.pauseMonitoring();
     final destinationAlbums = entriesByDestination.keys.toSet();
+    debugPrint('$runtimeType deleteExpiredShareCopied\n'
+        'settings.enableBin ${settings.enableBin} \n'
+        ' settings.shareByCopyExpiredRemoveUseBin ${ settings.shareByCopyExpiredRemoveUseBin}\n');
     if(settings.enableBin && settings.shareByCopyExpiredRemoveUseBin){
+      debugPrint('$runtimeType deleteExpiredShareCopied delete to bin \n');
       final processed = <MoveOpEvent>{};
       final completer = Completer<Set<String>>();
       final opId = mediaEditService.newOpId;
@@ -176,7 +178,6 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
 
           // move
           final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
-          final movedEntries = movedOps.map((v) => v.uri).map((uri) => expiredEntries.firstWhereOrNull((entry) => entry.uri == uri)).whereNotNull().toSet();
           await source.updateAfterMove(
             todoEntries: expiredEntries,
             moveType: MoveType.toBin,
@@ -193,6 +194,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       );
       await completer.future;
     }else{
+      debugPrint('$runtimeType deleteExpiredShareCopied delete to forvever \n');
       final processed = <ImageOpEvent>{};
       final completer = Completer<Set<String>>();
       mediaEditService.delete(entries: expiredEntries).listen(

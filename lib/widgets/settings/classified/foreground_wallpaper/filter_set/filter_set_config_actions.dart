@@ -1,4 +1,4 @@
-import 'package:aves/model/foreground_wallpaper/filterSet.dart';
+import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:flutter/material.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import 'filter_set_config_page.dart';
@@ -13,29 +13,29 @@ class FilterSetConfigActions with FeedbackMixin {
   });
 
   // FilterSet
-  void applyFilterSet(BuildContext context, List<FilterSetRow?> allItems, Set<FilterSetRow?> activeItems) {
+  void applyFilterSet(BuildContext context, List<FiltersSetRow?> allItems, Set<FiltersSetRow?> activeItems) {
     setState(() {
       // First, remove items not exist.
-      final currentItems = filterSet.all;
+      final currentItems = filtersSets.all;
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
-      filterSet.removeEntries(itemsToRemove);
+      filtersSets.removeEntries(itemsToRemove);
       // Second, should use allItems to keep the reorder level.
       int filterSetNum = 1;
       allItems.where((item) => activeItems.contains(item)).forEach((item) {
-        filterSet.set(
-          filterSetId: item!.filterSetId,
-          filterSetNum: filterSetNum++,
-          aliasName: item.aliasName,
+        filtersSets.set(
+          id: item!.id,
+          orderNum: filterSetNum++,
+          labelName: item.labelName,
           filters: item.filters,
           isActive: true,
         );
       });
 
       allItems.where((item) => !activeItems.contains(item)).forEach((item) {
-        filterSet.set(
-          filterSetId: item!.filterSetId,
-          filterSetNum: filterSetNum++,
-          aliasName: item.aliasName,
+        filtersSets.set(
+          id: item!.id,
+          orderNum: filterSetNum++,
+          labelName: item.labelName,
           filters: item.filters,
           isActive: false,
         );
@@ -45,7 +45,7 @@ class FilterSetConfigActions with FeedbackMixin {
     });
   }
 
-  void addFilterSet(BuildContext context, List<FilterSetRow?> allItems, Set<FilterSetRow?> activeItems) {
+  void addFilterSet(BuildContext context, List<FiltersSetRow?> allItems, Set<FiltersSetRow?> activeItems) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -59,7 +59,7 @@ class FilterSetConfigActions with FeedbackMixin {
       if (newItem != null) {
         //final newRow = newItem as FilterSetRow;
         setState(() {
-          filterSet.add({newItem});
+          filtersSets.add({newItem});
           allItems.add(newItem);
           if (newItem.isActive) {
             activeItems.add(newItem);
@@ -72,11 +72,11 @@ class FilterSetConfigActions with FeedbackMixin {
 
   void editFilterSet(
       BuildContext context,
-      FilterSetRow? item,
-      List<FilterSetRow?> allItems,
-      Set<FilterSetRow?> activeItems) {
+      FiltersSetRow? item,
+      List<FiltersSetRow?> allItems,
+      Set<FiltersSetRow?> activeItems) {
     //t4y: for the all items in Config page will not be the latest data.
-    final FilterSetRow currentItem = filterSet.all.firstWhere((i) => i?.filterSetId == item!.filterSetId);
+    final FiltersSetRow currentItem = filtersSets.all.firstWhere((i) => i?.id == item!.id);
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -90,7 +90,7 @@ class FilterSetConfigActions with FeedbackMixin {
       if (updatedItem != null) {
         setState(() {
           final index = allItems.indexWhere(
-                  (i) => i?.filterSetId == updatedItem.filterSetId);
+                  (i) => i?.id == updatedItem.id);
           if (index != -1) {
             allItems[index] = updatedItem;
           } else {
@@ -101,7 +101,7 @@ class FilterSetConfigActions with FeedbackMixin {
           }else{
             activeItems.remove(updatedItem);
           }
-          filterSet.setRows({updatedItem});
+          filtersSets.setRows({updatedItem});
         });
       }
     });

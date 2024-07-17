@@ -4,7 +4,7 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/select_filter_set_page.dart';
 import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/select_privcy_guard_level_page.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../collection/filter_bar.dart';
 import '../../../../common/action_mixins/feedback.dart';
@@ -37,7 +37,7 @@ class _WallpaperScheduleConfigPageState
   late WallpaperScheduleRow? _currentItem;
 
   late Set<PrivacyGuardLevelRow> _selectedPrivacyGuardLevels;
-  late Set<FilterSetRow> _selectedFilterSet;
+  late Set<FiltersSetRow> _selectedFilterSet;
 
   late Set<WallpaperUpdateType> _currentUpdateTypes;
 
@@ -61,7 +61,7 @@ class _WallpaperScheduleConfigPageState
     //       isActive: true,
     //     );
     _aliasNameController =
-        TextEditingController(text: _currentItem!.aliasName);
+        TextEditingController(text: _currentItem!.labelName);
     _isActive = _currentItem!.isActive;
 
     //Get schedule details, if exist.
@@ -88,15 +88,15 @@ class _WallpaperScheduleConfigPageState
               (row) => privacyGuardLevelIds.contains(row.privacyGuardLevelID))
           .toSet();
 
-      final filterSetIds =
-          relevantDetails.map((detail) => detail.filterSetId).toSet();
+      final ids =
+          relevantDetails.map((detail) => detail.filtersSetId).toSet();
       // Filter the PrivacyGuardLevelRow objects based on the extracted privacyGuardLevelIds
-      _selectedFilterSet = filterSet.all
-          .where((row) => filterSetIds.contains(row.filterSetId))
+      _selectedFilterSet = filtersSets.all
+          .where((row) => ids.contains(row.id))
           .toSet();
 
-      _curInterval = firstScheduleDetail.intervalTime >= 3
-          ? firstScheduleDetail.intervalTime
+      _curInterval = firstScheduleDetail.interval >= 3
+          ? firstScheduleDetail.interval
           : 0;
       _useInterval = _curInterval >= 3 ? true : false;
     } else {
@@ -104,7 +104,7 @@ class _WallpaperScheduleConfigPageState
       _selectedPrivacyGuardLevels = {
         privacyGuardLevels.all.firstWhere((e) => e.isActive)
       };
-      _selectedFilterSet = {filterSet.all.firstWhere((e) => e.isActive)};
+      _selectedFilterSet = {filtersSets.all.firstWhere((e) => e.isActive)};
       _IsWidgetSchdeule = false;
       _useInterval = false;
       _curWidgetID = 0;
@@ -130,7 +130,7 @@ class _WallpaperScheduleConfigPageState
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text('ID: ${_currentItem?.id ?? ''}'),
-                  Text('Sequence Number: ${_currentItem?.scheduleNum ?? ''}'),
+                  Text('Sequence Number: ${_currentItem?.orderNum ?? ''}'),
                 ],
               ),
               const Divider(height: 32),
@@ -220,7 +220,7 @@ class _WallpaperScheduleConfigPageState
       //   final detailRow = WallpaperScheduleDetailRow(
       //     wallpaperScheduleDetailId: _generateDetailUniqueId(),
       //     wallpaperScheduleId: updatedItem.id,
-      //     filterSetId: _selectedFilterSet.first.filterSetId,
+      //     id: _selectedFilterSet.first.id,
       //     privacyGuardLevelId: privacyGuardLevelRow.privacyGuardLevelID,
       //     updateType: _currentUpdateTypes,
       //     // Simplified for the example
@@ -425,7 +425,7 @@ class _WallpaperScheduleConfigPageState
           children: [
             ListTile(
               title: Text(
-                  'Filter Set: ${_selectedFilterSet.first.filterSetId ?? 'None'}'),
+                  'Filter Set: ${_selectedFilterSet.first.id ?? 'None'}'),
               trailing: ElevatedButton(
                 onPressed: () async {
                   final result = await Navigator.push(

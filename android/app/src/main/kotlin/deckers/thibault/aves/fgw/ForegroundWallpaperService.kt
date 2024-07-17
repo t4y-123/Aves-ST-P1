@@ -15,9 +15,9 @@ import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.utils.startForegroundServiceCompat
 import deckers.thibault.aves.utils.startService
 import deckers.thibault.aves.utils.stopService
-import deckers.thibault.aves.fgw.FgwSeviceNotificationHandler
-import deckers.thibault.aves.fgw.FgwServiceActionHandler
-import deckers.thibault.aves.fgw.FgwServiceFlutterHandler
+import deckers.thibault.aves.fgw.*
+
+
 
 class ForegroundWallpaperService : Service() {
     private lateinit var screenStateReceiver: BroadcastReceiver
@@ -31,14 +31,9 @@ class ForegroundWallpaperService : Service() {
         createNotificationChannel()
         registerScreenStateReceiver()
         isRunning = true
-
-        FgwServiceFlutterHandler.callDartStartMethod(serviceContext)
-        // first , sync necessary data.
         startForeground(2, FgwSeviceNotificationHandler.createNotification(this))
         ForegroundWallpaperTileService.upTile(this,true)
-        // Call the Dart start method via FgwServiceFlutterHandler
-//        FgwServiceFlutterHandler.callDartStartMethod(serviceContext)
-        Log.i(LOG_TAG, "Foreground wallpaper service  FgwServiceFlutterHandler.callDartStartMethod(serviceContext)")
+        FgwServiceFlutterHandler.callDartNoArgsMethod(serviceContext,FgwConstant.START)
     }
 
     // create update notification
@@ -48,7 +43,6 @@ class ForegroundWallpaperService : Service() {
             NotificationManagerCompat.IMPORTANCE_HIGH
         )
             .setName(applicationContext.getText(R.string.foreground_wallpaper_channel_name))
-//            .setName("ForegroundWallpaper")
             .setShowBadge(false)
             .build()
         NotificationManagerCompat.from(applicationContext).createNotificationChannel(channel)
@@ -61,7 +55,7 @@ class ForegroundWallpaperService : Service() {
 
     override fun onDestroy() {
         Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
-        FgwServiceFlutterHandler.callDartStopMethod(serviceContext)
+        FgwServiceFlutterHandler.callDartNoArgsMethod(serviceContext,FgwConstant.STOP)
         // Unregister receiver for screen events
         unregisterScreenStateReceiver()
         isRunning = false

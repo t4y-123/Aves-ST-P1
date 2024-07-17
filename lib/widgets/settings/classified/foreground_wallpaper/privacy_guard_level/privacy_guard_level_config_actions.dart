@@ -30,7 +30,7 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
         privacyGuardLevels.set(
           privacyGuardLevelID: item!.privacyGuardLevelID,
           guardLevel: guardLevelIndex++,
-          aliasName: item.aliasName,
+          labelName: item.labelName,
           color: item.color!,
           isActive: true,
         );
@@ -41,7 +41,7 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
         privacyGuardLevels.set(
           privacyGuardLevelID: item!.privacyGuardLevelID,
           guardLevel: guardLevelIndex++,
-          aliasName: item.aliasName,
+          labelName: item.labelName,
           color: item.color!,
           isActive: false,
         );

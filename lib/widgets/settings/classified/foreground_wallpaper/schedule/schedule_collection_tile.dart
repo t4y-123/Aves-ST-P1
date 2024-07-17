@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../../../services/intent_service.dart';
 import '../../../../../theme/icons.dart';
 import '../../../../collection/filter_bar.dart';
@@ -8,8 +8,8 @@ import '../filter_set/filter_set_config_page.dart';
 import 'generic_selection_page.dart';
 
 class ScheduleCollectionTile extends StatefulWidget {
-  final Set<FilterSetRow> selectedFilterSet;
-  final void Function(Set<FilterSetRow>) onSelection;
+  final Set<FiltersSetRow> selectedFilterSet;
+  final void Function(Set<FiltersSetRow>) onSelection;
 
   const ScheduleCollectionTile({
     super.key,
@@ -23,7 +23,7 @@ class ScheduleCollectionTile extends StatefulWidget {
 
 class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
     with FeedbackMixin  {
-  late Set<FilterSetRow> _selectedFilterSet;
+  late Set<FiltersSetRow> _selectedFilterSet;
 
   @override
   void initState() {
@@ -62,7 +62,7 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          ' ${_selectedFilterSet.isEmpty ? 'None' : _selectedFilterSet.first.aliasName}',
+                          ' ${_selectedFilterSet.isEmpty ? 'None' : _selectedFilterSet.first.labelName}',
                           style: textTheme.titleMedium!,
                         ),
                       ],
@@ -73,12 +73,12 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => GenericForegroundWallpaperItemsSelectionPage<FilterSetRow>(
+                          builder: (context) => GenericForegroundWallpaperItemsSelectionPage<FiltersSetRow>(
                             selectedItems: _selectedFilterSet,
                             maxSelection: 1,
-                            allItems: filterSet.all.where((e) => e.isActive).toList(),
-                            displayString: (item) => 'ID: ${item.filterSetId}-Num: ${item.filterSetNum}: ${item.aliasName}',
-                            itemId: (item) => item.filterSetNum,
+                            allItems: filtersSets.all.where((e) => e.isActive).toList(),
+                            displayString: (item) => 'ID: ${item.id}-Num: ${item.orderNum}: ${item.labelName}',
+                            itemId: (item) => item.orderNum,
                           ),
                         ),
                       );
@@ -101,16 +101,16 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                       final selection = await IntentService.pickCollectionFilters(curFilters);
                       debugPrint('$runtimeType: selection: $selection');
                       if (selection != null) {
-                        final newFilterSetRow =  FilterSetRow(
-                          filterSetId: curFilterSetRow.filterSetId,
-                          filterSetNum: curFilterSetRow.filterSetNum,
-                          aliasName: curFilterSetRow.aliasName,
+                        final newFilterSetRow =  FiltersSetRow(
+                          id: curFilterSetRow.id,
+                          orderNum: curFilterSetRow.orderNum,
+                          labelName: curFilterSetRow.labelName,
                           filters: selection,
                           isActive: curFilterSetRow.isActive,
                         );
-                        await filterSet.setRows({newFilterSetRow});
+                        await filtersSets.setRows({newFilterSetRow});
                         setState(() {
-                          widget.selectedFilterSet.removeWhere((item) => item.filterSetId == newFilterSetRow.filterSetId);
+                          widget.selectedFilterSet.removeWhere((item) => item.id == newFilterSetRow.id);
                           widget.selectedFilterSet.add(newFilterSetRow);
                         });
                       }
@@ -124,16 +124,16 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                         MaterialPageRoute(
                           builder: (context) => FilterSetConfigPage(
                             item: null, // Pass null to create a new item
-                            allItems: filterSet.all.toList(),
-                            activeItems: filterSet.all.where((e) => e.isActive).toSet(),
+                            allItems: filtersSets.all.toList(),
+                            activeItems: filtersSets.all.where((e) => e.isActive).toSet(),
                           ),
                         ),
                       ).then((newItem) {
                         if (newItem != null) {
                           //final newRow = newItem as FilterSetRow;
                           setState(() {
-                            filterSet.add({newItem});
-                            filterSet.all.add(newItem);
+                            filtersSets.add({newItem});
+                            filtersSets.all.add(newItem);
                             _selectedFilterSet = {newItem};
                             widget.onSelection({newItem});
                           });

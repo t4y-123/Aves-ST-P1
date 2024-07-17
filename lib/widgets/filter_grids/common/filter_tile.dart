@@ -56,7 +56,6 @@ class _InteractiveFilterTileState<T extends CollectionFilter> extends State<Inte
       final appMode = context.read<ValueNotifier<AppMode>?>()?.value;
       switch (appMode) {
         case AppMode.main:
-        case AppMode.fgwShareCopy:
         case AppMode.pickCollectionFiltersExternal:
         case AppMode.pickSingleMediaExternal:
         case AppMode.pickMultipleMediaExternal:

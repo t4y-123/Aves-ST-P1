@@ -1,14 +1,14 @@
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filterSet.dart';
+import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 
 
 import 'dart:collection';
 
 class FilterSetSelectionPage extends StatefulWidget {
   static const routeName = '/settings/classified/wallpaper_schedule_config/select_filter_set';
-  final Set<FilterSetRow> selectedFilterSet;
+  final Set<FiltersSetRow> selectedFilterSet;
   final int? maxSelection;
 
   const FilterSetSelectionPage({
@@ -29,7 +29,7 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
   @override
   void initState() {
     super.initState();
-    _selectedFilterSet = widget.selectedFilterSet.map((item) => item.filterSetNum).toSet();
+    _selectedFilterSet = widget.selectedFilterSet.map((item) => item.orderNum).toSet();
     if (_selectedFilterSet.isNotEmpty) {
       _selectedFilterSetNum = _selectedFilterSet.first;
       _selectionOrder.addAll(_selectedFilterSet);
@@ -63,11 +63,11 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
       ),
       body: SafeArea(
         child: ListView(
-          children: filterSet.all.where((e) => e.isActive).map((filterSet) {
+          children: filtersSets.all.where((e) => e.isActive).map((filterSet) {
             return ListTile(
-              title: Text('ID: ${filterSet.filterSetId}-Num: ${filterSet.filterSetNum}: ${filterSet.aliasName}'),
+              title: Text('ID: ${filterSet.id}-Num: ${filterSet.orderNum}: ${filterSet.labelName}'),
               trailing: Radio(
-                value: filterSet.filterSetNum,
+                value: filterSet.orderNum,
                 groupValue: _selectedFilterSetNum,
                 onChanged: (value) {
                   _selectFilterSet(value as int);
@@ -79,7 +79,7 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Set<FilterSetRow> resultFilterSet = filterSet.all.where((item) => _selectedFilterSet.contains(item.filterSetNum)).toSet();
+          Set<FiltersSetRow> resultFilterSet = filtersSets.all.where((item) => _selectedFilterSet.contains(item.orderNum)).toSet();
           Navigator.pop(context, resultFilterSet);
         },
         child: const Icon(Icons.check),

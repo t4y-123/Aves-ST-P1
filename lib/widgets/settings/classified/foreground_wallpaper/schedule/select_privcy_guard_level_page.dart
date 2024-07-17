@@ -59,7 +59,7 @@ class _PrivacyGuardLevelSelectionState extends State<PrivacyGuardLevelSelectionP
         child: ListView(
           children: privacyGuardLevels.all.where((e) => e.isActive).map((privacyGuardLevel) {
             return ListTile(
-              title: Text('L${privacyGuardLevel.guardLevel}:  ${privacyGuardLevel.aliasName} '),
+              title: Text('L${privacyGuardLevel.guardLevel}:  ${privacyGuardLevel.labelName} '),
               trailing: Switch(
                 value: _selectedIntLevels.contains(privacyGuardLevel.guardLevel),
                 onChanged: (value) {

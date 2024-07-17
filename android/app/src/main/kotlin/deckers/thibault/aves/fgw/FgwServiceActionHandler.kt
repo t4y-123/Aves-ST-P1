@@ -14,78 +14,70 @@ object FgwServiceActionHandler {
     private val LOG_TAG = LogUtils.createTag<FgwServiceActionHandler>()
 
     fun handleStartCommand(context: Context, intent: Intent?, flags: Int, startId: Int) {
+//        if(intent?.action!=null && intent?.action!= FgwIntentAction.SWITCH_GROUP)
+//            showToast(context, "${intent!!.action} tapped")
         when (intent?.action) {
             FgwIntentAction.SWITCH_GROUP -> {
                 FgwSeviceNotificationHandler.isLevelGroup = !FgwSeviceNotificationHandler.isLevelGroup
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
-            FgwIntentAction.LEFT -> {
-                showToast(context, "Left arrow tapped")
-                FgwServiceFlutterHandler.preWallpaper(context)
-                //FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
+            FgwIntentAction.PRE -> {
+                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.PRE_WARLLPAPER)
             }
-            FgwIntentAction.RIGHT -> {
-                showToast(context, "Right arrow tapped")
-                FgwServiceFlutterHandler.nextWallpaper(context)
-                //FgwServiceFlutterHandler.updateNotificationFromDart(context)// Add this line
-            }
-            FgwIntentAction.USED_RECORD -> {
-                showToast(context, "USED_RECORD icon tapped")
-                FgwServiceFlutterHandler.updateNotificationFromDart(context)
+            FgwIntentAction.NEXT -> {
+                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.NEXT_WARLLPAPER)
             }
             FgwIntentAction.DOWNWARD -> {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = true
                 FgwSeviceNotificationHandler.guardLevel -= 1
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.UPWARD -> {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = true
                 FgwSeviceNotificationHandler.guardLevel += 1
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.CANCEL_LEVEL_CHANGE -> {
                 FgwSeviceNotificationHandler.guardLevel = FgwServiceFlutterHandler.curGuardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
             }
             FgwIntentAction.APPLY_LEVEL_CHANGE -> {
-                //FgwSeviceNotificationHandler.guardLevel = FgwSeviceNotificationHandler.guardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
-                FgwServiceFlutterHandler.syncNecessaryDataFromDart(context)
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+                FgwServiceFlutterHandler.changeGuardLevel(context)
             }
             FgwIntentAction.LOCK_UNLOCK -> {
                 FgwSeviceNotificationHandler.canChangeLevel = !FgwSeviceNotificationHandler.canChangeLevel
-                showToast(context,if (FgwSeviceNotificationHandler.canChangeLevel) "Locked" else "Unlocked")
-                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+//                showToast(context,if (FgwSeviceNotificationHandler.canChangeLevel) "Locked" else "Unlocked")
             }
 
             Intent.ACTION_SCREEN_ON -> handleScreenOn(context)
             Intent.ACTION_SCREEN_OFF -> handleScreenOff(context)
             Intent.ACTION_USER_PRESENT -> handleUserPresent(context)
         }
+        FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
     }
 
     private fun handleScreenOn(context:Context) {
         // Handle screen on event
         Log.i(LOG_TAG, "Screen ON")
-        FgwServiceFlutterHandler.updateNotificationFromDart(context)
+        FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+        WallpaperScheduleHelper.handleSchedules(context,FgwServiceFlutterHandler.scheduleList)
     }
 
     private fun handleScreenOff(context:Context) {
         // Handle screen off event
         Log.i(LOG_TAG, "Screen OFF")
-        FgwServiceFlutterHandler.updateNotificationFromDart(context)
+        FgwServiceFlutterHandler.curUpdateType = FgwConstant.CUR_TYPE_LOCK
+        FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+        WallpaperScheduleHelper.handleScreenEvents(context,FgwServiceFlutterHandler.scheduleList)
     }
 
     private fun handleUserPresent(context:Context) {
         // Handle user present (unlock) event
         Log.i(LOG_TAG, "User Present (Unlocked)")
-        FgwServiceFlutterHandler.updateNotificationFromDart(context)
+        FgwServiceFlutterHandler.curUpdateType = FgwConstant.CUR_TYPE_HOME
+        FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+        WallpaperScheduleHelper.handleScreenEvents(context,FgwServiceFlutterHandler.scheduleList)
     }
-
-    private fun showToast(context:Context, message: String) {
-        Log.i(LOG_TAG, "FgwServiceActionHandler $context : $message")
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
+//    private fun showToast(context:Context, message: String) {
+//        Log.i(LOG_TAG, "FgwServiceActionHandler $context : $message")
+//        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//    }
 }

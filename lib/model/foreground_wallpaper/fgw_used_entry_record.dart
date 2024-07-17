@@ -121,7 +121,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
             return true;
           } else {
             entryIds.add(row.entryId);
-            debugPrint('_removeOldestEntries entryIds.add(${row.entryId});  $groupedRows');
+            //debugPrint('_removeOldestEntries entryIds.add(${row.entryId});  $groupedRows');
             return false;
           }
         });
@@ -172,7 +172,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
   Future<void> addAvesEntry(AvesEntry entry, WallpaperUpdateType updateType,
       {int widgetId = 0, PrivacyGuardLevelRow? curLevel}) async {
     debugPrint('addAvesEntry newRow $entry \n $updateType ');
-    curLevel ??= await fgwScheduleHelper.getPrivacyGuardLevel();
+    curLevel ??= await fgwScheduleHelper.getCurGuardLevel();
     debugPrint('addAvesEntry curLevel $curLevel');
     final FgwUsedEntryRecordRow newRecord = await newRow(
       curLevel!.privacyGuardLevelID,

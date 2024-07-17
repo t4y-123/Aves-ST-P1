@@ -267,7 +267,7 @@ object FgwServiceFlutterHandler {
         runBlocking {
             invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL, opString,
                 arguments = hashMapOf(
-                    "updateType" to curUpdateType,  // Replace with actual data
+                    "updateType" to curUpdateType,
                     "widgetId" to curWidgetId,
                 ),
                 onSuccess = { result -> Log.d(LOG_TAG, "$opString success: $result") },
@@ -276,8 +276,18 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    fun changeGuardLevel(context: Context) {
+    fun changeGuardLevel(context: Context, newGuardLevel:Int) {
+        val opString = FgwConstant.CHANGE_GUARD_LEVEL
         Log.d(LOG_TAG, "changeGuardLevel [$context]:RUN")
+        runBlocking {
+            invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL,opString ,
+                arguments = hashMapOf(
+                    "newGuardLevel" to newGuardLevel,
+                ),
+                onSuccess = { result -> Log.d(LOG_TAG, "$opString success: $result") },
+                onError = { e -> Log.e(LOG_TAG, "Failed to invoke $opString", e) }
+            )
+        }
     }
 
     private fun showToast(context:Context, message: String) {

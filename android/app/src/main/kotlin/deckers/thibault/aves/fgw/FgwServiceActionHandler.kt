@@ -39,8 +39,12 @@ object FgwServiceActionHandler {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
             }
             FgwIntentAction.APPLY_LEVEL_CHANGE -> {
+                //cancel all schedule periodic work, then set the level.
+                // in dart side, the flutter changeGuardLevel will call the next wallpaper to refresh the wallpaper.
+                WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(context)
+                FgwServiceFlutterHandler.curGuardLevel = FgwSeviceNotificationHandler.guardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
-                FgwServiceFlutterHandler.changeGuardLevel(context)
+                FgwServiceFlutterHandler.changeGuardLevel(context,FgwServiceFlutterHandler.curGuardLevel)
             }
             FgwIntentAction.LOCK_UNLOCK -> {
                 FgwSeviceNotificationHandler.canChangeLevel = !FgwSeviceNotificationHandler.canChangeLevel

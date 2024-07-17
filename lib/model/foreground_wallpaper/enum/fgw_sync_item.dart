@@ -25,6 +25,7 @@ extension ExtraFgwSyncItem on FgwSyncItem {
 
 class FgwSyncActions {
   static const changeGuardLevel = 'changeGuardLevel';
+  static const newGuardLevel = 'nweGuardLevel';
   static const curGuardLevel = 'curGuardLevel';
   static const curEntryFileName = 'curEntryFileName';
   static const activeLevels = 'activeLevels';

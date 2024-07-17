@@ -40,6 +40,7 @@ object FgwConstant {
     //wallpaper op string
     const val NEXT_WARLLPAPER = "nextWallpaper"
     const val PRE_WARLLPAPER = "preWallpaper"
+    const val CHANGE_GUARD_LEVEL = "changeGuardLevel"
 
     // for sync data
     const val CUR_LEVEL = "curLevel"

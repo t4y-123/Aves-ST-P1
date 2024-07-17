@@ -73,7 +73,6 @@ class FgwServiceHelper with FeedbackMixin{
   Future<void> _initDependencies() async {
     await androidFileUtils.init();
     await metadataDb.init();
-
     final readyCompleter = Completer();
     _source.stateNotifier.addListener(() {
       if (_source.isReady && !readyCompleter.isCompleted) {
@@ -95,7 +94,7 @@ class FgwServiceHelper with FeedbackMixin{
   Future<void> start() async {
     await reportService.log('FgwServiceHelper in start');
     await _initDependencies();
-    unawaited(syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules}));
+    await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
     unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
         FgwServiceWallpaperType.next));
   }
@@ -164,12 +163,22 @@ class FgwServiceHelper with FeedbackMixin{
   }
 
   Future<bool> changeGuardLevel(dynamic args) async {
+    debugPrint('$runtimeType changeGuardLevel args: $args');
+    if (args.containsKey('newGuardLevel')) {
+      debugPrint('$runtimeType newGuardLevel is present: ${args['newGuardLevel']}');
+    } else {
+      debugPrint('$runtimeType newGuardLevel is missing!');
+    }
+    final newGuardLevel = args['newGuardLevel'] as int;
     await _initDependencies();
-    final newGuardLevel = args[FgwSyncActions.changeGuardLevel] as int;
-    debugPrint('$runtimeType syncNecessaryData $newGuardLevel $newGuardLevel');
+    debugPrint('$runtimeType changeGuardLevel newGuardLevel $newGuardLevel');
     final activeLevels = await fgwScheduleHelper.getActiveLevels();
+
     if(activeLevels.any((item) => item.guardLevel == newGuardLevel)){
       settings.curPrivacyGuardLevel = newGuardLevel;
+      unawaited(syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules}));
+      unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+          FgwServiceWallpaperType.next));
       return Future.value(true);
     }else{
       throw  Exception('Invalid guard level [$newGuardLevel] for \n$activeLevels');

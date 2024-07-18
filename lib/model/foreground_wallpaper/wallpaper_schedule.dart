@@ -7,6 +7,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import '../settings/settings.dart';
+import 'enum/fgw_entry_sort_type.dart';
+import 'filtersSet.dart';
 
 enum WallpaperUpdateType { home, lock, both, widget }
 
@@ -43,10 +45,11 @@ class WallpaperSchedules with ChangeNotifier {
       await set(
         id: row.id,
         scheduleNum: row.orderNum,
-        aliasName: row.labelName,
+        lableName: row.labelName,
         privacyGuardLevelId: row.privacyGuardLevelId,
         filtersSetId: row.filtersSetId,
         updateType: row.updateType,
+        displayType: row.displayType,
         widgetId: row.widgetId,
         intervalTime: row.interval,
         isActive: row.isActive,
@@ -58,11 +61,12 @@ class WallpaperSchedules with ChangeNotifier {
   Future<void> set({
     required id,
     required scheduleNum,
-    required aliasName,
+    required lableName,
     required privacyGuardLevelId,
     required filtersSetId,
     required updateType,
     required widgetId,
+    required displayType,
     required intervalTime,
     required isActive,
   }) async {
@@ -75,10 +79,11 @@ class WallpaperSchedules with ChangeNotifier {
       id: id,
       orderNum: scheduleNum,
       filtersSetId: id,
-      labelName: aliasName,
+      labelName: lableName,
       privacyGuardLevelId: privacyGuardLevelId,
       updateType: updateType,
       widgetId: widgetId,
+      displayType:displayType,
       interval: intervalTime,
       isActive: isActive,
     );
@@ -132,23 +137,37 @@ class WallpaperSchedules with ChangeNotifier {
     notifyListeners();
   }
 
-  WallpaperScheduleRow newRow(int existActiveMaxLevelOffset, int privacyGuardLevelId, int id,
-      WallpaperUpdateType updateType,{ String? aliasName, int? widgetId, int? intervalTime , bool isActive = true}) {
+  WallpaperScheduleRow newRow({
+      required int existMaxOrderNumOffset,
+      required int privacyGuardLevelId,
+      required int filtersSetId,
+      required WallpaperUpdateType updateType,
+      FgwDisplayedType? displayType,
+      String? labelName,
+      int? widgetId,
+      int? interval,
+      bool isActive = true,
+      int? id}) {
     var thisGuardLevel = privacyGuardLevels.all.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId);
     thisGuardLevel ??= privacyGuardLevels.all.first;
+
+    var thisFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == filtersSetId);
+    thisFiltersSet ??= filtersSets.all.first;
+
     final relevantItems = isActive ? all.where((item) => item.isActive).toList() : all.toList();
     final maxScheduleNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
 
     return WallpaperScheduleRow(
-      id: metadataDb.nextId,
-      orderNum: maxScheduleNum + existActiveMaxLevelOffset,
-      labelName: aliasName ??  'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-$updateType' ,
+      id: id ?? metadataDb.nextId,
+      orderNum: maxScheduleNum + existMaxOrderNumOffset,
+      labelName: labelName ?? 'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-${updateType.name}',
       privacyGuardLevelId: privacyGuardLevelId,
-      filtersSetId: id,
+      filtersSetId: thisFiltersSet.id,
       updateType: updateType,
       widgetId: widgetId ?? 0,
-      interval: intervalTime ?? settings.defaultNewUpdateInterval,
+      displayType: displayType ?? settings.fgwDisplayType,
+      interval: interval ?? settings.defaultNewUpdateInterval,
       isActive: isActive,
     );
   }
@@ -201,6 +220,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
   final int filtersSetId;
   final WallpaperUpdateType updateType;
   final int widgetId;
+  final FgwDisplayedType displayType;
   final int interval; // in seconds
   final bool isActive;
 
@@ -213,6 +233,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
         filtersSetId,
         updateType,
         widgetId,
+        displayType,
         interval,
         isActive,
       ];
@@ -225,11 +246,14 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
     required this.filtersSetId,
     required this.updateType,
     required this.widgetId,
+    required this.displayType,
     required this.interval,
     required this.isActive,
   });
 
   static WallpaperScheduleRow fromMap(Map map) {
+    final defaultDisplayType = FgwDisplayedType.values.safeByName(map['displayType'] as String,settings.fgwDisplayType);
+    debugPrint('WallpaperScheduleRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
     return WallpaperScheduleRow(
       id: map['id'] as int,
       orderNum: map['orderNum'] as int,
@@ -238,6 +262,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
       filtersSetId: map['filtersSetId'] as int,
       updateType: WallpaperUpdateType.values.safeByName(map['updateType'] as String, WallpaperUpdateType.home),
       widgetId: map['widgetId'] as int,
+      displayType: defaultDisplayType,
       interval: map['interval'] as int,
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
@@ -251,6 +276,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
         'filtersSetId': filtersSetId,
         'updateType': updateType.name,
         'widgetId': widgetId,
+        'displayType': displayType.name,
         'interval': interval,
         'isActive': isActive ? 1 : 0,
       };

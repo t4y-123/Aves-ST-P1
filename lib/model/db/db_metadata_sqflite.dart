@@ -156,6 +156,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', filtersSetId INTEGER'
             ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', displayType TEXT' // Values can be 'random'  or 'most recent not used'
             ', interval INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
             ', isActive INTEGER DEFAULT 0'
             ')');

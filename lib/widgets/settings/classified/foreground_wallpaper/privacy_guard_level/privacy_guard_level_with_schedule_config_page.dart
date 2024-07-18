@@ -1,3 +1,4 @@
+import 'package:aves/model/foreground_wallpaper/enum/fgw_entry_sort_type.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:collection/collection.dart';
@@ -7,8 +8,10 @@ import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../../model/settings/settings.dart';
 import '../../../../../services/common/services.dart';
 import '../../../../../theme/format.dart';
+import '../../../../../theme/themes.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import '../../../../common/basic/list_tiles/color.dart';
+import '../../../../common/basic/text_dropdown_button.dart';
 import '../../../../common/identity/buttons/outlined_button.dart';
 import '../../../../dialogs/big_duration_dialog.dart';
 import '../schedule/generic_selection_page.dart';
@@ -79,38 +82,22 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       _currentUpdateTypes.clear();
       // For a new item, initialize _templateSchedules with default values.
       // widget should be add by default.
-      int newScheduleId = 1;
-      int newScheduleNum = 1;
+      int newScheduleOrderNumOffset = 1;
       for (var type in WallpaperUpdateType.values) {
         if (type != WallpaperUpdateType.widget) {
-          newScheduleId = metadataDb.nextId;
-          newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
-          _templateSchedules.add(WallpaperScheduleRow(
-            id: newScheduleId++,
-            orderNum: newScheduleNum++,
-            labelName:
-                'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-            filtersSetId: filtersSets.all.first.id,
-            privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
-            updateType: type,
-            widgetId: 0,
-            interval: type == WallpaperUpdateType.home
+          _templateSchedules.add(wallpaperSchedules.newRow(
+            existMaxOrderNumOffset: newScheduleOrderNumOffset++,
+             privacyGuardLevelId:  _currentItem!.privacyGuardLevelID,
+              filtersSetId:filtersSets.all.first.id,
+              updateType: type,
+              interval: type == WallpaperUpdateType.home
                 ? settings.defaultNewUpdateInterval
                 : 0,
-            isActive: _isActive,
-          ));
+            isActive: _isActive,));
         }
       }
     }
     // If _currentUpdateTypes is empty, do nothing.
-  }
-
-  int _generateUniqueScheduleNum(int scheduleNum) {
-    while (
-        wallpaperSchedules.all.any((row) => row.orderNum == scheduleNum)) {
-      scheduleNum++;
-    }
-    return scheduleNum;
   }
 
   void _setSchedule(PrivacyGuardLevelRow guardLevel) {
@@ -127,61 +114,45 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
       debugPrint(
           '$runtimeType set  WallpaperScheduleRow  _currentSchedules $_currentSchedules');
 
-      int newScheduleId = 1;
-      int newScheduleNum = 1;
+      int newScheduleOrderOffset = 1;
       // Iterate through all WallpaperUpdateType values
       for (var type in WallpaperUpdateType.values) {
-        newScheduleId = metadataDb.nextId;
-        newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
         if (type != WallpaperUpdateType.widget) {
           var existingSchedule = _currentSchedules.firstWhereOrNull(
             (e) => e.updateType == type,
           );
-          newScheduleId = metadataDb.nextId;
-          newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
           debugPrint(
               '$runtimeType set $type  WallpaperScheduleRow  existingSchedule $existingSchedule');
           WallpaperScheduleRow scheduleRow;
           if (existingSchedule != null) {
-            // If a schedule already exists, create a new one with incremented id and seqnum
-            scheduleRow = WallpaperScheduleRow(
-              id: (_currentItem!.privacyGuardLevelID == privacyId)
-                  ? existingSchedule.id
-                  : newScheduleId++,
-              // Generate new unique ID
-              orderNum: (_currentItem!.privacyGuardLevelID == privacyId)
-                  ? existingSchedule.orderNum
-                  : newScheduleNum++,
-              // Generate new sequence number
-              privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
-              labelName:
-                  'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-              filtersSetId: existingSchedule.filtersSetId,
-              updateType: existingSchedule.updateType,
-              widgetId: existingSchedule.widgetId,
-              interval: existingSchedule.interval,
-              isActive: _isActive,
+            // If a schedule already exists, create a new one increase orderNum
+            scheduleRow = wallpaperSchedules.newRow(
+                id: (_currentItem!.privacyGuardLevelID == privacyId)
+                    ? existingSchedule.id
+                    :  metadataDb.nextId,
+              existMaxOrderNumOffset: (_currentItem!.privacyGuardLevelID == privacyId)
+                    ? existingSchedule.orderNum
+                    : newScheduleOrderOffset++,
+               privacyGuardLevelId:  _currentItem!.privacyGuardLevelID,
+               filtersSetId:  existingSchedule.filtersSetId,
+               updateType:  existingSchedule.updateType,
+                displayType: existingSchedule.displayType,
+                widgetId: existingSchedule.widgetId,
+                interval: existingSchedule.interval,
+                isActive: _isActive,
             );
             _currentUpdateTypes.add(type); // only exist item need to add type.
           } else {
-            newScheduleId = metadataDb.nextId;
-            newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
             // If no existing schedule found, create a completely new one
-            scheduleRow = WallpaperScheduleRow(
-              id: newScheduleId++,
-              // Generate new unique ID
-              orderNum: newScheduleNum++,
-              // Generate new sequence number
-              labelName:
-                  'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${type.name.toUpperCase()}',
-              filtersSetId: filtersSets.all.first.id,
-              privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
-              updateType: type,
-              widgetId: 0,
-              interval: type == WallpaperUpdateType.home
-                  ? settings.defaultNewUpdateInterval
-                  : 0,
-              isActive: _isActive,
+            scheduleRow = wallpaperSchedules.newRow(
+                existMaxOrderNumOffset: newScheduleOrderOffset++,
+                privacyGuardLevelId:  _currentItem!.privacyGuardLevelID,
+               filtersSetId:  filtersSets.all.first.id,
+               updateType:  type,
+                interval: type == WallpaperUpdateType.home
+                    ? settings.defaultNewUpdateInterval
+                    : 0,
+                isActive: _isActive
             );
           }
           debugPrint(
@@ -194,25 +165,20 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
                 .where((e) => e.updateType == WallpaperUpdateType.widget));
             debugPrint('$runtimeType: templateSchedules.addAll  scheduleRow');
           } else {
-            //add all widget schdule with new scheduleId and sequence num.
+            //add all widget schedule with new scheduleId and sequence num.
             var widgetSchedules = _currentSchedules
                 .where((e) => e.updateType == WallpaperUpdateType.widget)
                 .toList();
             for (var widgetSchedule in widgetSchedules) {
-              newScheduleId = metadataDb.nextId;
-              newScheduleNum = _generateUniqueScheduleNum(newScheduleNum);
-              _templateSchedules.add(WallpaperScheduleRow(
-                id: newScheduleId++,
-                orderNum: newScheduleNum++,
-                labelName:
-                    'L${_currentItem!.guardLevel}_-ID_${_currentItem!.privacyGuardLevelID}-${WallpaperUpdateType.widget.name.toUpperCase()}',
-                filtersSetId: widgetSchedule.filtersSetId,
-                privacyGuardLevelId: _currentItem!.privacyGuardLevelID,
-                updateType: WallpaperUpdateType.widget,
-                widgetId: widgetSchedule.widgetId,
+
+              _templateSchedules.add(wallpaperSchedules.newRow(
+                 existMaxOrderNumOffset:    newScheduleOrderOffset++,
+                 privacyGuardLevelId:    _currentItem!.privacyGuardLevelID,
+                  filtersSetId:    widgetSchedule.filtersSetId,
+                 updateType:    WallpaperUpdateType.widget,
                 interval: widgetSchedule.interval,
                 isActive: _isActive,
-              ));
+                ));
             }
           }
         }
@@ -420,6 +386,8 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
         _buildFilterSetSelectTile(schedule),
         const SizedBox(height: 8),
         _buildIntervalSelectTile(schedule),
+        const SizedBox(height: 8),
+        _buildDisplayTypeTile(schedule),
         const Divider(height: 16),
       ],
     );
@@ -448,6 +416,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
             widgetId: schedule.widgetId,
             interval: schedule.interval,
             isActive: schedule.isActive,
+            displayType: schedule.displayType,
           );
           _templateSchedules.add(updatedSchedule); // Add the new schedule
         });
@@ -465,6 +434,33 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
         ),
         Column(children: _buildIntervalOptions(schedule)),
       ],
+    );
+  }
+
+  Widget _buildDisplayTypeTile(WallpaperScheduleRow schedule) {
+    return  TextDropdownButton<FgwDisplayedType>(
+      values: FgwDisplayedType.values,
+      valueText: (v) =>'${context.l10n.fgwDisplayType}: ${v.getName(context)}',
+      value: schedule.displayType,
+      onChanged: (v) => setState(() {
+        _templateSchedules.remove(schedule); // Remove the old schedule
+        // Create a new schedule with the updated interval time
+        final updatedSchedule = WallpaperScheduleRow(
+        id: schedule.id,
+        orderNum: schedule.orderNum,
+        labelName: schedule.labelName,
+        privacyGuardLevelId: schedule.privacyGuardLevelId,
+        filtersSetId: schedule.filtersSetId,
+        updateType: schedule.updateType,
+        widgetId: schedule.widgetId,
+        interval: schedule.interval,
+        isActive: schedule.isActive,
+        displayType: v!,
+        );
+        _templateSchedules.add(updatedSchedule); // Add the new schedule
+      }),
+      isExpanded: true,
+      dropdownColor: Themes.thirdLayerColor(context),
     );
   }
 
@@ -538,6 +534,7 @@ class _PrivacyGuardLevelWithScheduleConfigPageState
           filtersSetId: schedule.filtersSetId,
           updateType: schedule.updateType,
           widgetId: schedule.widgetId,
+          displayType: schedule.displayType,
           interval: v,
           isActive: schedule.isActive,
         );

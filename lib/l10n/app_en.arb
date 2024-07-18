@@ -1125,6 +1125,12 @@
   "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
   "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
 
+  "fgwDisplayType": "Display Type",
+  "fgwDisplayRandom": "Random",
+  "fgwDisplayMostRecentNotUsed": "Most recent not used",
+  "settingsScheduleDisplayTypeTile": "Entries Display Type",
+  "settingsScheduleDisplayTypeDialogTitle": "Entries Display Type",
+
   "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,check your settings.",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",

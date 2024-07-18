@@ -1,4 +1,5 @@
 
+import 'package:aves/model/foreground_wallpaper/enum/fgw_entry_sort_type.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves_model/aves_model.dart';
@@ -73,7 +74,11 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   set shareByCopyExpiredRemoveUseBin(bool newValue) => set(shareByCopyExpiredRemoveUseBinKey, newValue);
 
   static const shareByCopyRemoveIntervalKey = 'share_by_copy_remove_interval';
-  int get shareByCopyRemoveInterval => getInt(SettingKeys.screenSaverIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
-  set shareByCopyRemoveInterval(int newValue) => set(SettingKeys.screenSaverIntervalKey, newValue);
+  int get shareByCopyRemoveInterval => getInt(shareByCopyRemoveIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
+  set shareByCopyRemoveInterval(int newValue) => set(shareByCopyRemoveIntervalKey, newValue);
+
+  static const fgwDisplayTypeKey = 'fgw_display_type';
+  FgwDisplayedType get fgwDisplayType => getEnumOrDefault(fgwDisplayTypeKey, SettingsDefaults.fgwDisplayedItem,FgwDisplayedType.values);
+  set fgwDisplayType(FgwDisplayedType newValue) => set(fgwDisplayTypeKey, newValue.toString());
 
 }

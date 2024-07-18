@@ -198,19 +198,21 @@ object FgwSeviceNotificationHandler {
         val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.level }?.level ?: 1
         val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.level }?.level ?: 1
 
-        guardLevel = when {
-            guardLevel >= maxLevel -> {
-                inactiveButtonResIds.add(R.drawable.baseline_arrow_upward_24)
-                maxLevel
-            }
-            guardLevel <= minLevel -> {
-                inactiveButtonResIds.add(R.drawable.baseline_arrow_downward_24)
-                minLevel
-            }
-            else -> {
-                inactiveButtonResIds.remove(R.drawable.baseline_arrow_upward_24)
-                inactiveButtonResIds.remove(R.drawable.baseline_arrow_downward_24)
-                guardLevel
+        if(canChangeLevel){
+            guardLevel = when {
+                guardLevel >= maxLevel -> {
+                    inactiveButtonResIds.add(R.drawable.baseline_arrow_upward_24)
+                    maxLevel
+                }
+                guardLevel <= minLevel -> {
+                    inactiveButtonResIds.add(R.drawable.baseline_arrow_downward_24)
+                    minLevel
+                }
+                else -> {
+                    inactiveButtonResIds.remove(R.drawable.baseline_arrow_upward_24)
+                    inactiveButtonResIds.remove(R.drawable.baseline_arrow_downward_24)
+                    guardLevel
+                }
             }
         }
         Log.d(LOG_TAG, "updateGuardLevel inactiveButtonResIds: ($inactiveButtonResIds)")

@@ -62,14 +62,24 @@ class ForegroundWallpaperHelper {
     final fsIds = type346FilterSets.map((e) => e.id).toList();
 
     List<WallpaperScheduleRow> type346Schedules = [
-      wallpaperSchedules.newRow(1, glIds[0], fsIds[0], WallpaperUpdateType.home),
-      wallpaperSchedules.newRow(2, glIds[0], fsIds[2], WallpaperUpdateType.lock, intervalTime: 0),
-      wallpaperSchedules.newRow(3, glIds[1], fsIds[1], WallpaperUpdateType.home),
-      wallpaperSchedules.newRow(4, glIds[1], fsIds[2], WallpaperUpdateType.lock, intervalTime: 0),
-      wallpaperSchedules.newRow(5, glIds[2], fsIds[3], WallpaperUpdateType.home),
-      wallpaperSchedules.newRow(6, glIds[2], fsIds[3], WallpaperUpdateType.lock, intervalTime: 0),
+      newSchedule(1, glIds[0], fsIds[0], WallpaperUpdateType.home),
+      newSchedule(2, glIds[0], fsIds[2], WallpaperUpdateType.lock, 0),
+      newSchedule(3, glIds[1], fsIds[1], WallpaperUpdateType.home),
+      newSchedule(4, glIds[1], fsIds[2], WallpaperUpdateType.lock, 0),
+      newSchedule(5, glIds[2], fsIds[3], WallpaperUpdateType.home),
+      newSchedule(6, glIds[2], fsIds[3], WallpaperUpdateType.lock, 0),
     ];
     await wallpaperSchedules.add(type346Schedules.toSet());
+  }
+
+  WallpaperScheduleRow newSchedule(int offset,int levelId,int filtersSetId,updateType,[int? interval]){
+    return wallpaperSchedules.newRow(
+      existMaxOrderNumOffset: offset,
+      privacyGuardLevelId: levelId,
+      filtersSetId: filtersSetId,
+      updateType: updateType,
+      interval: interval,
+    );
   }
 
   // import/export

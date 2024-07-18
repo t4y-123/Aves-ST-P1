@@ -168,6 +168,7 @@ class FgwServiceHelper with FeedbackMixin{
       debugPrint('$runtimeType newGuardLevel is present: ${args['newGuardLevel']}');
     } else {
       debugPrint('$runtimeType newGuardLevel is missing!');
+      return false;
     }
     final newGuardLevel = args['newGuardLevel'] as int;
     await _initDependencies();

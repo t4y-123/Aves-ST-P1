@@ -6,6 +6,8 @@ import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
+import '../foreground_wallpaper/enum/fgw_entry_sort_type.dart';
+
 class SettingsDefaults {
   // app
   static const hasAcceptedTerms = true; // t4y temp set true accept for test
@@ -160,6 +162,8 @@ class SettingsDefaults {
   //t4y: foreground wallpaper
   static const int fgwNewUpdateInterval = 3;
   static const int defaultPrivacyGuardLevel = 1;
+  //for easily test, debug set to most recent,else, release change to random.
+  static const fgwDisplayedItem = FgwDisplayedType.mostRecent;
   //
   static const int maxFgwUsedEntryRecord = 10;
   static const int resetPrivacyGuardLevelDuration = 5; // seconds

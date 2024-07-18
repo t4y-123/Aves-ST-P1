@@ -45,6 +45,7 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget  {
 class _ForegroundWallpaperFixedListTabState<T>
     extends State<ForegroundWallpaperFixedListTab<T>>  with FeedbackMixin {
   Set<T> get _activeItems => widget.useActiveButton ? widget.activeItems : Set.from(widget.items);
+  bool _isModified = false;
 
   @override
   void initState() {
@@ -95,6 +96,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                   } else {
                     _activeItems.add(item);
                   }
+                  _isModified = true;
                 });
               }
 
@@ -107,6 +109,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                 setState(() {
                   widget.items.remove(item);
                   _activeItems.remove(item);
+                  _isModified = true;
                 });
               }
 
@@ -168,6 +171,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                 if (oldIndex < newIndex) newIndex -= 1;
                 final item = widget.items.removeAt(oldIndex);
                 widget.items.insert(newIndex, item);
+                _isModified = true; // Reset after applying changes
               });
             },
             shrinkWrap: true,
@@ -178,7 +182,7 @@ class _ForegroundWallpaperFixedListTabState<T>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AvesOutlinedButton(
+            if(_isModified) AvesOutlinedButton(
               icon: const Icon(AIcons.apply),
               label: context.l10n.settingsForegroundWallpaperConfigApplyChanges,
               onPressed: () async {
@@ -189,6 +193,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                     final Set<T> tmpActiveItems = {} ;
                     tmpActiveItems.addAll(_activeItems );
                     widget.applyChangesAction!(context, tmpItems, tmpActiveItems);
+                    _isModified = false;
                   });
                 } else {
                   _showDefaultAlert('applyReorderAction');
@@ -202,6 +207,9 @@ class _ForegroundWallpaperFixedListTabState<T>
               onPressed: () async {
                 if (widget.addItemAction != null) {
                   widget.addItemAction!(context, widget.items, _activeItems);
+                  setState(() {
+                    _isModified = true; // Mark as modified
+                  });
                 } else {
                   _showDefaultAlert('addItemAction');
                 }

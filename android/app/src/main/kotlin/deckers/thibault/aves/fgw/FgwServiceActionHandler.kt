@@ -35,6 +35,7 @@ object FgwServiceActionHandler {
                 FgwSeviceNotificationHandler.guardLevel += 1
             }
             FgwIntentAction.CANCEL_LEVEL_CHANGE -> {
+                // cancel change guard level get back the curGuardLevel.
                 FgwSeviceNotificationHandler.guardLevel = FgwServiceFlutterHandler.curGuardLevel
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
             }

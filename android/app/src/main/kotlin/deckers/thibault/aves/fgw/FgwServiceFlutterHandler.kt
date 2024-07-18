@@ -159,6 +159,7 @@ object FgwServiceFlutterHandler {
             Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString ${activeLevelsString}")
             if (tmpCurGuardLevel != null && activeLevelsString != null) {
                 curGuardLevel = tmpCurGuardLevel.toInt()
+                FgwSeviceNotificationHandler.guardLevel = curGuardLevel
                 activeLevelsList = parseActiveLevelsString(activeLevelsString)
             }
 
@@ -233,9 +234,10 @@ object FgwServiceFlutterHandler {
                 val guardLevelId = parts[3].toInt()
                 val scheduleId = parts[4].toInt()
                 val updateType = parts[5]
-                val startTime = parts[6].toInt()
-                val endTime = parts[7].toInt()
-                val enabled = parts[8].toBoolean()
+                val widgetId = parts[6].toInt()
+                val displayType = parts[7]
+                val interval = parts[8].toInt()
+                val isActive = parts[9].toBoolean()
                 WallpaperScheduleRow(
                     id,
                     order,
@@ -243,9 +245,10 @@ object FgwServiceFlutterHandler {
                     guardLevelId,
                     scheduleId,
                     updateType,
-                    startTime,
-                    endTime,
-                    enabled
+                    widgetId,
+                    displayType,
+                    interval,
+                    isActive
                 )
             }
     }

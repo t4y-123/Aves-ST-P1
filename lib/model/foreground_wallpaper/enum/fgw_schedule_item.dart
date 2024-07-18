@@ -1,3 +1,6 @@
+import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:flutter/cupertino.dart';
+
 import '../filtersSet.dart';
 import '../privacy_guard_level.dart';
 import '../wallpaper_schedule.dart';
@@ -24,5 +27,17 @@ extension ExtraAppExportItem on FgwExportItem {
       case FgwExportItem.schedule:
         await wallpaperSchedules.import(jsonMap);
     }
+  }
+}
+
+enum FgwDisplayedType { random, mostRecent }
+
+extension ExtraFgwDisplayedTypeView on FgwDisplayedType {
+  String getName(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      FgwDisplayedType.random => l10n.fgwDisplayRandom,
+      FgwDisplayedType.mostRecent => l10n.fgwDisplayMostRecentNotUsed,
+    };
   }
 }

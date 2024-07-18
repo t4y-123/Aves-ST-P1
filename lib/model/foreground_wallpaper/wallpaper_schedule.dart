@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import '../settings/settings.dart';
-import 'enum/fgw_entry_sort_type.dart';
+import 'enum/fgw_schedule_item.dart';
 import 'filtersSet.dart';
 
 enum WallpaperUpdateType { home, lock, both, widget }

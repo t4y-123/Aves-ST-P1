@@ -44,7 +44,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-import '../model/foreground_wallpaper/enum/fgw_service_open_type.dart';
+import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
 import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
 import '../model/foreground_wallpaper/share_copied_entry.dart';
 import '../services/common/image_op_events.dart';

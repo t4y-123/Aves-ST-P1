@@ -6,7 +6,7 @@ import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
-import '../foreground_wallpaper/enum/fgw_entry_sort_type.dart';
+import '../foreground_wallpaper/enum/fgw_schedule_item.dart';
 
 class SettingsDefaults {
   // app

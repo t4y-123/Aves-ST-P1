@@ -6,7 +6,7 @@ import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
-import 'enum/fgw_export_item.dart';
+import 'enum/fgw_schedule_item.dart';
 import 'fgw_used_entry_record.dart';
 
 final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();

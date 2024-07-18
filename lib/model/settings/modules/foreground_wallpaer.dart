@@ -1,8 +1,8 @@
-
-import 'package:aves/model/foreground_wallpaper/enum/fgw_entry_sort_type.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves_model/aves_model.dart';
+
+import '../../foreground_wallpaper/enum/fgw_schedule_item.dart';
 
 mixin ForegroundWallpaperSettings on SettingsAccess {
   static const defaultNewUpdateIntervalKey = 'default_wallpaper_updateIntervalKey';

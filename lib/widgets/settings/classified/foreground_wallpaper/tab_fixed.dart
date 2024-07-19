@@ -3,6 +3,7 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../services/fgw_service_handler.dart';
 import '../../../common/action_mixins/feedback.dart';
 import '../../../common/identity/buttons/outlined_button.dart';
 import 'foreground_wallpaper_config_banner.dart';
@@ -195,6 +196,7 @@ class _ForegroundWallpaperFixedListTabState<T>
                     widget.applyChangesAction!(context, tmpItems, tmpActiveItems);
                     _isModified = false;
                   });
+                  await ForegroundWallpaperService.syncFgwScheduleChanges();
                 } else {
                   _showDefaultAlert('applyReorderAction');
                 }

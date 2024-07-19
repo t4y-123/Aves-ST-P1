@@ -17,6 +17,17 @@ final FgwScheduleHelper fgwScheduleHelper = FgwScheduleHelper._private();
 class FgwScheduleHelper {
   FgwScheduleHelper._private();
 
+  Future<void> refreshSchedules()async {
+    debugPrint('$runtimeType refreshSchedules ');
+    await privacyGuardLevels.refresh();
+    await filtersSets.refresh();
+    await wallpaperSchedules.refresh();
+
+    debugPrint('$runtimeType refreshSchedules\n privacyGuardLevels ${privacyGuardLevels.all} ');
+    debugPrint('$runtimeType refreshSchedules\n filtersSets ${filtersSets.all} ');
+    debugPrint('$runtimeType refreshSchedules\n wallpaperSchedules ${wallpaperSchedules.all} ');
+  }
+
   Future<PrivacyGuardLevelRow> getCurGuardLevel() async {
     debugPrint('$runtimeType  getPrivacyGuardLevel start');
     final activeItems = privacyGuardLevels.all.where((e) => e.isActive).toSet();
@@ -69,7 +80,6 @@ class FgwScheduleHelper {
     debugPrint('$runtimeType getScheduleEntries \n curPrivacyGuardLevel $curPrivacyGuardLevel \n curSchedules :$curSchedules');
     return curSchedules;
   }
-
 
   Future<List<AvesEntry>> getScheduleEntries(CollectionSource source, WallpaperUpdateType updateType,
       {int widgetId =0 ,PrivacyGuardLevelRow? curPrivacyGuardLevel}) async {

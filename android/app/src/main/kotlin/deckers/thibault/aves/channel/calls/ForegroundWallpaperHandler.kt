@@ -6,11 +6,14 @@ import android.app.PendingIntent
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import deckers.thibault.aves.ForegroundWallpaperService
+import deckers.thibault.aves.ForegroundWallpaperTileService
 import deckers.thibault.aves.ForegroundWallpaperWidgetProvider
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import deckers.thibault.aves.utils.LogUtils
+import deckers.thibault.aves.fgw.*
+
 import android.appwidget.AppWidgetManager
 
 class ForegroundWallpaperHandler(private val context: Context): MethodChannel.MethodCallHandler {
@@ -18,7 +21,7 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
     private val appContext = context.applicationContext
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        Log.i(LOG_TAG, "On ForegroundWallpaperHandler")
+        Log.i(LOG_TAG, "On ForegroundWallpaperHandler with call $call ")
         when (call.method) {
             "startForegroundWallpaper" -> {
                 Log.i(LOG_TAG, "On startForegroundWallpaper")
@@ -39,6 +42,15 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
             // As of  this method is no longer available to third party applications.
             "isForegroundWallpaperRunning" -> {
                 result.success(ForegroundWallpaperService.isRunning)
+            }
+            FgwConstant.SYNC_FGW_SCHEDULE_CHANGES -> {
+                val isTileRunning = ForegroundWallpaperTileService.getIsTileClickRunning(appContext)
+                if (isTileRunning && ForegroundWallpaperService.isRunning) {
+                    Log.d(LOG_TAG, "${FgwConstant.SYNC_FGW_SCHEDULE_CHANGES} broadcast sent")
+                    val intent = Intent(FgwConstant.SYNC_FGW_SCHEDULE_CHANGES)
+                    appContext.sendBroadcast(intent)
+                }
+                result.success(null)
             }
             else -> result.notImplemented()
         }

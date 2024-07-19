@@ -34,4 +34,13 @@ class ForegroundWallpaperService {
       return false;
     }
   }
+
+  static Future<void> syncFgwScheduleChanges() async {
+    await reportService.log('syncFgwScheduleChanges');
+    try {
+      await _platform.invokeMethod('syncFgwScheduleChanges');
+    } on PlatformException catch (e, stack) {
+      await reportService.recordError(e, stack);
+    }
+  }
 }

@@ -81,4 +81,8 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   FgwDisplayedType get fgwDisplayType => getEnumOrDefault(fgwDisplayTypeKey, SettingsDefaults.fgwDisplayedItem,FgwDisplayedType.values);
   set fgwDisplayType(FgwDisplayedType newValue) => set(fgwDisplayTypeKey, newValue.toString());
 
+  static const fgwScheduleSetKey = 'fgw_schedule_group_set';
+  FgwScheduleSetType get fgwScheduleSet => getEnumOrDefault(fgwScheduleSetKey, SettingsDefaults.fgwScheduleSet,FgwScheduleSetType.values);
+  set fgwScheduleSet(FgwScheduleSetType newValue) => set(fgwScheduleSetKey, newValue.toString());
+
 }

@@ -74,6 +74,7 @@ class ForegroundWallpaperService : Service() {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
             addAction(Intent.ACTION_USER_PRESENT)
+            addAction(FgwIntentAction.SYNC_FGW_SCHEDULE_CHANGES)
         }
         registerReceiver(screenStateReceiver, filter)
     }

@@ -164,6 +164,10 @@ class SettingsDefaults {
   static const int defaultPrivacyGuardLevel = 1;
   //for easily test, debug set to most recent,else, release change to random.
   static const fgwDisplayedItem = FgwDisplayedType.mostRecent;
+  // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
+  // set to type333 in release for some os,like miui,
+  //  third part app will not be able to set the lock screen wallpaper for having strict limit.
+  static const fgwScheduleSet = FgwScheduleSetType.type346;
   //
   static const int maxFgwUsedEntryRecord = 10;
   static const int resetPrivacyGuardLevelDuration = 5; // seconds

@@ -281,11 +281,11 @@ object FgwServiceFlutterHandler {
 
     fun changeGuardLevel(context: Context, newGuardLevel:Int) {
         val opString = FgwConstant.CHANGE_GUARD_LEVEL
-        Log.d(LOG_TAG, "changeGuardLevel [$context]:RUN")
+        Log.d(LOG_TAG, "$opString [$context]:RUN")
         runBlocking {
             invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL,opString ,
                 arguments = hashMapOf(
-                    "newGuardLevel" to newGuardLevel,
+                    FgwConstant.newGuardLevel to newGuardLevel,
                 ),
                 onSuccess = { result -> Log.d(LOG_TAG, "$opString success: $result") },
                 onError = { e -> Log.e(LOG_TAG, "Failed to invoke $opString", e) }

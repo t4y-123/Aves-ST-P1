@@ -19,7 +19,7 @@ import '../schedule/schedule_collection_tile.dart';
 
 class PrivacyGuardLevelWithScheduleConfigPage extends StatefulWidget {
   static const routeName =
-      '/settings/classified/privacy_guard_level_with_schedule_config';
+      '/settings/presentation/privacy_guard_level_with_schedule_config';
   final PrivacyGuardLevelRow? item;
   final List<PrivacyGuardLevelRow?> allItems;
   final Set<PrivacyGuardLevelRow?> activeItems;

@@ -154,7 +154,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
 
     final entriesByDestination = <String, Set<AvesEntry>>{};
     entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
-    source.pauseMonitoring();
+    // source.pauseMonitoring();
     final destinationAlbums = entriesByDestination.keys.toSet();
     debugPrint('$runtimeType deleteExpiredShareCopied\n'
         'settings.enableBin ${settings.enableBin} \n'
@@ -188,7 +188,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
           final deletedOps = successOps.where((v) => v.deleted).toSet();
           final deletedUris = deletedOps.map((event) => event.uri).toSet();
           await source.removeEntries(deletedUris, includeTrash: true);
-          source.resumeMonitoring();
+          // source.resumeMonitoring();
           completer.complete(deletedUris);
         },
       );
@@ -204,7 +204,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
           final successOps = processed.where((e) => e.success).toSet();
           final deletedOps = successOps.where((e) => !e.skipped).toSet();
           final deletedUris = deletedOps.map((event) => event.uri).toSet();
-          source.resumeMonitoring();
+          // source.resumeMonitoring();
           completer.complete(deletedUris);
         },
       );

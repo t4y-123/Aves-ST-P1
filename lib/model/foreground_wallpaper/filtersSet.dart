@@ -21,6 +21,11 @@ class FilterSet with ChangeNotifier{
     _rows = await metadataDb.loadAllFilterSet();
   }
 
+  Future<void> refresh() async {
+    _rows.clear();
+    _rows = await metadataDb.loadAllFilterSet();
+  }
+
   Future<void> add(Set<FiltersSetRow> newRows) async {
     await metadataDb.addFilterSet(newRows);
     _rows.addAll(newRows);

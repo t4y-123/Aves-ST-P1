@@ -25,6 +25,11 @@ class WallpaperSchedules with ChangeNotifier {
     await _removeDuplicates();
   }
 
+  Future<void> refresh() async {
+    _rows.clear();
+    _rows = await metadataDb.loadAllWallpaperSchedules();
+  }
+
   int get count => _rows.length;
 
   Set<WallpaperScheduleRow> get all {

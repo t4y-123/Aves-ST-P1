@@ -9,7 +9,7 @@ import '../../../../common/basic/list_tiles/color.dart';
 import '../../../../common/identity/buttons/outlined_button.dart';
 
 class PrivacyGuardLevelConfigPage extends StatefulWidget {
-  static const routeName = '/settings/classified/privacy_guard_level_config';
+  static const routeName = '/settings/presentation/privacy_guard_level_config';
   final PrivacyGuardLevelRow? item;
   final List<PrivacyGuardLevelRow?> allItems;
   final Set<PrivacyGuardLevelRow?> activeItems;

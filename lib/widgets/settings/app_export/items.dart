@@ -5,7 +5,7 @@ import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../../model/foreground_wallpaper/foreground_wallpaper_helper.dart';
+import '../../../model/foreground_wallpaper/fgw_schedule_group_helper.dart';
 
 enum AppExportItem { covers, favourites, settings,foregroundWallpaper }
 
@@ -38,7 +38,7 @@ extension ExtraAppExportItem on AppExportItem {
       case AppExportItem.settings:
         await settings.import(jsonMap);
       case AppExportItem.foregroundWallpaper:
-        foregroundWallpaperHelper.import(jsonMap);
+        await foregroundWallpaperHelper.import(jsonMap);
     }
   }
 }

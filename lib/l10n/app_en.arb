@@ -1131,7 +1131,21 @@
   "settingsScheduleDisplayTypeTile": "Entries Display Type",
   "settingsScheduleDisplayTypeDialogTitle": "Entries Display Type",
 
-  "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,check your settings.",
+  "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,please check your settings.",
+
+  "initGuardLevelName01": "Exposure",
+  "initGuardLevelName02": "Moderate",
+  "initGuardLevelName03": "Safe",
+
+  "initFiltersSet346Name01": "Home: Exposure",
+  "initFiltersSet346Name02": "Home: Moderate",
+  "initFiltersSet346Name03": "Lock: Moderate & Exposure",
+  "initFiltersSet346Name04": "Home & Lock: Safe",
+
+  "initFiltersSet333Name01": "Home: Exposure",
+  "initFiltersSet333Name02": "Home: Moderate",
+  "initFiltersSet333Name03": "Home: Safe",
+
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

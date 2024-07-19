@@ -4,7 +4,7 @@ import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../model/foreground_wallpaper/foreground_wallpaper_helper.dart';
+import '../../../../model/foreground_wallpaper/fgw_schedule_group_helper.dart';
 
 class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
     with FeedbackMixin {
@@ -104,7 +104,7 @@ class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
   }
 
   Future<void> _addNew3L5FGroup(BuildContext context) async {
-    await foregroundWallpaperHelper.addType346Schedules();
+    await foregroundWallpaperHelper.addDefaultScheduleSet();
     showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
   }
 

@@ -375,11 +375,13 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       await metadataDb.saveAddresses(movedEntries.map((entry) => entry.addressDetails).whereNotNull().toSet());
       // t4y: for intuitively, the copied items should be the most recently.
       // And for functionally, somme apps  will still swallows you pic making it not be able to send to others unless made some modified.
-      if(shareByCopy){
+      if (shareByCopy) {
         final dateTime = DateTime.now();
         final modifier = DateModifier.setCustom(const {}, dateTime);
-        if (modifier != null)  movedEntries.forEach((entry)  => unawaited(entry.editDate(modifier)));
-        debugPrint('shareCopiedEntries.add(movedEntries:\n${movedEntries}');
+        await Future.wait(movedEntries.map((entry) async {
+          await entry.editDate(modifier);
+        }));
+        debugPrint('shareCopiedEntries.add(movedEntries:\n$movedEntries');
         await shareCopiedEntries.add(movedEntries);
       }
 

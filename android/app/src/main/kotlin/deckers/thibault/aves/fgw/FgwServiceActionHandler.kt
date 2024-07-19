@@ -51,7 +51,9 @@ object FgwServiceActionHandler {
                 FgwSeviceNotificationHandler.canChangeLevel = !FgwSeviceNotificationHandler.canChangeLevel
 //                showToast(context,if (FgwSeviceNotificationHandler.canChangeLevel) "Locked" else "Unlocked")
             }
-
+            FgwIntentAction.SYNC_FGW_SCHEDULE_CHANGES -> {
+                FgwServiceFlutterHandler.callDartNoArgsMethod(context,FgwConstant.SYNC_FGW_SCHEDULE_CHANGES)
+            }
             Intent.ACTION_SCREEN_ON -> handleScreenOn(context)
             Intent.ACTION_SCREEN_OFF -> handleScreenOff(context)
             Intent.ACTION_USER_PRESENT -> handleUserPresent(context)
@@ -81,8 +83,4 @@ object FgwServiceActionHandler {
         FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
         WallpaperScheduleHelper.handleScreenEvents(context,FgwServiceFlutterHandler.scheduleList)
     }
-//    private fun showToast(context:Context, message: String) {
-//        Log.i(LOG_TAG, "FgwServiceActionHandler $context : $message")
-//        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-//    }
 }

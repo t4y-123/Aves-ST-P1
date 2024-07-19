@@ -38,14 +38,14 @@ class ForegroundWallpaperTileService : TileService() {
 
         if (tile.state == Tile.STATE_ACTIVE) {
             WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(tileServiceContext)
-            ForegroundWallpaperService.stop(this)
+            ForegroundWallpaperService.stop(tileServiceContext)
             tile.state = Tile.STATE_INACTIVE
             setIsTileClickRunning(this, false)
             Log.d(LOG_TAG, "Service stopped, tile state: ${tile.state} isTileClickRunning ${getIsTileClickRunning(this)}")
         } else {
-            ForegroundWallpaperService.startForeground(this)
+            ForegroundWallpaperService.startForeground(tileServiceContext)
             tile.state = Tile.STATE_ACTIVE
-            setIsTileClickRunning(this, true)
+            setIsTileClickRunning(tileServiceContext, true)
             Log.d(LOG_TAG, "Service started, tile state: ${tile.state} isTileClickRunning true")
         }
         tile.updateTile()
@@ -100,6 +100,17 @@ class ForegroundWallpaperTileService : TileService() {
             getSharedPreferences(context).edit().putBoolean(PREF_IS_TILE_CLICK_RUNNING, isRunning).apply()
         }
 
+        fun updateFgwSchedules(context: Context){
+            Log.d(LOG_TAG, "updateFgwSchedules in ForegroundWallpaperService : as getIsTileClickRunning:" +
+                    "[${getIsTileClickRunning(context)}]")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                kotlin.runCatching {
+                    context.startService<ForegroundWallpaperService> {
+                        action = FgwIntentAction.SYNC_FGW_SCHEDULE_CHANGES
+                    }
+                }
+            }
+        }
 
         @SuppressLint("ObsoleteSdkInt")
         fun upTile(context: Context,active: Boolean) {

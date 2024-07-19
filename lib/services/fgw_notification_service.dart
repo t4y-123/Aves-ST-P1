@@ -50,6 +50,9 @@ Future<void> fgwNotificationServiceAsync() async {
         return await fgwServiceHelper.handleWallpaper(call.arguments, FgwServiceWallpaperType.pre);
       case 'changeGuardLevel':
         return await fgwServiceHelper.changeGuardLevel(call.arguments);
+      case 'syncFgwScheduleChanges':
+        // after sync new schedules, right away make next wallpaper
+        return await fgwServiceHelper.syncFgwScheduleChanges();
       default:
         throw PlatformException(code: 'not-implemented', message: 'failed to handle method=${call.method}');
     }
@@ -98,6 +101,8 @@ class FgwServiceHelper with FeedbackMixin{
 
   Future<void> syncDataToNative(Set<FgwSyncItem> syncItems,
       { WallpaperUpdateType updateType = WallpaperUpdateType.home, int widgetId = 0}) async {
+    await reportService.log('syncDataToNative in start');
+    await _initDependencies();
     debugPrint('$runtimeType syncDataToKotlin start');
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
 
@@ -174,13 +179,23 @@ class FgwServiceHelper with FeedbackMixin{
 
     if(activeLevels.any((item) => item.guardLevel == newGuardLevel)){
       settings.curPrivacyGuardLevel = newGuardLevel;
-      unawaited(syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules}));
+      await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
       unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
           FgwServiceWallpaperType.next));
       return Future.value(true);
     }else{
       throw  Exception('Invalid guard level [$newGuardLevel] for \n$activeLevels');
     }
+  }
+
+  Future<bool> syncFgwScheduleChanges() async {
+    debugPrint('$runtimeType flutter syncFgwScheduleChanges start');
+    await fgwScheduleHelper.refreshSchedules();
+    await _initDependencies();
+    await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
+    unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+        FgwServiceWallpaperType.next));
+    return Future.value(true);
   }
 
   Future<Map<String, dynamic>> syncDataByNativeCall(dynamic args) async {

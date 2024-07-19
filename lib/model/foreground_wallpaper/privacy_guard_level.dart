@@ -19,6 +19,11 @@ class PrivacyGuardLevel with ChangeNotifier {
     _rows = await metadataDb.loadAllPrivacyGuardLevels();
   }
 
+  Future<void> refresh() async {
+    _rows.clear();
+    _rows = await metadataDb.loadAllPrivacyGuardLevels();
+  }
+
   int get count => _rows.length;
 
   Set<PrivacyGuardLevelRow> get all => Set.unmodifiable(_rows);

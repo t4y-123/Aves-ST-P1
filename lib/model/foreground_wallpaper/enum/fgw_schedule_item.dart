@@ -5,7 +5,7 @@ import '../filtersSet.dart';
 import '../privacy_guard_level.dart';
 import '../wallpaper_schedule.dart';
 
-
+// export and import
 enum FgwExportItem { privacyGuardLevel, filtersSet, schedule }
 
 extension ExtraAppExportItem on FgwExportItem {
@@ -30,6 +30,7 @@ extension ExtraAppExportItem on FgwExportItem {
   }
 }
 
+// for display the entries in a random order or most recent not used., as there may have a recent used record.
 enum FgwDisplayedType { random, mostRecent }
 
 extension ExtraFgwDisplayedTypeView on FgwDisplayedType {
@@ -41,3 +42,6 @@ extension ExtraFgwDisplayedTypeView on FgwDisplayedType {
     };
   }
 }
+
+// for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
+enum FgwScheduleSetType{type346,type333}

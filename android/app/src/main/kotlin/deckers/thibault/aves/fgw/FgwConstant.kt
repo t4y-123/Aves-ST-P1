@@ -17,6 +17,7 @@ object FgwIntentAction {
     const val LOCK_UNLOCK = "FGW_LOCK_UNLOCK"
     const val APPLY_LEVEL_CHANGE = "FGW_APPLY_LEVEL_CHANGE"
     const val CANCEL_LEVEL_CHANGE = "FGW_CANCEL_LEVEL_CHANGE"
+    const val SYNC_FGW_SCHEDULE_CHANGES = "syncFgwScheduleChanges"
     //tile service
     const val TILE_SERIVCE_START = "FGW_TILE_SERIVCE_START"
     const val TILE_SERIVCE_STOP = "FGW_TILE_SERIVCE_STOP"
@@ -41,12 +42,15 @@ object FgwConstant {
     const val NEXT_WARLLPAPER = "nextWallpaper"
     const val PRE_WARLLPAPER = "preWallpaper"
     const val CHANGE_GUARD_LEVEL = "changeGuardLevel"
-
+    const val newGuardLevel = "newGuardLevel"
     // for sync data
     const val CUR_LEVEL = "curLevel"
     const val ACTIVE_LEVELS = "activeLevels"
     const val SCHEDULES = "schedules"
     const val CUR_ENTRY_NAME = "curEntryName"
+
+    //sync data from Native side.
+    const val SYNC_FGW_SCHEDULE_CHANGES = "syncFgwScheduleChanges"
 
     // New keys
     const val home_schedule_key = "WallpaperUpdateType.home-0"

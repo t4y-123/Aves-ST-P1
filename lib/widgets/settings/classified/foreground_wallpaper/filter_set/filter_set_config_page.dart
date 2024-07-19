@@ -10,7 +10,7 @@ import '../../../../common/identity/buttons/outlined_button.dart';
 import '../../../common/collection_tile.dart';
 
 class FilterSetConfigPage extends StatefulWidget {
-  static const routeName = '/settings/classified/filter_set_config';
+  static const routeName = '/settings/presentation/filter_set_config';
   final FiltersSetRow? item;
   final List<FiltersSetRow?> allItems;
   final Set<FiltersSetRow?> activeItems;

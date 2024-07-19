@@ -5,7 +5,7 @@ import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
-import 'package:aves/model/foreground_wallpaper/foreground_wallpaper_helper.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_schedule_group_helper.dart';
 import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';

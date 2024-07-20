@@ -3,8 +3,8 @@ import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_config_actions.dart';
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/tab_fixed.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/privacy_guard_level/privacy_guard_level_config_actions.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/tab_fixed.dart';
 
 import 'package:flutter/material.dart';
 import '../../../../model/foreground_wallpaper/filtersSet.dart';

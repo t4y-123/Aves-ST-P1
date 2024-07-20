@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/classified/share_by_copy.dart';
+import 'package:aves/widgets/settings/presentation/share_by_copy.dart';
 import 'package:aves/widgets/settings/common/tile_leading.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:aves/widgets/settings/navigation/drawer.dart';
@@ -25,8 +25,7 @@ class PresentationSection extends SettingsSection {
       );
 
   @override
-  String title(BuildContext context) =>
-      context.l10n.settingsPresentationSectionTitle;
+  String title(BuildContext context) => context.l10n.settingsPresentationSectionTitle;
 
   @override
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
@@ -38,21 +37,19 @@ class PresentationSection extends SettingsSection {
 
 class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
   @override
-  String title(BuildContext context) =>
-      context.l10n.settingsPresentationForegroundWallpaperConfigTile;
+  String title(BuildContext context) => context.l10n.settingsPresentationForegroundWallpaperConfigTile;
 
   @override
-  Widget build(BuildContext context) => SettingsSubPageTile(
-        title: title(context),
-        routeName: NavigationDrawerEditorPage.routeName,
-        builder: (context) => const ForegroundWallpaperConfigPage(),
-      );
-}
+  Widget build(BuildContext context)=> SettingsSubPageTile(
+      title: title(context),
+      routeName: NavigationDrawerEditorPage.routeName,
+      builder: (context) => const ForegroundWallpaperConfigPage(),
+    );
+  }
 
 class SettingsTileAddDefaultGroupsSchedules extends SettingsTile {
   @override
-  String title(BuildContext context) =>
-      context.l10n.settingsPresentationWallpaperAddDefaultScheduleTile;
+  String title(BuildContext context) => context.l10n.settingsPresentationWallpaperAddDefaultScheduleTile;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
@@ -68,8 +65,8 @@ class SettingsTileShareByCopy extends SettingsTile {
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
-    title: title(context),
-    routeName: ShareByCopyPage.routeName,
-    builder: (context) => const ShareByCopyPage(),
-  );
+        title: title(context),
+        routeName: ShareByCopyPage.routeName,
+        builder: (context) => const ShareByCopyPage(),
+      );
 }

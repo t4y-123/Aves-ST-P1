@@ -111,6 +111,27 @@ class FilterSet with ChangeNotifier{
     );
   }
 
+  Future<void> setExistRows(Set<FiltersSetRow> rows, Map<String, dynamic> newValues) async {
+    for (var row in rows) {
+      final oldRow = _rows.firstWhereOrNull((r) => r.id == row.id);
+      if (oldRow != null) {
+        _rows.remove(oldRow);
+        await metadataDb.removeFilterSet({oldRow});
+
+        final updatedRow = FiltersSetRow(
+          id: row.id,
+          orderNum: newValues[FiltersSetRow.propOrderNum] ?? row.orderNum,
+          labelName: newValues[FiltersSetRow.propLabelName] ?? row.labelName,
+          filters: newValues[FiltersSetRow.propFilters] ?? row.filters,
+          isActive: newValues[FiltersSetRow.propIsActive] ?? row.isActive,
+        );
+        _rows.add(updatedRow);
+        await metadataDb.addFilterSet({updatedRow});
+      }
+    }
+    notifyListeners();
+  }
+
   // import/export
   Map<String, Map<String, dynamic>>? export() {
     final rows = filtersSets.all;
@@ -157,6 +178,12 @@ class FiltersSetRow extends Equatable implements Comparable<FiltersSetRow> {
   final String labelName;
   final Set<CollectionFilter>? filters;
   final bool isActive;
+
+  // Define property name constants
+  static const String propOrderNum = 'orderNum';
+  static const String propLabelName = 'labelName';
+  static const String propFilters = 'filters';
+  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [id, orderNum, labelName, filters,];

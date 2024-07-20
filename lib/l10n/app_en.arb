@@ -1099,14 +1099,24 @@
   "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
   "settingsPresentationForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
 
-  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage Default Group Schedules",
-  "settingsWallpaperSchedulesManagerTitle": "Wallpaper Schedules Manager",
-  "settingsResetAllToDefault3L5F": "Reset All to Default",
-  "confirmResetAllToDefault3L5F": "This will clear all current guard levels, filter sets, and schedules, and add the default initial values.\ncontinue?",
-  "settingsAddNew3L5FGroup": "Add New 3L5F Group",
-  "confirmAddNew3L5FGroup": "This will add a new set of three guard levels and corresponding 5 filter sets and schedules.Continue?",
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage Wallpaper Schedules",
+  "settingsWallpaperSchedulesManagerTitle": "Manage Wallpaper Schedules",
+
+
+  "fgwScheduleGroupSetType346": "3/4/6,for home and lock screen",
+  "fgwScheduleGroupSetType333": "3/3/3,for only home screen",
+
+  "settingsFgwScheduleResetToDefault": "Reset to default",
+  "confirmResetAllScheduleToDefault": "This will clear all current guard levels, filter sets, and schedules, reset to default values.\ncontinue?",
+
+  "settingsAddNewScheduleGroup": "Add new group",
+  "confirmAddNewScheduleGroup": "This will add a new set of \n[guard levelscorresponding/filters sets/schedules].Continue?",
+
   "settingsClearRecentUsedEntryRecord": "Clear wallpaper used records",
   "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries {num} record \nContinue?",
+
+  "settingsSetAllFgwScheduleDisplayType": "Set all schedules display order type",
+  "confirmSetAllFgwScheduleDisplayType": "This will set all schedules display type in a same value.Continue?",
 
    "resetCompletedFeedback": "reset complete.",
    "clearCompletedFeedback": "clear complete.",

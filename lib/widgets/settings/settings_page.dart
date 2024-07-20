@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/durations.dart';
+import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/extensions/media_query.dart';
 import 'package:aves/widgets/settings/accessibility/accessibility.dart';
 import 'package:aves/widgets/settings/display/display.dart';
@@ -19,7 +20,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
-import 'classified/classified.dart';
+import 'presentation/presentation.dart';
 
 class SettingsPage extends StatelessWidget {
   static const routeName = '/settings';

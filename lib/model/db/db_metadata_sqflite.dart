@@ -209,8 +209,6 @@ class SqfliteMetadataDb implements MetadataDb {
       final whereArgs = [id];
       if (_dataTypes.contains(EntryDataType.basic)) {
         batch.delete(entryTable, where: where, whereArgs: whereArgs);
-        batch.delete(fgwUsedEntryTable, where: 'entryId = ?', whereArgs: whereArgs);
-        batch.delete(shareCopiedEntryTable, where: where, whereArgs: whereArgs);
       }
       if (_dataTypes.contains(EntryDataType.catalog)) {
         batch.delete(dateTakenTable, where: where, whereArgs: whereArgs);
@@ -893,6 +891,7 @@ class SqfliteMetadataDb implements MetadataDb {
 
   @override
   Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    debugPrint('addShareCopiedEntries.add(_db:\n$rows');
     if (rows.isEmpty) return;
     final batch = _db.batch();
     rows.forEach((row) => _batchInsertShareCopiedEntries(batch, row));
@@ -919,6 +918,7 @@ class SqfliteMetadataDb implements MetadataDb {
   }
 
   void _batchInsertShareCopiedEntries(Batch batch, ShareCopiedEntryRow row) {
+    debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
     batch.insert(
       shareCopiedEntryTable,
       row.toMap(),

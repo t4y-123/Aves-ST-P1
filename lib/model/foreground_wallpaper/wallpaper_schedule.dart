@@ -177,6 +177,34 @@ class WallpaperSchedules with ChangeNotifier {
     );
   }
 
+  Future<void> setExistRows(Set<WallpaperScheduleRow> rows, Map<String, dynamic> newValues) async {
+    for (var row in rows) {
+      final oldRow = _rows.firstWhereOrNull((r) => r.id == row.id);
+      if (oldRow != null) {
+        _rows.remove(oldRow);
+        await metadataDb.removeWallpaperSchedules({oldRow});
+
+        final updatedRow = WallpaperScheduleRow(
+          id: row.id,
+          orderNum: newValues[WallpaperScheduleRow.propId] ?? row.orderNum,
+          labelName: newValues[WallpaperScheduleRow.propLabelName] ?? row.labelName,
+          privacyGuardLevelId: newValues[WallpaperScheduleRow.propPrivacyGuardLevelId] ?? row.privacyGuardLevelId,
+          filtersSetId: newValues[WallpaperScheduleRow.propFiltersSetId] ?? row.filtersSetId,
+          updateType: newValues[WallpaperScheduleRow.propUpdateType] ?? row.updateType,
+          widgetId: newValues[WallpaperScheduleRow.propWidgetId] ?? row.widgetId,
+          displayType: newValues[WallpaperScheduleRow.propDisplayType] ?? row.displayType,
+          interval: newValues[WallpaperScheduleRow.propInterval] ?? row.interval,
+          isActive: newValues[WallpaperScheduleRow.propIsActive] ?? row.isActive,
+        );
+
+        _rows.add(updatedRow);
+        await metadataDb.addWallpaperSchedules({updatedRow});
+      }
+    }
+    await _removeDuplicates();
+    notifyListeners();
+  }
+
   // import/export
   Map<String, Map<String, dynamic>>? export() {
     final rows = wallpaperSchedules.all;
@@ -228,6 +256,18 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
   final FgwDisplayedType displayType;
   final int interval; // in seconds
   final bool isActive;
+
+  // Define property name constants
+  static const String propId = 'id';
+  static const String propOrderNum = 'orderNum';
+  static const String propLabelName = 'labelName';
+  static const String propPrivacyGuardLevelId = 'privacyGuardLevelId';
+  static const String propFiltersSetId = 'filtersSetId';
+  static const String propUpdateType = 'updateType';
+  static const String propWidgetId = 'widgetId';
+  static const String propDisplayType = 'displayType';
+  static const String propInterval = 'interval';
+  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [

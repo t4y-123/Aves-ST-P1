@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
-import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import '../../l10n/l10n.dart';
@@ -17,13 +16,14 @@ class ForegroundWallpaperHelper {
   ForegroundWallpaperHelper._private();
   late AppLocalizations? _l10n;
 
-  Future<void> initWallpaperSchedules() async {
-    final currentWallpaperSchedules = await metadataDb.loadAllWallpaperSchedules();
+  Future<void> initWallpaperSchedules({FgwScheduleSetType? fgwScheduleSetType}) async {
+    _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
+    fgwScheduleSetType ??= settings.fgwScheduleSet;
     await privacyGuardLevels.init();
     await filtersSets.init();
     await wallpaperSchedules.init();
-    if (currentWallpaperSchedules.isEmpty) {
-      await addDefaultScheduleSet();
+    if (wallpaperSchedules.all.isEmpty && privacyGuardLevels.all.isEmpty && filtersSets.all.isEmpty) {
+      await addDefaultScheduleSet(fgwScheduleSetType:fgwScheduleSetType);
     }
     await fgwUsedEntryRecord.init();
   }
@@ -47,7 +47,7 @@ class ForegroundWallpaperHelper {
 
   // 3level, 4filters set, 6 schedule. for default both home and lock screen wallpaper .
   Future<void> addDefaultScheduleSet({FgwScheduleSetType? fgwScheduleSetType}) async {
-    _l10n ??= await AppLocalizations.delegate.load(settings.appliedLocale);
+    _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
     final newLevels = commonType3GuardLevels(_l10n!);
     fgwScheduleSetType ??= settings.fgwScheduleSet;
     Set<FiltersSetRow> initFiltersSets = switch (fgwScheduleSetType) {

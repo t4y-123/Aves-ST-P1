@@ -14,9 +14,9 @@ class ShareCopiedEntries with ChangeNotifier {
   ShareCopiedEntries._private();
 
   Future<void> init() async {
-    _rows.clear();
+    //_rows.clear();
     _rows = await metadataDb.loadAllShareCopiedEntries();
-    debugPrint('$runtimeType ShareCopiedEntries _rows'
+    debugPrint('$runtimeType ShareCopiedEntries init _rows'
         '[$_rows]  start');
   }
 
@@ -41,14 +41,22 @@ class ShareCopiedEntries with ChangeNotifier {
   ShareCopiedEntryRow _entryToRow(AvesEntry entry) => ShareCopiedEntryRow(id: entry.id, dateMillis:DateTime.now().millisecondsSinceEpoch);
 
   Future<void> add(Set<AvesEntry> entries) async {
+    debugPrint('shareCopiedEntries.add(add:\n$entries');
     final newRows = entries.map(_entryToRow).toSet();
-
+    debugPrint('shareCopiedEntries.add(newRows:\n$newRows');
     await metadataDb.addShareCopiedEntries(newRows);
     _rows.addAll(newRows);
-
     notifyListeners();
   }
 
+  Future<void> removeEntryIds(Set<int> rowIds) async {
+    debugPrint('$runtimeType removeShareCopiedEntries ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
+    final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();
+    await metadataDb.removeShareCopiedEntries(removedRows);
+    removedRows.forEach(_rows.remove);
+    notifyListeners();
+
+  }
   Future<void> removeEntries(Set<AvesEntry> entries) => removeIds(entries.map((entry) => entry.id).toSet());
 
   Future<void> removeIds(Set<int> entryIds) async {

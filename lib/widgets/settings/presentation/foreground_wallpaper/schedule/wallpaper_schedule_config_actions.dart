@@ -1,4 +1,4 @@
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/schedule/wallpaper_schedule_config_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/schedule/wallpaper_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';

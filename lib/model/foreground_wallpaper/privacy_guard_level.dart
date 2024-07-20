@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:aves/services/common/services.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -118,6 +119,28 @@ class PrivacyGuardLevel with ChangeNotifier {
     );
   }
 
+  Future<void> setExistRows(Set<PrivacyGuardLevelRow> rows, Map<String, dynamic> newValues) async {
+    for (var row in rows) {
+      final oldRow = _rows.firstWhereOrNull((r) => r.privacyGuardLevelID == row.privacyGuardLevelID);
+      if (oldRow != null) {
+        _rows.remove(oldRow);
+        await metadataDb.removePrivacyGuardLevels({oldRow});
+
+        final updatedRow = PrivacyGuardLevelRow(
+          privacyGuardLevelID: row.privacyGuardLevelID,
+          guardLevel: newValues[PrivacyGuardLevelRow.propGuardLevel] ?? row.guardLevel,
+          labelName: newValues[PrivacyGuardLevelRow.propLabelName] ?? row.labelName,
+          color: newValues[PrivacyGuardLevelRow.propColor] ?? row.color,
+          isActive: newValues[PrivacyGuardLevelRow.propIsActive] ?? row.isActive,
+        );
+
+        _rows.add(updatedRow);
+        await metadataDb.addPrivacyGuardLevels({updatedRow});
+      }
+    }
+    notifyListeners();
+  }
+
   // import/export
   Map<String, Map<String, dynamic>>? export() {
     final rows = privacyGuardLevels.all;
@@ -166,6 +189,11 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
   final String labelName;
   final Color? color;
   final bool isActive;
+  // Define property name constants
+  static const String propGuardLevel = 'guardLevel';
+  static const String propLabelName = 'labelName';
+  static const String propColor = 'color';
+  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [privacyGuardLevelID, guardLevel, labelName, color];

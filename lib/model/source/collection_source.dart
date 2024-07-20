@@ -219,7 +219,11 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     final ids = entries.map((entry) => entry.id).toSet();
     await favourites.removeIds(ids);
     await covers.removeIds(ids);
+    debugPrint('$runtimeType  removeEntries');
     await fgwUsedEntryRecord.removeEntryIds(ids);
+    debugPrint('$runtimeType  await fgwUsedEntryRecord.removeEntryIds(ids); $ids');
+    await shareCopiedEntries.removeEntryIds(ids);
+    debugPrint('$runtimeType  await shareCopiedEntries.removeEntryIds(ids);; $ids');
     await metadataDb.removeIds(ids);
 
     ids.forEach((id) => _entryById.remove);
@@ -376,13 +380,15 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       // t4y: for intuitively, the copied items should be the most recently.
       // And for functionally, somme apps  will still swallows you pic making it not be able to send to others unless made some modified.
       if (shareByCopy) {
-        final dateTime = DateTime.now();
-        final modifier = DateModifier.setCustom(const {}, dateTime);
-        await Future.wait(movedEntries.map((entry) async {
-          await entry.editDate(modifier);
-        }));
-        debugPrint('shareCopiedEntries.add(movedEntries:\n$movedEntries');
         await shareCopiedEntries.add(movedEntries);
+        debugPrint('shareCopiedEntries.add(movedEntries updateAfterMove:\n'
+            '$movedEntries');
+        // final dateTime = DateTime.now();
+        // final modifier = DateModifier.setCustom(const {}, dateTime);
+        // await Future.wait(movedEntries.map((entry) async {
+        //   await entry.editDate(modifier);
+        //   debugPrint('shareCopiedEntries.  await entry.editDate(modifier);\n[$entry]');
+        // }));
       }
 
     } else {
@@ -402,6 +408,11 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
           }
         }
       });
+      if(moveType == MoveType.toBin){
+        debugPrint('$runtimeType  await shareCopiedEntries.removeEntries(movedEntries) in  updateAfterMove tobin'
+            ' :\n$movedEntries');
+        await shareCopiedEntries.removeEntries(movedEntries);
+      }
     }
 
     switch (moveType) {

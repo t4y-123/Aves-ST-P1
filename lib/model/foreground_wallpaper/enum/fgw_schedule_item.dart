@@ -45,3 +45,13 @@ extension ExtraFgwDisplayedTypeView on FgwDisplayedType {
 
 // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
 enum FgwScheduleSetType{type346,type333}
+
+extension ExtraFgwScheduleSetType on FgwScheduleSetType {
+  String getName(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      FgwScheduleSetType.type333 => l10n.fgwScheduleGroupSetType333,
+      FgwScheduleSetType.type346 => l10n.fgwScheduleGroupSetType346,
+    };
+  }
+}

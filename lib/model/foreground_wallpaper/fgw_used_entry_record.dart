@@ -86,6 +86,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
   }
 
   Future<void> removeEntryIds(Set<int> rowIds) async {
+    debugPrint('$runtimeType removeFgwUsedEntryRecord ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
     final removedRows = _rows.where((row) => rowIds.contains(row.entryId)).toSet();
     await metadataDb.removeFgwUsedEntryRecord(removedRows);
     removedRows.forEach(_rows.remove);

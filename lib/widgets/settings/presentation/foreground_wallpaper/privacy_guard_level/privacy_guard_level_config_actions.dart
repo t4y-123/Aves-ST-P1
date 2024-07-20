@@ -1,4 +1,4 @@
-import 'package:aves/widgets/settings/classified/foreground_wallpaper/privacy_guard_level/privacy_guard_level_with_schedule_config_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/privacy_guard_level/privacy_guard_level_with_schedule_config_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../model/foreground_wallpaper/privacy_guard_level.dart';

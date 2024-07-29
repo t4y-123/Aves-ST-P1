@@ -1,6 +1,5 @@
 import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:flutter/material.dart';
-import '../../../../../services/fgw_service_handler.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import 'filter_set_config_page.dart';
 
@@ -104,7 +103,6 @@ class FilterSetConfigActions with FeedbackMixin {
           }
           filtersSets.setRows({updatedItem});
         });
-        await ForegroundWallpaperService.syncFgwScheduleChanges();
       }
     });
   }

@@ -1,7 +1,7 @@
 import '../../source/collection_source.dart';
 import '../fgw_schedule_helper.dart';
 import '../privacy_guard_level.dart';
-import '../wallpaper_schedule.dart';
+import 'fgw_schedule_item.dart';
 
 enum FgwSyncItem { curLevel, activeLevels, schedules, curEntryName }
 

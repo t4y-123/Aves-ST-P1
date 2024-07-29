@@ -10,24 +10,28 @@ import '../settings/settings.dart';
 import 'enum/fgw_schedule_item.dart';
 import 'filtersSet.dart';
 
-enum WallpaperUpdateType { home, lock, both, widget }
+enum ScheduleRowType { all, bridgeAll }
 
 final WallpaperSchedules wallpaperSchedules = WallpaperSchedules._private();
 
 class WallpaperSchedules with ChangeNotifier {
   Set<WallpaperScheduleRow> _rows = {};
+  Set<WallpaperScheduleRow> _bridgeRows = {};
 
 //
   WallpaperSchedules._private();
 
   Future<void> init() async {
     _rows = await metadataDb.loadAllWallpaperSchedules();
+    _bridgeRows = await metadataDb.loadAllWallpaperSchedules();
     await _removeDuplicates();
   }
 
   Future<void> refresh() async {
     _rows.clear();
+    _bridgeRows.clear();
     _rows = await metadataDb.loadAllWallpaperSchedules();
+    _bridgeRows = await metadataDb.loadAllWallpaperSchedules();
   }
 
   int get count => _rows.length;
@@ -37,20 +41,46 @@ class WallpaperSchedules with ChangeNotifier {
     return Set.unmodifiable(_rows);
   }
 
-  Future<void> add(Set<WallpaperScheduleRow> newRows) async {
-    await metadataDb.addWallpaperSchedules(newRows);
-    _rows.addAll(newRows);
+  Set<WallpaperScheduleRow> get bridgeAll {
+    _removeDuplicates();
+    return Set.unmodifiable(_bridgeRows);
+  }
+
+  Set<WallpaperScheduleRow> getAll(ScheduleRowType type) {
+    switch (type) {
+      case ScheduleRowType.bridgeAll:
+        return bridgeAll;
+      case ScheduleRowType.all:
+      default:
+        return all;
+    }
+  }
+
+  Set<WallpaperScheduleRow> _getTarget(ScheduleRowType type) {
+    switch (type) {
+      case ScheduleRowType.bridgeAll:
+        return _bridgeRows;
+      case ScheduleRowType.all:
+      default:
+        return _rows;
+    }
+  }
+
+  Future<void> add(Set<WallpaperScheduleRow> newRows, {ScheduleRowType type = ScheduleRowType.all}) async {
+    final targetSet = _getTarget(type);
+    if (type == ScheduleRowType.all) await metadataDb.addWallpaperSchedules(newRows);
+    targetSet.addAll(newRows);
     await _removeDuplicates();
     notifyListeners();
   }
 
-  Future<void> setRows(Set<WallpaperScheduleRow> newRows) async {
-    await removeEntries(newRows);
+  Future<void> setRows(Set<WallpaperScheduleRow> newRows, {ScheduleRowType type = ScheduleRowType.all}) async {
+    await removeEntries(newRows, type: type);
     for (var row in newRows) {
       await set(
         id: row.id,
-        scheduleNum: row.orderNum,
-        lableName: row.labelName,
+        orderNum: row.orderNum,
+        labelName: row.labelName,
         privacyGuardLevelId: row.privacyGuardLevelId,
         filtersSetId: row.filtersSetId,
         updateType: row.updateType,
@@ -58,60 +88,70 @@ class WallpaperSchedules with ChangeNotifier {
         widgetId: row.widgetId,
         intervalTime: row.interval,
         isActive: row.isActive,
+        type: type,
       );
     }
     notifyListeners();
   }
 
   Future<void> set({
-    required id,
-    required scheduleNum,
-    required lableName,
-    required privacyGuardLevelId,
-    required filtersSetId,
-    required updateType,
-    required widgetId,
-    required displayType,
-    required intervalTime,
-    required isActive,
+    required int id,
+    required int orderNum,
+    required String labelName,
+    required int privacyGuardLevelId,
+    required int filtersSetId,
+    required WallpaperUpdateType updateType,
+    required int widgetId,
+    required FgwDisplayedType displayType,
+    required int intervalTime,
+    required bool isActive,
+    ScheduleRowType type = ScheduleRowType.all,
   }) async {
-    // Remove existing entries with the same privacyGuardLevelId and updateType
-    // erase contextual properties from filters before saving them
-    final oldRows = _rows.where((row) => row.id == id).toSet();
-    _rows.removeAll(oldRows);
-    await metadataDb.removeWallpaperSchedules(oldRows);
+    final targetSet = _getTarget(type);
+
+    final oldRows = targetSet.where((row) => row.id == id).toSet();
+    targetSet.removeAll(oldRows);
+    if (type == ScheduleRowType.all) await metadataDb.removeWallpaperSchedules(oldRows);
     final row = WallpaperScheduleRow(
       id: id,
-      orderNum: scheduleNum,
-      filtersSetId: id,
-      labelName: lableName,
+      orderNum: orderNum,
+      filtersSetId: filtersSetId,
+      labelName: labelName,
       privacyGuardLevelId: privacyGuardLevelId,
       updateType: updateType,
       widgetId: widgetId,
-      displayType:displayType,
+      displayType: displayType,
       interval: intervalTime,
       isActive: isActive,
     );
-    debugPrint('$runtimeType set  WallpaperScheduleRow  $row');
-    _rows.add(row);
-    await metadataDb.addWallpaperSchedules({row});
+
+    debugPrint('$runtimeType set WallpaperScheduleRow $row');
+    targetSet.add(row);
+    if (type == ScheduleRowType.all) await metadataDb.addWallpaperSchedules({row});
     await _removeDuplicates();
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<WallpaperScheduleRow> rows) => removeIds(rows.map((row) => row.id).toSet());
+  Future<void> removeEntries(Set<WallpaperScheduleRow> rows, {ScheduleRowType type = ScheduleRowType.all}) async {
+    await removeIds(rows.map((row) => row.id).toSet(), type: type);
+  }
 
-  Future<void> removeNumbers(Set<int> rowNums) async {
-    final removedRows = _rows.where((row) => rowNums.contains(row.orderNum)).toSet();
-    await metadataDb.removeWallpaperSchedules(removedRows);
-    removedRows.forEach(_rows.remove);
+  Future<void> removeNumbers(Set<int> rowNums, {ScheduleRowType type = ScheduleRowType.all}) async {
+    final targetSet = _getTarget(type);
+
+    final removedRows = targetSet.where((row) => rowNums.contains(row.orderNum)).toSet();
+    if (type == ScheduleRowType.all) await metadataDb.removeWallpaperSchedules(removedRows);
+    removedRows.forEach(targetSet.remove);
     notifyListeners();
   }
 
-  Future<void> removeIds(Set<int> rowIds) async {
-    final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();
-    await metadataDb.removeWallpaperSchedules(removedRows);
-    removedRows.forEach(_rows.remove);
+  Future<void> removeIds(Set<int> rowIds, {ScheduleRowType type = ScheduleRowType.all}) async {
+    final targetSet = _getTarget(type);
+
+    final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
+    // only the all type affect the database.
+    if (type == ScheduleRowType.all) await metadataDb.removeWallpaperSchedules(removedRows);
+    removedRows.forEach(targetSet.remove);
     notifyListeners();
   }
 
@@ -136,37 +176,45 @@ class WallpaperSchedules with ChangeNotifier {
     }
   }
 
-  Future<void> clear() async {
+  Future<void> clear({ScheduleRowType type = ScheduleRowType.all}) async {
+    final targetSet = _getTarget(type);
+
     await metadataDb.clearWallpaperSchedules();
-    _rows.clear();
+    targetSet.clear();
     notifyListeners();
   }
 
   WallpaperScheduleRow newRow({
-      required int existMaxOrderNumOffset,
-      required int privacyGuardLevelId,
-      required int filtersSetId,
-      required WallpaperUpdateType updateType,
-      FgwDisplayedType? displayType,
-      String? labelName,
-      int? widgetId,
-      int? interval,
-      bool isActive = true,
-      int? id}) {
-    var thisGuardLevel = privacyGuardLevels.all.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId);
+    required int existMaxOrderNumOffset,
+    required int privacyGuardLevelId,
+    required int filtersSetId,
+    required WallpaperUpdateType updateType,
+    FgwDisplayedType? displayType,
+    String? labelName,
+    int? widgetId,
+    int? interval,
+    bool isActive = true,
+    int? id,
+    ScheduleRowType type = ScheduleRowType.all,
+  }) {
+    var thisGuardLevel = type ==ScheduleRowType.all?
+    privacyGuardLevels.all.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId)
+        :  privacyGuardLevels.bridgeAll.firstWhereOrNull((e) => e.privacyGuardLevelID == privacyGuardLevelId);
     thisGuardLevel ??= privacyGuardLevels.all.first;
 
     var thisFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == filtersSetId);
     thisFiltersSet ??= filtersSets.all.first;
 
-    final relevantItems = isActive ? all.where((item) => item.isActive).toList() : all.toList();
+    final targetSet = _getTarget(type);
+    final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxScheduleNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
 
     return WallpaperScheduleRow(
       id: id ?? metadataDb.nextId,
       orderNum: maxScheduleNum + existMaxOrderNumOffset,
-      labelName: labelName ?? 'L${thisGuardLevel.guardLevel}-ID_${thisGuardLevel.privacyGuardLevelID}-${updateType.name}',
+      labelName:
+          labelName ?? 'L${thisGuardLevel.guardLevel}-ID_$privacyGuardLevelId-${thisGuardLevel.labelName}-${updateType.name}',
       privacyGuardLevelId: privacyGuardLevelId,
       filtersSetId: thisFiltersSet.id,
       updateType: updateType,
@@ -177,16 +225,32 @@ class WallpaperSchedules with ChangeNotifier {
     );
   }
 
-  Future<void> setExistRows(Set<WallpaperScheduleRow> rows, Map<String, dynamic> newValues) async {
-    for (var row in rows) {
-      final oldRow = _rows.firstWhereOrNull((r) => r.id == row.id);
-      if (oldRow != null) {
-        _rows.remove(oldRow);
-        await metadataDb.removeWallpaperSchedules({oldRow});
+  Future<void> syncRowsToBridge() async {
+    _bridgeRows.clear();
+    _bridgeRows.addAll(_rows);
+  }
 
+  Future<void> syncBridgeToRows() async {
+    await clear();
+    _rows.addAll(_bridgeRows);
+    await metadataDb.addWallpaperSchedules(_rows);
+    notifyListeners();
+  }
+
+  Future<void> setExistRows(Set<WallpaperScheduleRow> rows, Map<String, dynamic> newValues,
+      {ScheduleRowType type = ScheduleRowType.all}) async {
+    final targetSet = _getTarget(type);
+
+    // Make a copy of the targetSet to avoid concurrent modification issues
+    final targetSetCopy = targetSet.toSet();
+
+    for (var row in rows) {
+      final oldRow = targetSetCopy.firstWhereOrNull((r) => r.id == row.id);
+      if (oldRow != null) {
+        await removeEntries({oldRow}, type: type);
         final updatedRow = WallpaperScheduleRow(
           id: row.id,
-          orderNum: newValues[WallpaperScheduleRow.propId] ?? row.orderNum,
+          orderNum: newValues[WallpaperScheduleRow.propOrderNum] ?? row.orderNum,
           labelName: newValues[WallpaperScheduleRow.propLabelName] ?? row.labelName,
           privacyGuardLevelId: newValues[WallpaperScheduleRow.propPrivacyGuardLevelId] ?? row.privacyGuardLevelId,
           filtersSetId: newValues[WallpaperScheduleRow.propFiltersSetId] ?? row.filtersSetId,
@@ -196,9 +260,48 @@ class WallpaperSchedules with ChangeNotifier {
           interval: newValues[WallpaperScheduleRow.propInterval] ?? row.interval,
           isActive: newValues[WallpaperScheduleRow.propIsActive] ?? row.isActive,
         );
-
-        _rows.add(updatedRow);
-        await metadataDb.addWallpaperSchedules({updatedRow});
+        await setRows({updatedRow}, type: type);
+        // set conflict update type in {home,lock} and {both}.
+        if (updatedRow.isActive) {
+          if (updatedRow.updateType == WallpaperUpdateType.home || updatedRow.updateType == WallpaperUpdateType.lock) {
+            // Deactivate rows with updateType both
+            for (var conflictingRow in targetSetCopy.where((r) =>
+                r.updateType == WallpaperUpdateType.both && r.privacyGuardLevelId == updatedRow.privacyGuardLevelId)) {
+              await set(
+                id: conflictingRow.id,
+                orderNum: conflictingRow.orderNum,
+                labelName: conflictingRow.labelName,
+                privacyGuardLevelId: conflictingRow.privacyGuardLevelId,
+                filtersSetId: conflictingRow.filtersSetId,
+                updateType: conflictingRow.updateType,
+                widgetId: conflictingRow.widgetId,
+                displayType: conflictingRow.displayType,
+                intervalTime: conflictingRow.interval,
+                isActive: false,
+                type: type,
+              );
+            }
+          } else if (updatedRow.updateType == WallpaperUpdateType.both) {
+            // Deactivate rows with updateType home or lock
+            for (var conflictingRow in targetSetCopy.where((r) =>
+                (r.updateType == WallpaperUpdateType.home || r.updateType == WallpaperUpdateType.lock) &&
+                r.privacyGuardLevelId == updatedRow.privacyGuardLevelId)) {
+              await set(
+                id: conflictingRow.id,
+                orderNum: conflictingRow.orderNum,
+                labelName: conflictingRow.labelName,
+                privacyGuardLevelId: conflictingRow.privacyGuardLevelId,
+                filtersSetId: conflictingRow.filtersSetId,
+                updateType: conflictingRow.updateType,
+                widgetId: conflictingRow.widgetId,
+                displayType: conflictingRow.displayType,
+                intervalTime: conflictingRow.interval,
+                isActive: false,
+                type: type,
+              );
+            }
+          }
+        }
       }
     }
     await _removeDuplicates();
@@ -217,7 +320,7 @@ class WallpaperSchedules with ChangeNotifier {
     return jsonMap.isNotEmpty ? jsonMap : null;
   }
 
-  Future<void> import (dynamic jsonMap) async {
+  Future<void> import(dynamic jsonMap) async {
     if (jsonMap is! Map) {
       debugPrint('failed to import wallpaper schedules for jsonMap=$jsonMap');
       return;
@@ -251,6 +354,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
   final String labelName;
   final int privacyGuardLevelId;
   final int filtersSetId;
+
   final WallpaperUpdateType updateType;
   final int widgetId;
   final FgwDisplayedType displayType;
@@ -297,7 +401,8 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
   });
 
   static WallpaperScheduleRow fromMap(Map map) {
-    final defaultDisplayType = FgwDisplayedType.values.safeByName(map['displayType'] as String,settings.fgwDisplayType);
+    final defaultDisplayType =
+        FgwDisplayedType.values.safeByName(map['displayType'] as String, settings.fgwDisplayType);
     debugPrint('WallpaperScheduleRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
     return WallpaperScheduleRow(
       id: map['id'] as int,
@@ -334,12 +439,38 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
       return isActive ? -1 : 1;
     }
 
-    // If isActive is the same, sort by scheduleNum
-    final scheduleNumComparison = orderNum.compareTo(other.orderNum);
-    if (scheduleNumComparison != 0) {
-      return scheduleNumComparison;
+    // If isActive is the same, sort by orderNum
+    final orderNumComparison = orderNum.compareTo(other.orderNum);
+    if (orderNumComparison != 0) {
+      return orderNumComparison;
     }
-    // If scheduleNum is the same, sort by id
+    // If orderNum is the same, sort by id
     return id.compareTo(other.id);
+  }
+
+  WallpaperScheduleRow copyWith({
+    int? id,
+    int? orderNum,
+    String? labelName,
+    int? privacyGuardLevelId,
+    int? filtersSetId,
+    WallpaperUpdateType? updateType,
+    int? widgetId,
+    FgwDisplayedType? displayType,
+    int? interval,
+    bool? isActive,
+  }) {
+    return WallpaperScheduleRow(
+      id: id ?? this.id,
+      orderNum: orderNum ?? this.orderNum,
+      labelName: labelName ?? this.labelName,
+      privacyGuardLevelId: privacyGuardLevelId ?? this.privacyGuardLevelId,
+      filtersSetId: filtersSetId ?? this.filtersSetId,
+      updateType: updateType ?? this.updateType,
+      widgetId: widgetId ?? this.widgetId,
+      displayType: displayType ?? this.displayType,
+      interval: interval ?? this.interval,
+      isActive: isActive ?? this.isActive,
+    );
   }
 }

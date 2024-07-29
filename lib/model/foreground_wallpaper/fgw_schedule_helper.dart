@@ -10,6 +10,7 @@ import '../filters/filters.dart';
 import '../settings/settings.dart';
 import '../source/collection_lens.dart';
 import '../source/collection_source.dart';
+import 'enum/fgw_schedule_item.dart';
 import 'fgw_used_entry_record.dart';
 
 final FgwScheduleHelper fgwScheduleHelper = FgwScheduleHelper._private();
@@ -74,9 +75,10 @@ class FgwScheduleHelper {
     return filters;
   }
 
-  Future<Set<WallpaperScheduleRow>> getCurSchedules({PrivacyGuardLevelRow? curPrivacyGuardLevel}) async {
+  Future<Set<WallpaperScheduleRow>> getCurSchedules({PrivacyGuardLevelRow? curPrivacyGuardLevel,ScheduleRowType rowsType = ScheduleRowType.all}) async {
     curPrivacyGuardLevel ??= await getCurGuardLevel();
-    final curSchedules = wallpaperSchedules.all.where((e) => e.privacyGuardLevelId == curPrivacyGuardLevel?.privacyGuardLevelID).toSet();
+    final targetSet = wallpaperSchedules.getAll(rowsType);
+    final curSchedules = targetSet.where((e) => e.privacyGuardLevelId == curPrivacyGuardLevel?.privacyGuardLevelID).toSet();
     debugPrint('$runtimeType getScheduleEntries \n curPrivacyGuardLevel $curPrivacyGuardLevel \n curSchedules :$curSchedules');
     return curSchedules;
   }

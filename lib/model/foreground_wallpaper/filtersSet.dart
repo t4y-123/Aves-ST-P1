@@ -111,7 +111,7 @@ class FilterSet with ChangeNotifier{
     );
   }
 
-  Future<void> setExistRows(Set<FiltersSetRow> rows, Map<String, dynamic> newValues) async {
+  Future<void> seRowsProperties(Set<FiltersSetRow> rows, Map<String, dynamic> newValues) async {
     for (var row in rows) {
       final oldRow = _rows.firstWhereOrNull((r) => r.id == row.id);
       if (oldRow != null) {

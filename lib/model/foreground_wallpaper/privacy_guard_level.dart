@@ -8,35 +8,56 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
+import '../../l10n/l10n.dart';
+import '../settings/settings.dart';
+
 final PrivacyGuardLevel privacyGuardLevels = PrivacyGuardLevel._private();
+
+enum LevelRowType {all,bridgeAll}
 
 class PrivacyGuardLevel with ChangeNotifier {
 
   Set<PrivacyGuardLevelRow> _rows = {};
+  Set<PrivacyGuardLevelRow> _bridgeRows = {};
 
   PrivacyGuardLevel._private();
 
   Future<void> init() async {
     _rows = await metadataDb.loadAllPrivacyGuardLevels();
+    _bridgeRows = await metadataDb.loadAllPrivacyGuardLevels();
   }
 
   Future<void> refresh() async {
     _rows.clear();
+    _bridgeRows.clear();
     _rows = await metadataDb.loadAllPrivacyGuardLevels();
   }
 
   int get count => _rows.length;
 
   Set<PrivacyGuardLevelRow> get all => Set.unmodifiable(_rows);
+  Set<PrivacyGuardLevelRow> get bridgeAll => Set.unmodifiable(_bridgeRows);
 
-  Future<void> add(Set<PrivacyGuardLevelRow> newRows) async {
-    await metadataDb.addPrivacyGuardLevels(newRows);
-    _rows.addAll(newRows);
+  Set<PrivacyGuardLevelRow> _getTarget(LevelRowType type) {
+    switch (type) {
+      case LevelRowType.bridgeAll:
+        return _bridgeRows;
+      case LevelRowType.all:
+      default:
+        return _rows;
+    }
+  }
 
+  Future<void> add(Set<PrivacyGuardLevelRow> newRows, {LevelRowType type = LevelRowType.all}) async {
+    final targetSet = _getTarget(type);
+    if (type == LevelRowType.all) {
+      await metadataDb.addPrivacyGuardLevels(newRows);
+    }
+    targetSet.addAll(newRows);
     notifyListeners();
   }
 
-  Future<void> setRows(Set<PrivacyGuardLevelRow> newRows) async {
+  Future<void> setRows(Set<PrivacyGuardLevelRow> newRows, {LevelRowType type = LevelRowType.all}) async {
     for (var row in newRows) {
       await set(
         privacyGuardLevelID: row.privacyGuardLevelID,
@@ -44,6 +65,7 @@ class PrivacyGuardLevel with ChangeNotifier {
         labelName: row.labelName,
         color: row.color!,
         isActive: row.isActive,
+        type: type,
       );
     }
     notifyListeners();
@@ -55,11 +77,15 @@ class PrivacyGuardLevel with ChangeNotifier {
     required String labelName,
     required Color color,
     required bool isActive,
+    LevelRowType type = LevelRowType.all,
   }) async {
-    // erase contextual properties from filters before saving them
-    final oldRows = _rows.where((row) => row.privacyGuardLevelID == privacyGuardLevelID).toSet();
-    _rows.removeAll(oldRows);
-    await metadataDb.removePrivacyGuardLevels(oldRows);
+    final targetSet = _getTarget(type);
+
+    final oldRows = targetSet.where((row) => row.privacyGuardLevelID == privacyGuardLevelID).toSet();
+    targetSet.removeAll(oldRows);
+    if (type == LevelRowType.all) {
+      await metadataDb.removePrivacyGuardLevels(oldRows);
+    }
 
     final row = PrivacyGuardLevelRow(
       privacyGuardLevelID: privacyGuardLevelID,
@@ -68,26 +94,37 @@ class PrivacyGuardLevel with ChangeNotifier {
       color: color,
       isActive: isActive,
     );
-    _rows.add(row);
-    await metadataDb.addPrivacyGuardLevels({row});
+    targetSet.add(row);
+    if (type == LevelRowType.all) {
+      await metadataDb.addPrivacyGuardLevels({row});
+    }
 
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<PrivacyGuardLevelRow> rows) => removeIds(rows.map((row) => row.privacyGuardLevelID).toSet());
+  Future<void> removeEntries(Set<PrivacyGuardLevelRow> rows, {LevelRowType type = LevelRowType.all}) async {
+    await removeIds(rows.map((row) => row.privacyGuardLevelID).toSet(), type: type);
+  }
 
-  Future<void> removeIds(Set<int> rowIds) async {
-    final removedRows = _rows.where((row) => rowIds.contains(row.privacyGuardLevelID)).toSet();
+  Future<void> removeIds(Set<int> rowIds, {LevelRowType type = LevelRowType.all}) async {
+    final targetSet = _getTarget(type);
 
-    await metadataDb.removePrivacyGuardLevels(removedRows);
-    removedRows.forEach(_rows.remove);
+    final removedRows = targetSet.where((row) => rowIds.contains(row.privacyGuardLevelID)).toSet();
+    if (type == LevelRowType.all) {
+      await metadataDb.removePrivacyGuardLevels(removedRows);
+    }
+    removedRows.forEach(targetSet.remove);
 
     notifyListeners();
   }
 
-  Future<void> clear() async {
-    await metadataDb.clearPrivacyGuardLevel();
-    _rows.clear();
+  Future<void> clear({LevelRowType type = LevelRowType.all}) async {
+    final targetSet = _getTarget(type);
+
+    if (type == LevelRowType.all) {
+      await metadataDb.clearPrivacyGuardLevel();
+    }
+    targetSet.clear();
 
     notifyListeners();
   }
@@ -102,29 +139,50 @@ class PrivacyGuardLevel with ChangeNotifier {
     );
   }
 
-  PrivacyGuardLevelRow newRow(int existLevelOffset, String alias,{ Color? newColor, bool isActive = true}) {
+  Future<String> getLabelName(int guardLevel) async {
+    AppLocalizations _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
+    final prefix = _l10n.guardLevelNamePrefix;
+    return '$prefix $guardLevel';
+  }
+
+  Future<PrivacyGuardLevelRow> newRow(int existLevelOffset, {String? labelName, Color? newColor, bool isActive = true, LevelRowType type = LevelRowType.all}) async {
+    final targetSet = _getTarget(type);
+
     final relevantItems = isActive
-        ? privacyGuardLevels.all.where((item) => item.isActive).toList()
-        : privacyGuardLevels.all.toList();
+        ? targetSet.where((item) => item.isActive).toList()
+        : targetSet.toList();
     final maxGuardLevel = relevantItems.isEmpty
         ? 0
         : relevantItems.map((item) => item.guardLevel).reduce((a, b) => a > b ? a : b);
-
+    final guardLevel =  maxGuardLevel + existLevelOffset;
     return PrivacyGuardLevelRow(
       privacyGuardLevelID: metadataDb.nextId,
-      guardLevel: maxGuardLevel + existLevelOffset,
-      labelName: alias,
+      guardLevel: guardLevel,
+      labelName: labelName ?? await getLabelName(guardLevel),
       color:  newColor ?? getRandomColor(),
       isActive: isActive,
     );
   }
 
-  Future<void> setExistRows(Set<PrivacyGuardLevelRow> rows, Map<String, dynamic> newValues) async {
+  Future<void> setExistRows({
+    required Set<PrivacyGuardLevelRow> rows,
+    required Map<String, dynamic> newValues,
+    LevelRowType type =LevelRowType.all,
+  }) async {
+    final setBridge = type == LevelRowType.bridgeAll;
+    final targetSet = setBridge ? _bridgeRows : _rows;
+
+    debugPrint('$runtimeType setExistRows privacyGuardLevels: ${privacyGuardLevels.all}\n'
+        'row.targetSet:[$targetSet]  \n'
+        'newValues $newValues\n');
     for (var row in rows) {
-      final oldRow = _rows.firstWhereOrNull((r) => r.privacyGuardLevelID == row.privacyGuardLevelID);
+      final oldRow = targetSet.firstWhereOrNull((r) => r.privacyGuardLevelID == row.privacyGuardLevelID);
       if (oldRow != null) {
-        _rows.remove(oldRow);
-        await metadataDb.removePrivacyGuardLevels({oldRow});
+        debugPrint('$runtimeType setExistRows:$oldRow');
+        targetSet.remove(oldRow);
+        if (!setBridge) {
+          await metadataDb.removePrivacyGuardLevels({oldRow});
+        }
 
         final updatedRow = PrivacyGuardLevelRow(
           privacyGuardLevelID: row.privacyGuardLevelID,
@@ -134,12 +192,38 @@ class PrivacyGuardLevel with ChangeNotifier {
           isActive: newValues[PrivacyGuardLevelRow.propIsActive] ?? row.isActive,
         );
 
-        _rows.add(updatedRow);
-        await metadataDb.addPrivacyGuardLevels({updatedRow});
+        targetSet.add(updatedRow);
+        if (!setBridge) {
+          await metadataDb.addPrivacyGuardLevels({updatedRow});
+        }
       }
     }
     notifyListeners();
   }
+
+  Future<void> syncRowsToBridge() async {
+    debugPrint('$runtimeType  syncRowsToBridge,\n'
+        'all:[$_rows]'
+        'before bridget:[$_bridgeRows]');
+    _bridgeRows.clear();
+    _bridgeRows.addAll(_rows);
+    debugPrint('$runtimeType  syncRowsToBridge,\n'
+        'after bridget:[$_bridgeRows]');
+  }
+
+  Future<void> syncBridgeToRows() async {
+    debugPrint('$runtimeType  syncBridgeToRows, before\n'
+        'all:[$_rows]'
+        'before bridget:[$_bridgeRows]');
+    await clear();
+    _rows.addAll(_bridgeRows);
+    await metadataDb.addPrivacyGuardLevels(_rows);
+    debugPrint('$runtimeType  syncBridgeToRows, after\n'
+        'all:[$_rows]'
+        'before bridget:[$_bridgeRows]');
+    notifyListeners();
+  }
+
 
   // import/export
   Map<String, Map<String, dynamic>>? export() {
@@ -196,7 +280,7 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
   static const String propIsActive = 'isActive';
 
   @override
-  List<Object?> get props => [privacyGuardLevelID, guardLevel, labelName, color];
+  List<Object?> get props => [privacyGuardLevelID, guardLevel, labelName, color,isActive];
 
   const PrivacyGuardLevelRow({
     required this.privacyGuardLevelID,

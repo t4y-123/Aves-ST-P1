@@ -1099,7 +1099,7 @@
   "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
   "settingsPresentationForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
 
-  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage Wallpaper Schedules",
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage wallpaper schedules",
   "settingsWallpaperSchedulesManagerTitle": "Manage Wallpaper Schedules",
 
 
@@ -1124,12 +1124,40 @@
 
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsFgwScheduleBanner": "Can only edit schedule in guard level edit page.",
+  "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
   "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
   "settingsForegroundWallpaperConfigAddItem": "Add Item",
+  "settingsFgwScheduleSyncButtonText": "Sync Schedules Now",
+  "settingsFgwScheduleSyncButtonAlert": "Sync Schedules tapped,please wait a few second.",
+
+  "guardLevelTitle": "Guard Level",
+  "guardLevelNamePrefix": "Level",
+  "renameLabelNameTileTitle": "Label Name",
+  "renameLabelNameDialogLabel": "New name",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "No need to name a same name",
+  "settingsCopySchedulesFromExist": "Copy schedules from exist ",
+  "settingsGuardLevelColor": "Color:",
+  "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
+  "settingsCollectionScheduleUpdateTypeMultiSelectionNone": "None",
+  "settingsGuardLevelIsActiveTitle": "Active:",
+
 
   "settingsFilterSetTabTypes": "Filter Set",
+  "settingsFilterSetTile": "Filter Set Setting",
+  "settingsScheduleIntervalTile": "Interval:",
 
   "settingsWallpaperScheduleTabTypes": "Schedule",
+  "settingsScheduleNamePrefix": "Schedule: ",
+  "settingsGuardLevelScheduleSubPagePrefix": "Schedule Setting",
+
+  "wallpaperUpdateTypeHome": "home",
+  "wallpaperUpdateTypeLock": "lock",
+  "wallpaperUpdateTypeBoth": "both",
+  "wallpaperUpdateTypeWidget": "widget",
+
   "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
   "settingsSelectOneGuardLevelTitle": "Select one guard level",
   "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
@@ -1140,6 +1168,7 @@
   "fgwDisplayMostRecentNotUsed": "Most recent not used",
   "settingsScheduleDisplayTypeTile": "Entries Display Type",
   "settingsScheduleDisplayTypeDialogTitle": "Entries Display Type",
+  "settingsScheduleIsActiveTitle": "Active:",
 
   "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,please check your settings.",
 
@@ -1149,8 +1178,8 @@
 
   "initFiltersSet346Name01": "Home: Exposure",
   "initFiltersSet346Name02": "Home: Moderate",
-  "initFiltersSet346Name03": "Lock: Moderate & Exposure",
-  "initFiltersSet346Name04": "Home & Lock: Safe",
+  "initFiltersSet346Name03": "Home & Lock: Safe",
+  "initFiltersSet346Name04": "Lock: Moderate & Exposure",
 
   "initFiltersSet333Name01": "Home: Exposure",
   "initFiltersSet333Name02": "Home: Moderate",

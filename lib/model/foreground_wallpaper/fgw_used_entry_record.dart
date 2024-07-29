@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:aves/model/foreground_wallpaper/fgw_schedule_helper.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
@@ -9,6 +8,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import '../entry/entry.dart';
+import 'enum/fgw_schedule_item.dart';
 
 final FgwUsedEntryRecord fgwUsedEntryRecord = FgwUsedEntryRecord._private();
 

@@ -55,3 +55,17 @@ extension ExtraFgwScheduleSetType on FgwScheduleSetType {
     };
   }
 }
+
+enum WallpaperUpdateType { home, lock, both, widget }
+
+extension ExtraWallpaperUpdateType on WallpaperUpdateType {
+  String getName(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      WallpaperUpdateType.home => l10n.wallpaperUpdateTypeHome,
+      WallpaperUpdateType.lock => l10n.wallpaperUpdateTypeLock,
+      WallpaperUpdateType.both => l10n.wallpaperUpdateTypeBoth,
+      WallpaperUpdateType.widget => l10n.wallpaperUpdateTypeWidget,
+    };
+  }
+}

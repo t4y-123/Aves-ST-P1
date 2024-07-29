@@ -1,3 +1,4 @@
+import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 import '../../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../../../services/intent_service.dart';
@@ -10,11 +11,12 @@ import 'generic_selection_page.dart';
 class ScheduleCollectionTile extends StatefulWidget {
   final Set<FiltersSetRow> selectedFilterSet;
   final void Function(Set<FiltersSetRow>) onSelection;
-
+  final String? title;
   const ScheduleCollectionTile({
     super.key,
     required this.selectedFilterSet,
     required this.onSelection,
+    this.title,
   });
 
   @override
@@ -52,7 +54,18 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
       ),
       child: Center(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if(widget.title != null) Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                   '${context.l10n.settingsFilterSetTile}:  (id:${_selectedFilterSet.first.id})',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(

@@ -10,10 +10,10 @@ import 'package:flutter/widgets.dart';
 import '../l10n/l10n.dart';
 import '../model/entry/entry.dart';
 import '../model/entry/sort.dart';
+import '../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
 import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
 import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
 import '../model/foreground_wallpaper/fgw_used_entry_record.dart';
-import '../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../widgets/common/action_mixins/feedback.dart';
 
 const _opChannel = MethodChannel('deckers.thibault/aves/fgw_service_notification_op');

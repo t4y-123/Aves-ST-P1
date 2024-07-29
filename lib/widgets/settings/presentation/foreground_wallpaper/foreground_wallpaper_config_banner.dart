@@ -1,10 +1,10 @@
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/basic/font_size_icon_theme.dart';
-import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
-class ForegroundWallpaperConfigBanner extends StatelessWidget {
-  const ForegroundWallpaperConfigBanner({super.key});
+class ForegroundWallpaperConfigBanner<T> extends StatelessWidget {
+  String bannerString;
+  ForegroundWallpaperConfigBanner({super.key,required this.bannerString});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class ForegroundWallpaperConfigBanner extends StatelessWidget {
         children: [
           const FontSizeIconTheme(child: Icon(AIcons.info)),
           const SizedBox(width: 16),
-          Expanded(child: Text(context.l10n.settingsForegroundWallpaperConfigBanner)),
+          Expanded(child: Text(bannerString)),
         ],
       ),
     );

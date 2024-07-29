@@ -50,7 +50,7 @@ class FgwUsedFilter extends CollectionFilter {
   String getLabel(BuildContext context) => context.l10n.filterFgwUsedLabel;
 
   @override
-  Widget iconBuilder(BuildContext context, double size, {bool showGenericIcon = true}) => Icon(AIcons.fgwUsed, size: size);
+  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) => Icon(AIcons.fgwUsed, size: size);
 
   @override
   String get category => type;

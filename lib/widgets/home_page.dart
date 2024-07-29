@@ -94,7 +94,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) => const AvesScaffold();
 
   Future<void> _setup() async {
-    final stopwatch = Stopwatch()..start();
+    final stopwatch = Stopwatch()
+      ..start();
     if (await windowService.isActivity()) {
       // do not check whether permission was granted, because some app stores
       // hide in some countries apps that force quit on permission denial
@@ -111,15 +112,17 @@ class _HomePageState extends State<HomePage> {
 
     await androidFileUtils.init();
     if (!{
-          IntentActions.edit,
-          IntentActions.screenSaver,
-          IntentActions.setWallpaper,
-        }.contains(intentAction) &&
+      IntentActions.edit,
+      IntentActions.screenSaver,
+      IntentActions.setWallpaper,
+    }.contains(intentAction) &&
         settings.isInstalledAppAccessAllowed) {
       unawaited(appInventory.initAppNames());
     }
 
-    if (intentData.values.whereNotNull().isNotEmpty) {
+    if (intentData.values
+        .whereNotNull()
+        .isNotEmpty) {
       await reportService.log('Intent data=$intentData');
       switch (intentAction) {
         case IntentActions.view:
@@ -204,8 +207,8 @@ class _HomePageState extends State<HomePage> {
             appMode = AppMode.setWallpaper;
           }
         case IntentActions.pickItems:
-          // TODO TLAD apply pick mimetype(s)
-          // some apps define multiple types, separated by a space (maybe other signs too, like `,` `;`?)
+        // TODO TLAD apply pick mimetype(s)
+        // some apps define multiple types, separated by a space (maybe other signs too, like `,` `;`?)
           String? pickMimeTypes = intentData[IntentDataKeys.mimeType];
           final multiple = intentData[IntentDataKeys.allowMultiple] ?? false;
           debugPrint('pick mimeType=$pickMimeTypes multiple=$multiple');
@@ -227,7 +230,7 @@ class _HomePageState extends State<HomePage> {
           _initialRouteName = ForegroundWallpaperWidgetSettings.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         default:
-          // do not use 'route' as extra key, as the Flutter framework acts on it
+        // do not use 'route' as extra key, as the Flutter framework acts on it
           final extraRoute = intentData[IntentDataKeys.page];
           if (allowedShortcutRoutes.contains(extraRoute)) {
             _initialRouteName = extraRoute;
@@ -241,7 +244,9 @@ class _HomePageState extends State<HomePage> {
       }
       _initialExplorerPath = intentData[IntentDataKeys.explorerPath];
     }
-    context.read<ValueNotifier<AppMode>>().value = appMode;
+    context
+        .read<ValueNotifier<AppMode>>()
+        .value = appMode;
     unawaited(reportService.setCustomKey('app_mode', appMode.toString()));
     debugPrint('Storage check complete in ${stopwatch.elapsed.inMilliseconds}ms');
 
@@ -256,7 +261,8 @@ class _HomePageState extends State<HomePage> {
         source.safeMode = safeMode;
         if (source.initState != SourceInitializationState.full) {
           await source.init(
-            loadTopEntriesFirst: settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty,
+            loadTopEntriesFirst: settings.homePage == HomePageSetting.collection &&
+                settings.homeCustomCollection.isEmpty,
           );
         }
       case AppMode.screenSaver:
@@ -289,7 +295,7 @@ class _HomePageState extends State<HomePage> {
     // e.g. when opening the viewer in `view` mode should replace a viewer in `main` mode
     unawaited(Navigator.maybeOf(context)?.pushAndRemoveUntil(
       await _getRedirectRoute(appMode),
-      (route) => false,
+          (route) => false,
     ));
   }
 
@@ -299,7 +305,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool _isViewerSourceable(AvesEntry? viewerEntry) {
-    return viewerEntry != null && viewerEntry.directory != null && !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
+    return viewerEntry != null && viewerEntry.directory != null &&
+        !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
   }
 
   Future<AvesEntry?> _initViewerEntry({required String uri, required String? mimeType}) async {
@@ -355,15 +362,15 @@ class _HomePageState extends State<HomePage> {
               case FgwServiceOpenType.shareByCopy:
                 final album = viewerEntry.directory;
                 if (album != null) {
-            collection = CollectionLens(
-              source: source,
-              filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
-              listenToSource: false,
-              // if we group bursts, opening a burst sub-entry should:
-              // - identify and select the containing main entry,
-              // - select the sub-entry in the Viewer page.
-              stackBursts: false,
-            );
+                  collection = CollectionLens(
+                    source: source,
+                    filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
+                    listenToSource: false,
+                    // if we group bursts, opening a burst sub-entry should:
+                    // - identify and select the containing main entry,
+                    // - select the sub-entry in the Viewer page.
+                    stackBursts: false,
+                  );
                 }
               case FgwServiceOpenType.usedRecord:
               case FgwServiceOpenType.curFilters:
@@ -386,25 +393,26 @@ class _HomePageState extends State<HomePage> {
                 debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
             }
             final viewerEntryPath = viewerEntry.path;
-            final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+            final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) =>
+            entry.path == viewerEntryPath);
             if (collectionEntry != null) {
               viewerEntry = collectionEntry;
             } else {
               debugPrint('collection does not contain viewerEntry=$viewerEntry');
               collection = null;
-
+            }
           }
         }
 
-        return DirectMaterialPageRoute(
-          settings: const RouteSettings(name: EntryViewerPage.routeName),
-          builder: (_) {
-            return EntryViewerPage(
-              collection: collection,
-              initialEntry: viewerEntry,
-            );
-          },
-        );
+          return DirectMaterialPageRoute(
+            settings: const RouteSettings(name: EntryViewerPage.routeName),
+            builder: (_) {
+              return EntryViewerPage(
+                collection: collection,
+                initialEntry: viewerEntry,
+              );
+            },
+          );
       case AppMode.edit:
         return DirectMaterialPageRoute(
           settings: const RouteSettings(name: EntryViewerPage.routeName),
@@ -416,9 +424,11 @@ class _HomePageState extends State<HomePage> {
         );
       default:
         routeName = _initialRouteName ?? settings.homePage.routeName;
-        filters = _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
+        filters =
+            _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
     }
-    Route buildRoute(WidgetBuilder builder) => DirectMaterialPageRoute(
+    Route buildRoute(WidgetBuilder builder) =>
+        DirectMaterialPageRoute(
           settings: RouteSettings(name: routeName),
           builder: builder,
         );
@@ -491,8 +501,6 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:
         return buildRoute((context) => const ScreenSaverSettingsPage());
-      case HomeWidgetSettingsPage.routeName:
-        return buildRoute((context) => HomeWidgetSettingsPage(widgetId: _widgetId!));
       case ForegroundWallpaperWidgetSettings.routeName:
         return buildRoute((context) => ForegroundWallpaperWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
@@ -509,5 +517,4 @@ class _HomePageState extends State<HomePage> {
       default:
         return buildRoute((context) => CollectionPage(source: source, filters: filters));
     }
-  }
-}
+  }}

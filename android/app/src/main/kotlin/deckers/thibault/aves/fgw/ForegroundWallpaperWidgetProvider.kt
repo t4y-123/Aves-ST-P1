@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.SizeF
 import android.widget.RemoteViews
 import app.loup.streams_channel.StreamsChannel
 import deckers.thibault.aves.channel.AvesByteSendingMethodCodec
@@ -44,16 +45,19 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
 
     // t4y: do almost the same as pre normal widget.
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        Log.d(LOG_TAG, "onUpdate widgetIds=${appWidgetIds.contentToString()}")
+        Log.d(LOG_TAG, "Widget onUpdate widgetIds=${appWidgetIds.contentToString()}")
         for (widgetId in appWidgetIds) {
             val widgetInfo = appWidgetManager.getAppWidgetOptions(widgetId)
 
+            val pendingResult = goAsync()
             defaultScope.launch {
-                val backgroundProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = false)
-                updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, backgroundProps)
+                val backgroundProps = getProps(context, widgetId, widgetInfo, drawEntryImage = false)
+                updateWidgetImage(context, appWidgetManager, widgetId, backgroundProps)
 
-                val imageProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = false)
-                updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
+                val imageProps = getProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = false)
+                updateWidgetImage(context, appWidgetManager, widgetId, imageProps)
+
+                pendingResult?.finish()
             }
         }
 
@@ -69,32 +73,47 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
         }
         imageByteFetchJob = defaultScope.launch {
             delay(500)
-            val imageProps = getWallpaperProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = true)
-            updateWallpaperWidgetImage(context, appWidgetManager, widgetId, widgetInfo, imageProps)
+            val imageProps = getProps(context, widgetId, widgetInfo, drawEntryImage = true, reuseEntry = true)
+            updateWidgetImage(context, appWidgetManager, widgetId, imageProps)
         }
     }
 
     private fun getDevicePixelRatio(): Float = Resources.getSystem().displayMetrics.density
 
-    private fun getWidgetSizePx(context: Context, widgetInfo: Bundle): Pair<Int, Int> {
-        val devicePixelRatio = getDevicePixelRatio()
-        val isPortrait = context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-        val widthKey = if (isPortrait) AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
-        val heightKey = if (isPortrait) AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT
-        val widthPx = (widgetInfo.getInt(widthKey) * devicePixelRatio).roundToInt()
-        val heightPx = (widgetInfo.getInt(heightKey) * devicePixelRatio).roundToInt()
-        return Pair(widthPx, heightPx)
+    private fun getWidgetSizesDip(context: Context, widgetInfo: Bundle): List<FieldMap> {
+        var sizes: List<SizeF>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            widgetInfo.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            @Suppress("DEPRECATION")
+            widgetInfo.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES)
+        } else {
+            null
+        }
+
+        if (sizes.isNullOrEmpty()) {
+            val isPortrait = context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            val widthKey = if (isPortrait) AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
+            val heightKey = if (isPortrait) AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT
+            val widthDip = widgetInfo.getInt(widthKey)
+            val heightDip = widgetInfo.getInt(heightKey)
+            sizes = listOf(SizeF(widthDip.toFloat(), heightDip.toFloat()))
+        }
+
+        return sizes.map { size -> hashMapOf("widthDip" to size.width, "heightDip" to size.height) }
     }
 
-    private suspend fun getWallpaperProps(
+    private suspend fun getProps(
         context: Context,
         widgetId: Int,
         widgetInfo: Bundle,
         drawEntryImage: Boolean,
         reuseEntry: Boolean = false,
     ): FieldMap? {
-        val (widthPx, heightPx) = getWidgetSizePx(context, widgetInfo)
-        if (widthPx == 0 || heightPx == 0) return null
+        val sizesDip = getWidgetSizesDip(context, widgetInfo)
+        if (sizesDip.isEmpty()) return null
+
+        val sizeDip = sizesDip.first()
+        if (sizeDip["widthDip"] == 0 || sizeDip["heightDip"] == 0) return null
 
         val isNightModeOn = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
@@ -107,13 +126,16 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
                     FlutterUtils.runOnUiThread {
                         channel.invokeMethod("drawWidget", hashMapOf(
                             "widgetId" to widgetId,
-                            "widthPx" to widthPx,
-                            "heightPx" to heightPx,
+                            "sizesDip" to sizesDip,
                             "devicePixelRatio" to getDevicePixelRatio(),
                             "drawEntryImage" to drawEntryImage,
                             "reuseEntry" to reuseEntry,
                             "isSystemThemeDark" to isNightModeOn,
-                        ), object : MethodChannel.Result {
+                        ).apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                put("cornerRadiusPx", context.resources.getDimension(android.R.dimen.system_app_widget_background_radius))
+                            }
+                        }, object : MethodChannel.Result {
                             override fun success(result: Any?) {
                                 cont.resume(result)
                             }
@@ -133,45 +155,92 @@ class ForegroundWallpaperWidgetProvider : AppWidgetProvider() {
             Log.i(LOG_TAG, "finish suspendCoroutine ")
             return props as FieldMap?
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "failed to draw widget for widgetId=$widgetId widthPx=$widthPx heightPx=$heightPx", e)
+            Log.e(LOG_TAG, "failed to draw widget for widgetId=$widgetId sizesPx=$sizesDip", e)
         }
         return null
     }
 
-    private fun updateWallpaperWidgetImage(
+    private fun updateWidgetImage(
         context: Context,
         appWidgetManager: AppWidgetManager,
         widgetId: Int,
-        widgetInfo: Bundle,
         props: FieldMap?,
     ) {
         props ?: return
 
-        val bytes = props["bytes"] as ByteArray?
+        val bytesBySizeDip = (props["bytesBySizeDip"] as List<*>?)?.mapNotNull {
+            if (it is Map<*, *>) {
+                val widthDip = (it["widthDip"] as Number?)?.toFloat()
+                val heightDip = (it["heightDip"] as Number?)?.toFloat()
+                val bytes = it["bytes"] as ByteArray?
+                if (widthDip != null && heightDip != null && bytes != null) {
+                    Pair(SizeF(widthDip, heightDip), bytes)
+                } else null
+            } else null
+        }
         val updateOnTap = props["updateOnTap"] as Boolean?
-        if (bytes == null || updateOnTap == null) {
+        if (bytesBySizeDip == null || updateOnTap == null) {
             Log.e(LOG_TAG, "missing arguments")
             return
         }
 
-        val (widthPx, heightPx) = getWidgetSizePx(context, widgetInfo)
-        if (widthPx == 0 || heightPx == 0) return
+        if (bytesBySizeDip.isEmpty()) {
+            Log.e(LOG_TAG, "empty image list")
+            return
+        }
+
+        val bitmaps = ArrayList<Bitmap>()
+
+        fun createRemoteViewsForSize(
+            context: Context,
+            widgetId: Int,
+            sizeDip: SizeF,
+            bytes: ByteArray,
+            updateOnTap: Boolean,
+        ): RemoteViews? {
+            val devicePixelRatio = getDevicePixelRatio()
+            val widthPx = (sizeDip.width * devicePixelRatio).roundToInt()
+            val heightPx = (sizeDip.height * devicePixelRatio).roundToInt()
+
+            try {
+                val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888).also {
+                    bitmaps.add(it)
+                    it.copyPixelsFromBuffer(ByteBuffer.wrap(bytes))
+                }
+
+                val pendingIntent = if (updateOnTap) buildUpdateIntent(context, widgetId) else buildOpenAppIntent(context, widgetId)
+
+                return RemoteViews(context.packageName, R.layout.app_widget).apply {
+                    setImageViewBitmap(R.id.widget_img, bitmap)
+                    setOnClickPendingIntent(R.id.widget_img, pendingIntent)
+                }
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "failed to draw widget", e)
+            }
+            return null
+        }
 
         try {
-            val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
-            bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(bytes))
-
-            val pendingIntent = if (updateOnTap) buildUpdateIntent(context, widgetId) else buildOpenAppIntent(context, widgetId)
-            Log.d(LOG_TAG, " pendingIntent $pendingIntent")
-            val views = RemoteViews(context.packageName, R.layout.fgw_widget).apply {
-                setImageViewBitmap(R.id.fgw_widget_img, bitmap)
-                setOnClickPendingIntent(R.id.fgw_widget_img, pendingIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // multiple rendering for all possible sizes
+                val views = RemoteViews(
+                    bytesBySizeDip.associateBy(
+                        { (sizeDip, _) -> sizeDip },
+                        { (sizeDip, bytes) -> createRemoteViewsForSize(context, widgetId, sizeDip, bytes, updateOnTap) },
+                    ).filterValues { it != null }.mapValues { (_, view) -> view!! }
+                )
+                appWidgetManager.updateAppWidget(widgetId, views)
+            } else {
+                // single rendering
+                val (sizeDip, bytes) = bytesBySizeDip.first()
+                val views = createRemoteViewsForSize(context, widgetId, sizeDip, bytes, updateOnTap)
+                appWidgetManager.updateAppWidget(widgetId, views)
             }
-
-            appWidgetManager.updateAppWidget(widgetId, views)
-            bitmap.recycle()
         } catch (e: Exception) {
             Log.e(LOG_TAG, "failed to draw widget", e)
+        } finally {
+            bitmaps.forEach { it.recycle() }
+            bitmaps.clear()
         }
     }
 

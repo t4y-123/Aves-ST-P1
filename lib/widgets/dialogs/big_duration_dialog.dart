@@ -4,6 +4,9 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/providers/media_query_data_provider.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../ref/locales.dart';
 
 class HmsDurationDialog extends StatefulWidget {
   final int initialSeconds;
@@ -43,7 +46,10 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
     return MediaQueryDataProvider(
       child: Builder(builder: (context) {
         final l10n = context.l10n;
+        final timeComponentFormatter = NumberFormat('0', context.locale);
+
         const textStyle = TextStyle(fontSize: 34);
+        const digitsAlign = TextAlign.right;
 
         return AvesDialog(
           scrollableContent: [
@@ -51,16 +57,15 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
               padding: const EdgeInsets.only(top: 16),
               child: Center(
                 child: Table(
-                  // even when ambient direction is RTL, time is displayed in LTR
-                  textDirection: TextDirection.ltr,
+                  textDirection: timeComponentsDirection,
                   children: [
                     TableRow(
                       children: [
-                        Center(child: Text(context.l10n.durationDialogHours)),
+                        Center(child: Text(l10n.durationDialogHours)),
                         const SizedBox(width: 16),
-                        Center(child: Text(context.l10n.durationDialogMinutes)),
+                        Center(child: Text(l10n.durationDialogMinutes)),
                         const SizedBox(width: 16),
-                        Center(child: Text(context.l10n.durationDialogSeconds)),
+                        Center(child: Text(l10n.durationDialogSeconds)),
                       ],
                     ),
                     TableRow(
@@ -71,7 +76,8 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
                             valueNotifier: _hours,
                             values: List.generate(Duration.hoursPerDay *2, (i) => i),
                             textStyle: textStyle,
-                            textAlign: TextAlign.end,
+                            textAlign: digitsAlign,
+                            format: timeComponentFormatter.format,
                           ),
                         ),
                         const Padding(
@@ -87,7 +93,8 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
                             valueNotifier: _minutes,
                             values: List.generate(minutesInHour, (i) => i),
                             textStyle: textStyle,
-                            textAlign: TextAlign.end,
+                            textAlign: digitsAlign,
+                            format: timeComponentFormatter.format,
                           ),
                         ),
                         const Padding(
@@ -103,7 +110,8 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
                             valueNotifier: _seconds,
                             values: List.generate(secondsInMinute, (i) => i),
                             textStyle: textStyle,
-                            textAlign: TextAlign.end,
+                            textAlign: digitsAlign,
+                            format: timeComponentFormatter.format,
                           ),
                         ),
                       ],

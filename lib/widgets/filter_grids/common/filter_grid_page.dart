@@ -5,7 +5,6 @@ import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/highlight.dart';
 import 'package:aves/model/query.dart';
 import 'package:aves/model/selection.dart';
-import 'package:aves/model/settings/enums/accessibility_animations.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/vaults/vaults.dart';
@@ -192,12 +191,10 @@ class _FilterGrid<T extends CollectionFilter> extends StatefulWidget {
 
 class _FilterGridState<T extends CollectionFilter> extends State<_FilterGrid<T>> {
   TileExtentController? _tileExtentController;
-  final DoubleBackPopHandler _doubleBackPopHandler = DoubleBackPopHandler();
 
   @override
   void dispose() {
     _tileExtentController?.dispose();
-    _doubleBackPopHandler.dispose();
     super.dispose();
   }
 
@@ -213,16 +210,12 @@ class _FilterGridState<T extends CollectionFilter> extends State<_FilterGrid<T>>
     );
     return AvesPopScope(
       handlers: [
-        (context) {
-          final selection = context.read<Selection<FilterGridItem<T>>>();
-          if (selection.isSelecting) {
-            selection.browse();
-            return false;
-          }
-          return true;
-        },
-        TvNavigationPopHandler.pop,
-        _doubleBackPopHandler.pop,
+        APopHandler(
+          canPop: (context) => context.select<Selection<FilterGridItem<T>>, bool>((v) => !v.isSelecting),
+          onPopBlocked: (context) => context.read<Selection<FilterGridItem<T>>>().browse(),
+        ),
+        tvNavigationPopHandler,
+        doubleBackPopHandler,
       ],
       child: TileExtentControllerProvider(
         controller: _tileExtentController!,
@@ -544,7 +537,7 @@ class _FilterSectionedContentState<T extends CollectionFilter> extends State<_Fi
 
     await Future.delayed(ADurations.highlightScrollInitDelay);
 
-    final animate = context.read<Settings>().accessibilityAnimations.animate;
+    final animate = context.read<Settings>().animate;
     highlightInfo.trackItem(item, animate: animate, highlightItem: filter);
   }
 }

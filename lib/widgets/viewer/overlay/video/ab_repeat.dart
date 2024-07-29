@@ -1,6 +1,7 @@
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/buttons/overlay_button.dart';
+import 'package:aves/widgets/viewer/overlay/bottom.dart';
 import 'package:aves_video/aves_video.dart';
 import 'package:flutter/material.dart';
 
@@ -37,13 +38,13 @@ class _VideoABRepeatOverlayState extends State<VideoABRepeatOverlay> {
         Widget boundButton;
         if (abRepeat.start == null) {
           boundButton = IconButton(
-            icon: Icon(AIcons.setStart),
+            icon: Icon(AIcons.setBoundStart),
             onPressed: controller?.setABRepeatStart,
             tooltip: l10n.videoRepeatActionSetStart,
           );
         } else if (abRepeat.end == null) {
           boundButton = IconButton(
-            icon: Icon(AIcons.setEnd),
+            icon: Icon(AIcons.setBoundEnd),
             onPressed: controller?.setABRepeatEnd,
             tooltip: l10n.videoRepeatActionSetEnd,
           );
@@ -55,6 +56,7 @@ class _VideoABRepeatOverlayState extends State<VideoABRepeatOverlay> {
           );
         }
         return Row(
+          textDirection: ViewerBottomOverlay.actionsDirection,
           children: [
             const Spacer(),
             OverlayButton(

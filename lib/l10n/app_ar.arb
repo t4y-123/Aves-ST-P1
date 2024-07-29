@@ -313,8 +313,6 @@
   "@exportEntryDialogFormat": {},
   "widgetOpenPageHome": "إفتح الرئيسية",
   "@widgetOpenPageHome": {},
-  "mapStyleHuaweiNormal": "خرائط بيتال (هواوي)",
-  "@mapStyleHuaweiNormal": {},
   "keepScreenOnAlways": "دائما",
   "@keepScreenOnAlways": {},
   "appExportSettings": "إعدادات",
@@ -571,8 +569,6 @@
   "@settingsSubtitleThemeTextAlignmentLeft": {},
   "settingsVideoGestureSideDoubleTapSeek": "انقر نقرًا مزدوجًا على حواف الشاشة للتقدم للأمام/للخلف",
   "@settingsVideoGestureSideDoubleTapSeek": {},
-  "mapStyleHuaweiTerrain": "خرائط بيتال (التضاريس)",
-  "@mapStyleHuaweiTerrain": {},
   "sortByItemCount": "حسب عدد العناصر",
   "@sortByItemCount": {},
   "sectionUnknown": "مجهول",
@@ -887,7 +883,7 @@
   "@placePageTitle": {},
   "filterOnThisDayLabel": "في هذا اليوم",
   "@filterOnThisDayLabel": {},
-  "columnCount": "{count, plural, =1{1 عمود} other{{count} أعمدة}}{count}",
+  "columnCount": "{count, plural, =1{{count} عمود} other{{count} أعمدة}}{count}",
   "@columnCount": {
     "placeholders": {
       "count": {}
@@ -941,7 +937,7 @@
   "@albumMimeTypeMixed": {},
   "settingsViewerQuickActionEditorAvailableButtonsSectionTitle": "الأزرار المتاحة",
   "@settingsViewerQuickActionEditorAvailableButtonsSectionTitle": {},
-  "itemCount": "{count, plural, =1{1 عنصر} other{{count} عناصر}}",
+  "itemCount": "{count, plural, =1{{count} عنصر} other{{count} عناصر}}",
   "@itemCount": {
     "placeholders": {
       "count": {}
@@ -1195,7 +1191,7 @@
   "@collectionActionAddShortcut": {},
   "settingsViewerShowMinimap": "إظهار الخريطة المصغرة",
   "@settingsViewerShowMinimap": {},
-  "settingsCollectionBurstPatternsTile": "أنماط الانفجار",
+  "settingsCollectionBurstPatternsTile": "أنماط الصور المتتابعة",
   "@settingsCollectionBurstPatternsTile": {},
   "viewerInfoLabelPath": "المسار",
   "@viewerInfoLabelPath": {},
@@ -1247,7 +1243,7 @@
   "@drawerCollectionImages": {},
   "sortOrderSmallestFirst": "الأصغر أولاً",
   "@sortOrderSmallestFirst": {},
-  "timeSeconds": "{seconds, plural, =1{1 ثانية} other{{seconds} ثواني}}",
+  "timeSeconds": "{count, plural, =1{{count} ثانية} other{{count} ثواني}}",
   "@timeSeconds": {
     "placeholders": {
       "seconds": {}
@@ -1393,7 +1389,7 @@
   "@subtitlePositionBottom": {},
   "castDialogTitle": "أجهزة البث",
   "@castDialogTitle": {},
-  "timeDays": "{days, plural, =1{1 يوم} other{{days} أيام}}",
+  "timeDays": "{count, plural, =1{{count} يوم} other{{count} أيام}}",
   "@timeDays": {
     "placeholders": {
       "days": {}
@@ -1425,7 +1421,7 @@
   "@newVaultDialogTitle": {},
   "entryInfoActionEditRating": "تحرير التقييم",
   "@entryInfoActionEditRating": {},
-  "timeMinutes": "{minutes, plural, =1{1 دقيقة} other{{minutes} دقائق}}",
+  "timeMinutes": "{count, plural, =1{{count} دقيقة} other{{count} دقائق}}",
   "@timeMinutes": {
     "placeholders": {
       "minutes": {}
@@ -1523,8 +1519,6 @@
   "@settingsThumbnailShowHdrIcon": {},
   "collectionActionSetHome": "تعيين كخلفية",
   "@collectionActionSetHome": {},
-  "setHomeCustomCollection": "مجموعة مخصصة",
-  "@setHomeCustomCollection": {},
   "videoActionABRepeat": "تكرار A-B",
   "@videoActionABRepeat": {},
   "videoRepeatActionSetEnd": "تعيين نهاية التشغيل",
@@ -1536,5 +1530,17 @@
   "settingsForceWesternArabicNumeralsTile": "فرض الأرقام العربية",
   "@settingsForceWesternArabicNumeralsTile": {},
   "renameProcessorHash": "تجزئة",
-  "@renameProcessorHash": {}
+  "@renameProcessorHash": {},
+  "chipActionShowCollection": "عرض في المجموعة",
+  "@chipActionShowCollection": {},
+  "chipActionGoToExplorerPage": "عرض في المستكشف",
+  "@chipActionGoToExplorerPage": {},
+  "explorerPageTitle": "المستكشف",
+  "@explorerPageTitle": {},
+  "explorerActionSelectStorageVolume": "حدد التخزين",
+  "@explorerActionSelectStorageVolume": {},
+  "setHomeCustom": "مخصص",
+  "@setHomeCustom": {},
+  "selectStorageVolumeDialogTitle": "حدد التَخزين",
+  "@selectStorageVolumeDialogTitle": {}
 }

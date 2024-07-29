@@ -415,8 +415,6 @@
   "@exportEntryDialogFormat": {},
   "widgetOpenPageHome": "Mở trang chủ",
   "@widgetOpenPageHome": {},
-  "mapStyleHuaweiNormal": "Petal Maps",
-  "@mapStyleHuaweiNormal": {},
   "keepScreenOnAlways": "Luôn luôn",
   "@keepScreenOnAlways": {},
   "appExportSettings": "Cài đặt",
@@ -665,8 +663,6 @@
   "@settingsSubtitleThemeTextAlignmentLeft": {},
   "settingsVideoGestureSideDoubleTapSeek": "Nhấn đúp vào các cạnh màn hình để lùi lại/tiến tới",
   "@settingsVideoGestureSideDoubleTapSeek": {},
-  "mapStyleHuaweiTerrain": "Petal Maps (Địa hình)",
-  "@mapStyleHuaweiTerrain": {},
   "sortByItemCount": "Theo số mục",
   "@sortByItemCount": {},
   "sectionUnknown": "Không biết",
@@ -951,7 +947,7 @@
   "@placePageTitle": {},
   "filterOnThisDayLabel": "Vào ngày này",
   "@filterOnThisDayLabel": {},
-  "columnCount": "{count, plural, =1{1 cột} other{{count} cột}}",
+  "columnCount": "{count, plural, other{{count} cột}}",
   "@columnCount": {
     "placeholders": {
       "count": {}
@@ -1007,7 +1003,7 @@
   "@albumMimeTypeMixed": {},
   "settingsViewerQuickActionEditorAvailableButtonsSectionTitle": "Các nút có sẵn",
   "@settingsViewerQuickActionEditorAvailableButtonsSectionTitle": {},
-  "itemCount": "{count, plural, =1{1 mục} other{{count} mục}}",
+  "itemCount": "{count, plural, other{{count} mục}}",
   "@itemCount": {
     "placeholders": {
       "count": {}
@@ -1271,7 +1267,7 @@
   "@drawerCollectionImages": {},
   "sortOrderSmallestFirst": "Nhỏ trước",
   "@sortOrderSmallestFirst": {},
-  "timeSeconds": "{seconds, plural, =1{1 giây} other{{seconds} giây}}",
+  "timeSeconds": "{count, plural, other{{count} giây}}",
   "@timeSeconds": {
     "placeholders": {
       "seconds": {}
@@ -1405,7 +1401,7 @@
   "@settingsNavigationDrawerTabAlbums": {},
   "subtitlePositionBottom": "Dưới",
   "@subtitlePositionBottom": {},
-  "timeDays": "{days, plural, =1{1 ngày} other{{days} ngày}}",
+  "timeDays": "{count, plural, other{{count} ngày}}",
   "@timeDays": {
     "placeholders": {
       "days": {}
@@ -1429,7 +1425,7 @@
   "@settingsViewerQuickActionsTile": {},
   "newVaultDialogTitle": "Két sắt mới",
   "@newVaultDialogTitle": {},
-  "timeMinutes": "{minutes, plural, =1{1 phút} other{{minutes} phút}}",
+  "timeMinutes": "{count, plural, other{{count} phút}}",
   "@timeMinutes": {
     "placeholders": {
       "minutes": {}
@@ -1519,8 +1515,6 @@
   "@entryActionCast": {},
   "castDialogTitle": "Thiết bị truyền",
   "@castDialogTitle": {},
-  "setHomeCustomCollection": "Bộ sưu tập tùy chỉnh",
-  "@setHomeCustomCollection": {},
   "settingsThumbnailShowHdrIcon": "Hiển thị biểu tượng HDR",
   "@settingsThumbnailShowHdrIcon": {},
   "collectionActionSetHome": "Đặt làm nhà",
@@ -1536,5 +1530,15 @@
   "renameProcessorHash": "Băm",
   "@renameProcessorHash": {},
   "settingsForceWesternArabicNumeralsTile": "Buộc chữ số Ả Rập",
-  "@settingsForceWesternArabicNumeralsTile": {}
+  "@settingsForceWesternArabicNumeralsTile": {},
+  "chipActionShowCollection": "Hiển thị trong Bộ sưu tập",
+  "@chipActionShowCollection": {},
+  "selectStorageVolumeDialogTitle": "Chọn dung lượng",
+  "@selectStorageVolumeDialogTitle": {},
+  "explorerActionSelectStorageVolume": "Chọn dung lượng",
+  "@explorerActionSelectStorageVolume": {},
+  "chipActionGoToExplorerPage": "Hiển thị ở Explorer",
+  "@chipActionGoToExplorerPage": {},
+  "explorerPageTitle": "Explorer",
+  "@explorerPageTitle": {}
 }

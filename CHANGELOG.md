@@ -4,13 +4,77 @@ All notable changes to this project will be documented in this file.
 
 ## <a id="unreleased"></a>[Unreleased]
 
+### Added
+
+- Viewer: display more items in tag/copy/move quick action choosers
+
+## <a id="v1.11.8"></a>[v1.11.8] - 2024-07-19
+
+### Added
+
+- Explorer: set custom path as home
+- Explorer: create shortcut to custom path
+
 ### Changed
 
-- upgraded Flutter to stable v3.22.0
+- target Android 15 (API 35)
+- upgraded Flutter to stable v3.22.3
+
+### Fixed
+
+- crash when cataloguing some PNG files
+
+## <a id="v1.11.7"></a>[v1.11.7] - 2024-07-18 [YANKED AGAIN!]
+
+## <a id="v1.11.6"></a>[v1.11.6] - 2024-07-17 [YANKED]
+
+## <a id="v1.11.5"></a>[v1.11.5] - 2024-07-11
+
+### Added
+
+- Collection: stack RAW and JPEG with same file names
+- Collection: ask to rename/replace/skip when converting items with name conflict
+- Export: bulk converting motion photos to still images
+- Explorer: view folder tree and filter paths
+
+### Fixed
+
+- switching to PiP when changing device orientation on Android >=13
+- handling wallpaper intent without URI
+- sizing widgets with some launchers on Android >=12
+
+### Removed
+
+- `huawei` app flavor
+
+## <a id="v1.11.4"></a>[v1.11.4] - 2024-07-09 [YANKED]
+
+## <a id="v1.11.3"></a>[v1.11.3] - 2024-06-17
+
+### Added
+
+- handle `MediaStore.ACTION_REVIEW` intent
+
+## <a id="v1.11.2"></a>[v1.11.2] - 2024-06-11
+
+### Added
+
+- Albums / Countries / Tags: show selection in Collection
+- allow shifting dates by seconds
+
+### Changed
+
+- opening app from launcher shows home page only when exited by back button
+- Screen saver: black background, consistent with slideshow
+- upgraded Flutter to stable v3.22.2
 
 ### Removed
 
 - support for Android KitKat (API 19)
+
+### Fixed
+
+- crash when cataloguing large images
 
 ## <a id="v1.11.1"></a>[v1.11.1] - 2024-05-03
 

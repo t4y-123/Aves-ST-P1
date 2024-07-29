@@ -5,6 +5,7 @@ import 'package:aves/model/device.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/favourites.dart';
 import 'package:aves/model/entry/extensions/metadata_edition.dart';
+import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
@@ -21,6 +22,7 @@ import 'package:aves/model/vaults/vaults.dart';
 import 'package:aves/services/app_service.dart';
 import 'package:aves/services/common/image_op_events.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/themes.dart';
 import 'package:aves/utils/android_file_utils.dart';
@@ -36,6 +38,7 @@ import 'package:aves/widgets/common/search/route.dart';
 import 'package:aves/widgets/dialogs/add_shortcut_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/convert_entry_dialog.dart';
 import 'package:aves/widgets/dialogs/entry_editors/rename_entry_set_page.dart';
 import 'package:aves/widgets/dialogs/pick_dialogs/location_pick_page.dart';
 import 'package:aves/widgets/map/map_page.dart';
@@ -250,7 +253,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
   Set<AvesEntry> _getTargetItems(BuildContext context) {
     final selection = context.read<Selection<AvesEntry>>();
     final groupedEntries = (selection.isSelecting ? selection.selectedItems : context.read<CollectionLens>().sortedEntries);
-    return groupedEntries.expand((entry) => entry.burstEntries ?? {entry}).toSet();
+    return groupedEntries.expand((entry) => entry.stackedEntries ?? {entry}).toSet();
   }
 
   Future<void> _share(BuildContext context) async {
@@ -383,9 +386,23 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     _browse(context);
   }
 
-  void _convert(BuildContext context) {
+  Future<void> _convert(BuildContext context) async {
     final entries = _getTargetItems(context);
-    convert(context, entries);
+
+    final options = await showDialog<EntryConvertOptions>(
+      context: context,
+      builder: (context) => ConvertEntryDialog(entries: entries),
+      routeSettings: const RouteSettings(name: ConvertEntryDialog.routeName),
+    );
+    if (options == null) return;
+
+    switch (options.action) {
+      case EntryConvertAction.convert:
+        await doExport(context, entries, options);
+      case EntryConvertAction.convertMotionPhotoToStillImage:
+        final todoItems = entries.where((entry) => entry.isMotionPhoto).toSet();
+        await _edit(context, todoItems, (entry) => entry.removeTrailerVideo());
+    }
 
     _browse(context);
   }
@@ -800,8 +817,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
   }
 
   void _setHome(BuildContext context) async {
-    settings.homeCustomCollection = context.read<CollectionLens>().filters;
-    settings.homePage = HomePageSetting.collection;
+    settings.setHome(HomePageSetting.collection, customCollection: context.read<CollectionLens>().filters);
     showFeedback(context, FeedbackType.info, context.l10n.genericSuccessFeedback);
   }
 }

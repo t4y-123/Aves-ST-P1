@@ -113,11 +113,13 @@ class _CollectionGridContent extends StatefulWidget {
 class _CollectionGridContentState extends State<_CollectionGridContent> {
   final ValueNotifier<AvesEntry?> _focusedItemNotifier = ValueNotifier(null);
   final ValueNotifier<bool> _isScrollingNotifier = ValueNotifier(false);
+  final ValueNotifier<AppMode> _selectingAppModeNotifier = ValueNotifier(AppMode.pickFilteredMediaInternal);
 
   @override
   void dispose() {
     _focusedItemNotifier.dispose();
     _isScrollingNotifier.dispose();
+    _selectingAppModeNotifier.dispose();
     super.dispose();
   }
 
@@ -252,7 +254,7 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
           if (selection.isSelecting) {
             child = MultiProvider(
               providers: [
-                ListenableProvider<ValueNotifier<AppMode>>.value(value: ValueNotifier(AppMode.pickFilteredMediaInternal)),
+                ListenableProvider<ValueNotifier<AppMode>>.value(value: _selectingAppModeNotifier),
                 ChangeNotifierProvider<Selection<AvesEntry>>.value(value: selection),
               ],
               child: child,
@@ -673,7 +675,7 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
               final newest = firstKey.date;
               final oldest = lastKey.date;
               if (newest != null && oldest != null) {
-                final locale = context.l10n.localeName;
+                final locale = context.locale;
                 final dateFormat = (newest.difference(oldest).inHumanDays).abs() > 365 ? DateFormat.y(locale) : DateFormat.MMM(locale);
                 String? lastLabel;
                 sectionLayouts.forEach((section) {

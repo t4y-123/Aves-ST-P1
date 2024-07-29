@@ -51,8 +51,10 @@ class MediaStoreImageProvider : ImageProvider() {
         context: Context,
         knownEntries: Map<Long?, Int?>,
         directory: String?,
+        safe: Boolean,
         handleNewEntry: NewEntryHandler,
     ) {
+        Log.d(LOG_TAG, "fetching all media store items for ${knownEntries.size} known entries, directory=$directory safe=$safe")
         val isModified = fun(contentId: Long, dateModifiedSecs: Int): Boolean {
             val knownDate = knownEntries[contentId]
             return knownDate == null || knownDate < dateModifiedSecs
@@ -82,14 +84,14 @@ class MediaStoreImageProvider : ImageProvider() {
         } else {
             handleNew = handleNewEntry
         }
-        fetchFrom(context, isModified, handleNew, IMAGE_CONTENT_URI, IMAGE_PROJECTION, selection, selectionArgs)
-        fetchFrom(context, isModified, handleNew, VIDEO_CONTENT_URI, VIDEO_PROJECTION, selection, selectionArgs)
+        fetchFrom(context, isModified, handleNew, IMAGE_CONTENT_URI, IMAGE_PROJECTION, selection, selectionArgs, safe = safe)
+        fetchFrom(context, isModified, handleNew, VIDEO_CONTENT_URI, VIDEO_PROJECTION, selection, selectionArgs, safe = safe)
     }
 
     // the provided URI can point to the wrong media collection,
     // e.g. a GIF image with the URI `content://media/external/video/media/[ID]`
     // so the effective entry URI may not match the provided URI
-    override fun fetchSingle(context: Context, uri: Uri, sourceMimeType: String?, callback: ImageOpCallback) {
+    override fun fetchSingle(context: Context, uri: Uri, sourceMimeType: String?, allowUnsized: Boolean, callback: ImageOpCallback) {
         var found = false
         val fetched = arrayListOf<FieldMap>()
         val id = uri.tryParseId()
@@ -206,6 +208,7 @@ class MediaStoreImageProvider : ImageProvider() {
         selection: String? = null,
         selectionArgs: Array<String>? = null,
         fileMimeType: String? = null,
+        safe: Boolean = false,
     ): Boolean {
         var found = false
         val orderBy = "${MediaStore.MediaColumns.DATE_MODIFIED} DESC"
@@ -299,7 +302,7 @@ class MediaStoreImageProvider : ImageProvider() {
                                 // missing some attributes such as width, height, orientation.
                                 // Also, the reported size of raw images is inconsistent across devices
                                 // and Android versions (sometimes the raw size, sometimes the decoded size).
-                                val entry = SourceEntry(entryMap).fillPreCatalogMetadata(context)
+                                val entry = SourceEntry(entryMap).fillPreCatalogMetadata(context, safe)
                                 entryMap = entry.toMap()
                             }
 
@@ -562,13 +565,14 @@ class MediaStoreImageProvider : ImageProvider() {
         }
 
         val desiredNameWithoutExtension = desiredName.substringBeforeLast(".")
-        val targetNameWithoutExtension = resolveTargetFileNameWithoutExtension(
+        val resolution = resolveTargetFileNameWithoutExtension(
             contextWrapper = activity,
             dir = targetDir,
             desiredNameWithoutExtension = desiredNameWithoutExtension,
             mimeType = mimeType,
             conflictStrategy = nameConflictStrategy,
-        ) ?: return skippedFieldMap
+        )
+        val targetNameWithoutExtension = resolution.nameWithoutExtension ?: return skippedFieldMap
 
         val sourceDocFile = DocumentFileCompat.fromSingleUri(activity, sourceUri)
         val targetPath = createSingle(

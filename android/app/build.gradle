@@ -40,12 +40,11 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties["keyAlias"] = System.getenv("AVES_KEY_ALIAS") ?: "<NONE>"
     keystoreProperties["keyPassword"] = System.getenv("AVES_KEY_PASSWORD") ?: "<NONE>"
     keystoreProperties["googleApiKey"] = System.getenv("AVES_GOOGLE_API_KEY") ?: "<NONE>"
-    keystoreProperties["huaweiApiKey"] = System.getenv("AVES_HUAWEI_API_KEY") ?: "<NONE>"
 }
 
 android {
     namespace 'deckers.thibault.aves'
-    compileSdk 34
+    compileSdk 35
     // cf https://developer.android.com/studio/projects/install-ndk#default-ndk-per-agp
     ndkVersion '26.1.10909125'
 
@@ -67,11 +66,10 @@ android {
     defaultConfig {
         applicationId packageName
         minSdk flutter.minSdkVersion
-        targetSdk 34
+        targetSdk 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        manifestPlaceholders = [googleApiKey: keystoreProperties["googleApiKey"] ?: "<NONE>",
-                                huaweiApiKey: keystoreProperties["huaweiApiKey"] ?: "<NONE>"]
+        manifestPlaceholders = [googleApiKey: keystoreProperties["googleApiKey"] ?: "<NONE>"]
         multiDexEnabled true
     }
 
@@ -89,13 +87,6 @@ android {
     productFlavors {
         play {
             // Google Play
-            dimension "store"
-            // generate a universal APK without x86 native libs
-            ext.useNdkAbiFilters = true
-        }
-
-        huawei {
-            // Huawei AppGallery
             dimension "store"
             // generate a universal APK without x86 native libs
             ext.useNdkAbiFilters = true
@@ -196,9 +187,9 @@ repositories {
 dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 
-    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.appcompat:appcompat:1.7.0"
     implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.lifecycle:lifecycle-process:2.8.0'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.3'
     implementation 'androidx.media:media:1.7.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
@@ -220,9 +211,7 @@ dependencies {
     implementation 'com.github.deckerst.mp4parser:isoparser:4cc0c5d06c'
     implementation 'com.github.deckerst.mp4parser:muxer:4cc0c5d06c'
     implementation 'com.github.deckerst:pixymeta-android:9ec7097f17'
-
-    // huawei flavor only
-    huaweiImplementation "com.huawei.agconnect:agconnect-core:$huawei_agconnect_version"
+    implementation project(':exifinterface')
 
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
@@ -236,9 +225,4 @@ if (useCrashlytics) {
     println("Building flavor with Crashlytics plugin")
     apply plugin: 'com.google.gms.google-services'
     apply plugin: 'com.google.firebase.crashlytics'
-}
-
-if (useHms) {
-    println("Building flavor with HMS plugin")
-    apply plugin: 'com.huawei.agconnect'
 }

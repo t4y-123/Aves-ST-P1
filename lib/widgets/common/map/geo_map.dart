@@ -146,7 +146,7 @@ class _GeoMapState extends State<GeoMap> {
       selector: (context, s) => s.mapStyle,
       builder: (context, mapStyle, child) {
         final isHeavy = ExtraEntryMapStyle.isHeavy(mapStyle);
-        final locale = context.l10n.localeName;
+        final locale = context.locale;
         Widget _buildMarkerWidget(MarkerKey<AvesEntry> key) => ImageMarker(
               key: key,
               count: key.count,
@@ -167,8 +167,6 @@ class _GeoMapState extends State<GeoMap> {
             case EntryMapStyle.googleNormal:
             case EntryMapStyle.googleHybrid:
             case EntryMapStyle.googleTerrain:
-            case EntryMapStyle.hmsNormal:
-            case EntryMapStyle.hmsTerrain:
               child = mobileServices.buildMap<AvesEntry>(
                 controller: controller,
                 clusterListenable: _clusterChangeNotifier,
@@ -484,7 +482,7 @@ class _GeoMapState extends State<GeoMap> {
     } else {
       markerEntry = geoEntry.entry!;
     }
-    final locale = context.l10n.localeName;
+    final locale = context.locale;
     final markerLocation = LatLng(geoEntry.latitude!, geoEntry.longitude!);
     Widget markerBuilder(BuildContext context) => ImageMarker(
           count: geoEntry.pointsSize,

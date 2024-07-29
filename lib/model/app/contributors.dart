@@ -90,14 +90,22 @@ class Contributors {
     Contributor('何意挽秋風', '94283631+RejectVanity@users.noreply.github.com'),
     Contributor('cheese', 'deanlemans5646@gmail.com'),
     Contributor('Owen Elderbroek', 'o.elderbroek@gmail.com'),
+    Contributor('Maxi', 'maxitendo01@proton.me'),
+    Contributor('Jerguš Fonfer', 'caro.jf@protonmail.com'),
+    Contributor('elfriob', 'elfriob@ya.ru'),
+    Contributor('Stephan Paternotte', 'stephan@paternottes.net'),
+    Contributor('Tung Anh', 'buihuutunganh2007@gmail.com'),
+    Contributor('Adrien N', 'adriennathaniel1999@gmail.com'),
     // Contributor('Alvi Khan', 'aveenalvi@gmail.com'), // Bengali
     // Contributor('Htet Oo Hlaing', 'htetoh2006@outlook.com'), // Burmese
     // Contributor('Khant', 'khant@users.noreply.hosted.weblate.org'), // Burmese
     // Contributor('Grooty12', 'Rasmus@rosendahl-kaa.name'), // Danish
     // Contributor('Åzze', 'laitinen.jere222@gmail.com'), // Finnish
+    // Contributor('Olli', 'ollinen@ollit.dev'), // Finnish
     // Contributor('Idj', 'joneltmp+goahn@gmail.com'), // Hebrew
     // Contributor('Rohit Burman', 'rohitburman31p@rediffmail.com'), // Hindi
     // Contributor('AJ07', 'ajaykumarmeena676@gmail.com'), // Hindi
+    // Contributor('Sartaj', 'ssaarrttaajj111@gmail.com'), // Hindi
     // Contributor('Chethan', 'chethan@users.noreply.hosted.weblate.org'), // Kannada
     // Contributor('GoRaN', 'gorangharib.909@gmail.com'), // Kurdish (Central)
     // Contributor('Rasti K5', 'rasti.khdhr@gmail.com'), // Kurdish (Central)

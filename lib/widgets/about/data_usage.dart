@@ -87,6 +87,7 @@ class _AboutDataUsageState extends State<AboutDataUsage> with FeedbackMixin {
                       label: context.l10n.aboutDataUsageClearCache,
                       onPressed: () async {
                         await storageService.deleteTempDirectory();
+                        await storageService.deleteExternalCache();
                         await mediaFetchService.clearSizedThumbnailDiskCache();
                         imageCache.clear();
                         _reload();
@@ -137,7 +138,7 @@ class DataUsageDonut extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locale = l10n.localeName;
+    final locale = context.locale;
 
     return AvesDonut(
       title: Text(title),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:aves/app_mode.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/props.dart';
-import 'package:aves/model/settings/enums/accessibility_animations.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/view_state.dart';
 import 'package:aves/services/common/services.dart';
@@ -149,7 +148,7 @@ class _EntryPageViewState extends State<EntryPageView> with TickerProviderStateM
       );
     }
 
-    final animate = context.select<Settings, bool>((v) => v.accessibilityAnimations.animate);
+    final animate = context.select<Settings, bool>((v) => v.animate);
     if (animate) {
       child = Consumer<HeroInfo?>(
         builder: (context, info, child) => Hero(
@@ -488,6 +487,7 @@ class _EntryPageViewState extends State<EntryPageView> with TickerProviderStateM
   }
 
   void _onViewStateChanged(MagnifierState v) {
+    if (!mounted) return;
     _viewStateNotifier.value = _viewStateNotifier.value.copyWith(
       position: v.position,
       scale: v.scale,
@@ -504,7 +504,7 @@ class _EntryPageViewState extends State<EntryPageView> with TickerProviderStateM
   double? _getSideRatio() {
     if (!mounted) return null;
     final isPortrait = MediaQuery.orientationOf(context) == Orientation.portrait;
-    return isPortrait ? 1 / 5 : 1 / 8;
+    return isPortrait ? 1 / 6 : 1 / 8;
   }
 
   static ScaleState _vectorScaleStateCycle(ScaleState actual) {

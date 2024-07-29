@@ -7,7 +7,7 @@
   "@welcomeOptional": {},
   "welcomeTermsToggle": "Я погоджуюсь з умовами та положеннями",
   "@welcomeTermsToggle": {},
-  "timeDays": "{days, plural, =1{1 день} few{{days} дні} other{{days} днів}}",
+  "timeDays": "{count, plural, =1{{count} день} few{{count} дні} other{{count} днів}}",
   "@timeDays": {
     "placeholders": {
       "days": {}
@@ -221,10 +221,6 @@
   "@mapStyleGoogleHybrid": {},
   "mapStyleGoogleTerrain": "Google Карти (Місцевість)",
   "@mapStyleGoogleTerrain": {},
-  "mapStyleHuaweiNormal": "Petal Maps",
-  "@mapStyleHuaweiNormal": {},
-  "mapStyleHuaweiTerrain": "Petal Maps (Місцевість)",
-  "@mapStyleHuaweiTerrain": {},
   "mapStyleOsmHot": "Humanitarian OSM",
   "@mapStyleOsmHot": {},
   "nameConflictStrategyRename": "Перейменувати",
@@ -637,19 +633,19 @@
   "@entryActionShareVideoOnly": {},
   "continueButtonLabel": "ПРОДОВЖИТИ",
   "@continueButtonLabel": {},
-  "itemCount": "{count, plural, =1{1 елемент} few{{count} елементи} other{{count} елементів}}",
+  "itemCount": "{count, plural, =1{{count} елемент} few{{count} елементи} other{{count} елементів}}",
   "@itemCount": {
     "placeholders": {
       "count": {}
     }
   },
-  "timeSeconds": "{seconds, plural, =1{1 секунда} few{{seconds} секунди} other{{seconds} секунд}}",
+  "timeSeconds": "{count, plural, =1{{count} секунда} few{{count} секунди} other{{count} секунд}}",
   "@timeSeconds": {
     "placeholders": {
       "seconds": {}
     }
   },
-  "timeMinutes": "{minutes, plural, =1{1 хвилина} few{{minutes} хвилини} other{{minutes} хвилин}}",
+  "timeMinutes": "{count, plural, =1{{count} хвилина} few{{count} хвилини} other{{count} хвилин}}",
   "@timeMinutes": {
     "placeholders": {
       "minutes": {}
@@ -1035,7 +1031,7 @@
   "@settingsSubtitleThemeTextAlignmentCenter": {},
   "settingsSubtitleThemeTextAlignmentRight": "Праворуч",
   "@settingsSubtitleThemeTextAlignmentRight": {},
-  "settingsVideoControlsTile": "Управління",
+  "settingsVideoControlsTile": "Елементи керування",
   "@settingsVideoControlsTile": {},
   "settingsVideoButtonsTile": "Кнопки",
   "@settingsVideoButtonsTile": {},
@@ -1049,7 +1045,7 @@
   "@settingsSaveSearchHistory": {},
   "settingsEnableBin": "Використовувати кошик",
   "@settingsEnableBin": {},
-  "settingsAllowMediaManagement": "Дозволити управління медіа",
+  "settingsAllowMediaManagement": "Дозволити керування мультимедіа",
   "@settingsAllowMediaManagement": {},
   "settingsHiddenItemsTile": "Приховані елементи",
   "@settingsHiddenItemsTile": {},
@@ -1297,7 +1293,7 @@
   "@settingsSlideshowAnimatedZoomEffect": {},
   "settingsSubtitleThemeSample": "Це зразок.",
   "@settingsSubtitleThemeSample": {},
-  "settingsVideoControlsPageTitle": "Управління",
+  "settingsVideoControlsPageTitle": "Елементи керування",
   "@settingsVideoControlsPageTitle": {},
   "settingsVideoSectionTitle": "Відео",
   "@settingsVideoSectionTitle": {},
@@ -1345,7 +1341,7 @@
   "@mapAttributionOsmHot": {},
   "settingsAccessibilityShowPinchGestureAlternatives": "Показувати альтернативи мультисенсорним жестам",
   "@settingsAccessibilityShowPinchGestureAlternatives": {},
-  "columnCount": "{count, plural, =1{1 стовпець} few{{count} стовпці} other{{count} стовпців}}",
+  "columnCount": "{count, plural, =1{{count} стовпець} few{{count} стовпці} other{{count} стовпців}}",
   "@columnCount": {
     "placeholders": {
       "count": {}
@@ -1521,8 +1517,6 @@
   "@castDialogTitle": {},
   "settingsThumbnailShowHdrIcon": "Показати іконку HDR",
   "@settingsThumbnailShowHdrIcon": {},
-  "setHomeCustomCollection": "Власна колекція",
-  "@setHomeCustomCollection": {},
   "collectionActionSetHome": "Встановити як головну",
   "@collectionActionSetHome": {},
   "videoRepeatActionSetStart": "Змінити початок",
@@ -1536,5 +1530,17 @@
   "renameProcessorHash": "Хеш",
   "@renameProcessorHash": {},
   "settingsForceWesternArabicNumeralsTile": "Примусові арабські цифри",
-  "@settingsForceWesternArabicNumeralsTile": {}
+  "@settingsForceWesternArabicNumeralsTile": {},
+  "chipActionShowCollection": "Показати у Колекції",
+  "@chipActionShowCollection": {},
+  "chipActionGoToExplorerPage": "Показати в провіднику",
+  "@chipActionGoToExplorerPage": {},
+  "explorerPageTitle": "Провідник",
+  "@explorerPageTitle": {},
+  "setHomeCustom": "Власне",
+  "@setHomeCustom": {},
+  "explorerActionSelectStorageVolume": "Обрати сховище",
+  "@explorerActionSelectStorageVolume": {},
+  "selectStorageVolumeDialogTitle": "Оберіть сховище",
+  "@selectStorageVolumeDialogTitle": {}
 }

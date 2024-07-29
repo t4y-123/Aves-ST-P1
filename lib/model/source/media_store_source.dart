@@ -25,6 +25,10 @@ class MediaStoreSource extends CollectionSource {
   final Set<String> _changedUris = {};
   int? _lastGeneration;
   SourceInitializationState _initState = SourceInitializationState.none;
+  bool _safeMode = false;
+
+  @override
+  set safeMode(bool enabled) => _safeMode = enabled;
 
   @override
   SourceInitializationState get initState => _initState;
@@ -48,7 +52,7 @@ class MediaStoreSource extends CollectionSource {
       analysisController: analysisController,
       directory: directory,
       loadTopEntriesFirst: loadTopEntriesFirst,
-      canAnalyze: canAnalyze,
+      canAnalyze: canAnalyze && !_safeMode,
     ));
   }
 
@@ -182,7 +186,7 @@ class MediaStoreSource extends CollectionSource {
       pendingNewEntries.clear();
     }
 
-    mediaStoreService.getEntries(knownDateByContentId, directory: directory).listen(
+    mediaStoreService.getEntries(_safeMode, knownDateByContentId, directory: directory).listen(
       (entry) {
         // when discovering modified entry with known content ID,
         // reuse known entry ID to overwrite it while preserving favourites, etc.
@@ -367,7 +371,7 @@ class MediaStoreSource extends CollectionSource {
           existingDirectories.add(existingDirectory);
         }
       } else {
-        final sourceEntry = await mediaFetchService.getEntry(uri, null);
+        final sourceEntry = await mediaFetchService.getEntry(uri, null, allowUnsized: true);
         if (sourceEntry != null) {
           newEntries.add(sourceEntry.copyWith(
             id: metadataDb.nextId,

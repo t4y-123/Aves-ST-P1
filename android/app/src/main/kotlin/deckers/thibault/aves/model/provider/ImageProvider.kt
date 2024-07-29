@@ -11,8 +11,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.util.Log
-import androidx.exifinterface.media.ExifInterface
-import androidx.fragment.app.FragmentActivity
+import androidx.exifinterface.media.ExifInterfaceFork as ExifInterface
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -41,6 +40,7 @@ import deckers.thibault.aves.metadata.xmp.GoogleXMP
 import deckers.thibault.aves.model.AvesEntry
 import deckers.thibault.aves.model.ExifOrientationOp
 import deckers.thibault.aves.model.FieldMap
+import deckers.thibault.aves.model.NameConflictResolution
 import deckers.thibault.aves.model.NameConflictStrategy
 import deckers.thibault.aves.model.SourceEntry
 import deckers.thibault.aves.utils.BitmapUtils
@@ -70,7 +70,7 @@ import java.util.TimeZone
 import kotlin.math.absoluteValue
 
 abstract class ImageProvider {
-    open fun fetchSingle(context: Context, uri: Uri, sourceMimeType: String?, callback: ImageOpCallback) {
+    open fun fetchSingle(context: Context, uri: Uri, sourceMimeType: String?, allowUnsized: Boolean, callback: ImageOpCallback) {
         callback.onFailure(UnsupportedOperationException("`fetchSingle` is not supported by this image provider"))
     }
 
@@ -147,13 +147,14 @@ abstract class ImageProvider {
                         val oldFile = File(sourcePath)
                         if (oldFile.nameWithoutExtension != desiredNameWithoutExtension) {
                             oldFile.parent?.let { dir ->
-                                resolveTargetFileNameWithoutExtension(
+                                val resolution = resolveTargetFileNameWithoutExtension(
                                     contextWrapper = activity,
                                     dir = dir,
                                     desiredNameWithoutExtension = desiredNameWithoutExtension,
                                     mimeType = mimeType,
                                     conflictStrategy = NameConflictStrategy.RENAME,
-                                )?.let { targetNameWithoutExtension ->
+                                )
+                                resolution.nameWithoutExtension?.let { targetNameWithoutExtension ->
                                     val targetFileName = "$targetNameWithoutExtension${extensionFor(mimeType)}"
                                     val newFile = File(dir, targetFileName)
                                     if (oldFile != newFile) {
@@ -194,7 +195,7 @@ abstract class ImageProvider {
     }
 
     suspend fun convertMultiple(
-        activity: FragmentActivity,
+        activity: Activity,
         imageExportMimeType: String,
         targetDir: String,
         entries: List<AvesEntry>,
@@ -253,7 +254,7 @@ abstract class ImageProvider {
     }
 
     private suspend fun convertSingle(
-        activity: FragmentActivity,
+        activity: Activity,
         sourceEntry: AvesEntry,
         targetDir: String,
         targetDirDocFile: DocumentFileCompat?,
@@ -266,7 +267,7 @@ abstract class ImageProvider {
         exportMimeType: String,
     ): FieldMap {
         val sourceMimeType = sourceEntry.mimeType
-        val sourceUri = sourceEntry.uri
+        var sourceUri = sourceEntry.uri
         val pageId = sourceEntry.pageId
 
         var desiredNameWithoutExtension = if (sourceEntry.path != null) {
@@ -279,13 +280,17 @@ abstract class ImageProvider {
             val page = if (sourceMimeType == MimeTypes.TIFF) pageId + 1 else pageId
             desiredNameWithoutExtension += "_${page.toString().padStart(3, '0')}"
         }
-        val targetNameWithoutExtension = resolveTargetFileNameWithoutExtension(
+        val resolution = resolveTargetFileNameWithoutExtension(
             contextWrapper = activity,
             dir = targetDir,
             desiredNameWithoutExtension = desiredNameWithoutExtension,
             mimeType = exportMimeType,
             conflictStrategy = nameConflictStrategy,
-        ) ?: return skippedFieldMap
+        )
+        val targetNameWithoutExtension = resolution.nameWithoutExtension ?: return skippedFieldMap
+        resolution.replacementFile?.let { file ->
+            sourceUri = Uri.fromFile(file)
+        }
 
         val targetMimeType: String
         val write: (OutputStream) -> Unit
@@ -328,7 +333,7 @@ abstract class ImageProvider {
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
 
-                target = Glide.with(activity)
+                target = Glide.with(activity.applicationContext)
                     .asBitmap()
                     .apply(glideOptions)
                     .load(model)
@@ -390,7 +395,9 @@ abstract class ImageProvider {
             return newFields
         } finally {
             // clearing Glide target should happen after effectively writing the bitmap
-            Glide.with(activity).clear(target)
+            Glide.with(activity.applicationContext).clear(target)
+
+            resolution.replacementFile?.delete()
         }
     }
 
@@ -470,7 +477,7 @@ abstract class ImageProvider {
         }
 
         val captureMimeType = MimeTypes.JPEG
-        val targetNameWithoutExtension = try {
+        val resolution = try {
             resolveTargetFileNameWithoutExtension(
                 contextWrapper = contextWrapper,
                 dir = targetDir,
@@ -483,6 +490,7 @@ abstract class ImageProvider {
             return
         }
 
+        val targetNameWithoutExtension = resolution.nameWithoutExtension
         if (targetNameWithoutExtension == null) {
             // skip it
             callback.onSuccess(skippedFieldMap)
@@ -568,10 +576,13 @@ abstract class ImageProvider {
         desiredNameWithoutExtension: String,
         mimeType: String,
         conflictStrategy: NameConflictStrategy,
-    ): String? {
+    ): NameConflictResolution {
+        var resolvedName: String? = desiredNameWithoutExtension
+        var replacementFile: File? = null
+
         val extension = extensionFor(mimeType)
         val targetFile = File(dir, "$desiredNameWithoutExtension$extension")
-        return when (conflictStrategy) {
+        when (conflictStrategy) {
             NameConflictStrategy.RENAME -> {
                 var nameWithoutExtension = desiredNameWithoutExtension
                 var i = 0
@@ -579,24 +590,28 @@ abstract class ImageProvider {
                     i++
                     nameWithoutExtension = "$desiredNameWithoutExtension ($i)"
                 }
-                nameWithoutExtension
+                resolvedName = nameWithoutExtension
             }
 
             NameConflictStrategy.REPLACE -> {
                 if (targetFile.exists()) {
+                    // move replaced file to temp storage
+                    // so that it can be used as a source for conversion or metadata copy
+                    replacementFile = StorageUtils.createTempFile(contextWrapper).apply {
+                        targetFile.transferTo(outputStream())
+                    }
                     deletePath(contextWrapper, targetFile.path, mimeType)
                 }
-                desiredNameWithoutExtension
             }
 
             NameConflictStrategy.SKIP -> {
                 if (targetFile.exists()) {
-                    null
-                } else {
-                    desiredNameWithoutExtension
+                    resolvedName = null
                 }
             }
         }
+
+        return NameConflictResolution(resolvedName, replacementFile)
     }
 
     // cf `MetadataFetchHandler.getCatalogMetadataByMetadataExtractor()` for a more thorough check
@@ -1026,7 +1041,7 @@ abstract class ImageProvider {
         uri: Uri,
         mimeType: String,
         dateMillis: Long?,
-        shiftMinutes: Long?,
+        shiftSeconds: Long?,
         fields: List<String>,
         callback: ImageOpCallback,
     ) {
@@ -1057,9 +1072,9 @@ abstract class ImageProvider {
                     }
                 }
 
-                shiftMinutes != null -> {
+                shiftSeconds != null -> {
                     // shift
-                    val shiftMillis = shiftMinutes * 60000
+                    val shiftMillis = shiftSeconds * 1000
                     listOf(
                         ExifInterface.TAG_DATETIME,
                         ExifInterface.TAG_DATETIME_ORIGINAL,

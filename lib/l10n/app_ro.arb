@@ -5,19 +5,19 @@
   "@welcomeOptional": {},
   "welcomeTermsToggle": "Sunt de acord cu Termenii și condițiile",
   "@welcomeTermsToggle": {},
-  "timeSeconds": "{seconds, plural, =1{1 secundă} other{{seconds} secunde}}",
+  "timeSeconds": "{count, plural, =1{{count} secundă} other{{count} secunde}}",
   "@timeSeconds": {
     "placeholders": {
       "seconds": {}
     }
   },
-  "timeMinutes": "{minutes, plural, =1{1 minut} other{{minutes} minute}}",
+  "timeMinutes": "{count, plural, =1{{count} minut} other{{count} minute}}",
   "@timeMinutes": {
     "placeholders": {
       "minutes": {}
     }
   },
-  "timeDays": "{days, plural, =1{1 zi} other{{days} zile}}",
+  "timeDays": "{count, plural, =1{{count} zi} other{{count} zile}}",
   "@timeDays": {
     "placeholders": {
       "days": {}
@@ -251,10 +251,6 @@
   "@mapStyleGoogleHybrid": {},
   "mapStyleGoogleTerrain": "Hărți Google (Teren)",
   "@mapStyleGoogleTerrain": {},
-  "mapStyleHuaweiNormal": "Petal Maps",
-  "@mapStyleHuaweiNormal": {},
-  "mapStyleHuaweiTerrain": "Petal Maps (Teren)",
-  "@mapStyleHuaweiTerrain": {},
   "mapStyleOsmHot": "OSM umanitar",
   "@mapStyleOsmHot": {},
   "mapStyleStamenWatercolor": "Stamine Acuarela",
@@ -648,7 +644,7 @@
   },
   "appName": "Aves",
   "@appName": {},
-  "itemCount": "{count, plural, =1{1 element} other{{count} elemente}}",
+  "itemCount": "{count, plural, =1{{count} element} other{{count} elemente}}",
   "@itemCount": {
     "placeholders": {
       "count": {}
@@ -1329,7 +1325,7 @@
   "@statsTopCountriesSectionTitle": {},
   "settingsAccessibilityShowPinchGestureAlternatives": "Afișare alternative de gesturi atingeri-multiple",
   "@settingsAccessibilityShowPinchGestureAlternatives": {},
-  "columnCount": "{count, plural, =1{1 coloană} other{{count} coloane}}",
+  "columnCount": "{count, plural, =1{{count} coloană} other{{count} coloane}}",
   "@columnCount": {
     "placeholders": {
       "count": {}
@@ -1495,8 +1491,6 @@
   "@collectionActionSetHome": {},
   "aboutDataUsageClearCache": "Golește memoria cache",
   "@aboutDataUsageClearCache": {},
-  "setHomeCustomCollection": "Colecție personalizată",
-  "@setHomeCustomCollection": {},
   "settingsThumbnailShowHdrIcon": "Afișare pictogramă HDR",
   "@settingsThumbnailShowHdrIcon": {},
   "settingsViewerShowHistogram": "Afișare histogramă",
@@ -1536,5 +1530,7 @@
   "videoRepeatActionSetStart": "Setează începutul",
   "@videoRepeatActionSetStart": {},
   "videoRepeatActionSetEnd": "Setează sfârșitul",
-  "@videoRepeatActionSetEnd": {}
+  "@videoRepeatActionSetEnd": {},
+  "chipActionShowCollection": "Afișați în colecție",
+  "@chipActionShowCollection": {}
 }

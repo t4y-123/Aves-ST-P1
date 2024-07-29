@@ -30,7 +30,7 @@ abstract class AppService {
 
   Future<bool> shareSingle(String uri, String mimeType);
 
-  Future<void> pinToHomeScreen(String label, AvesEntry? coverEntry, {Set<CollectionFilter>? filters, String? uri});
+  Future<void> pinToHomeScreen(String label, AvesEntry? coverEntry, {Set<CollectionFilter>? filters, String? explorerPath, String? uri});
 }
 
 class PlatformAppService implements AppService {
@@ -114,7 +114,9 @@ class PlatformAppService implements AppService {
       if (result == null) return {'error': 'cancelled'};
       return result.cast<String, dynamic>();
     } on PlatformException catch (e, stack) {
-      await reportService.recordError(e, stack);
+      if (e.code != 'edit-resolve') {
+        await reportService.recordError(e, stack);
+      }
       return {'error': e.code};
     }
   }
@@ -201,7 +203,7 @@ class PlatformAppService implements AppService {
   // app shortcuts
 
   @override
-  Future<void> pinToHomeScreen(String label, AvesEntry? coverEntry, {Set<CollectionFilter>? filters, String? uri}) async {
+  Future<void> pinToHomeScreen(String label, AvesEntry? coverEntry, {Set<CollectionFilter>? filters, String? explorerPath, String? uri}) async {
     Uint8List? iconBytes;
     if (coverEntry != null) {
       final size = coverEntry.isVideo ? 0.0 : 256.0;
@@ -220,6 +222,7 @@ class PlatformAppService implements AppService {
         'label': label,
         'iconBytes': iconBytes,
         'filters': filters?.map((filter) => filter.toJson()).toList(),
+        'explorerPath': explorerPath,
         'uri': uri,
       });
     } on PlatformException catch (e, stack) {

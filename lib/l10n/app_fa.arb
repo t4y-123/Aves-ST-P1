@@ -67,7 +67,7 @@
   "@chipActionCreateAlbum": {},
   "filterNoRatingLabel": "بدون امتیاز",
   "@filterNoRatingLabel": {},
-  "timeSeconds": "{seconds, plural, =1{1 ثانیع} other{{seconds} ثانیه}}",
+  "timeSeconds": "{count, plural, =1{{count} ثانیع} other{{count} ثانیه}}",
   "@timeSeconds": {
     "placeholders": {
       "seconds": {}
@@ -75,7 +75,7 @@
   },
   "deleteButtonLabel": "پاک کردن",
   "@deleteButtonLabel": {},
-  "itemCount": "{count, plural, =1{1 فایل} other{{count} فایل}}",
+  "itemCount": "{count, plural, =1{{count} فایل} other{{count} فایل}}",
   "@itemCount": {
     "placeholders": {
       "count": {}
@@ -99,7 +99,7 @@
   "@doNotAskAgain": {},
   "entryActionDelete": "پاک‌کردن",
   "@entryActionDelete": {},
-  "timeMinutes": "{minutes, plural, =1{1 دقیقه} other{{minutes} دقیقه}}",
+  "timeMinutes": "{count, plural, other{{count} دقیقه}}",
   "@timeMinutes": {
     "placeholders": {
       "minutes": {}
@@ -141,7 +141,7 @@
   "@filterBinLabel": {},
   "filterNoDateLabel": "بدون تاریخ",
   "@filterNoDateLabel": {},
-  "timeDays": "{days, plural, =1{1 روز} other{{days} روز}}",
+  "timeDays": "{count, plural, other{{count} روز}}",
   "@timeDays": {
     "placeholders": {
       "days": {}
@@ -333,16 +333,12 @@
   "@videoPlaybackMuted": {},
   "storageVolumeDescriptionFallbackPrimary": "حافظه داخلی",
   "@storageVolumeDescriptionFallbackPrimary": {},
-  "columnCount": "{count, plural, =1{1 ستون} other{{count} ستون}}",
+  "columnCount": "{count, plural, other{{count} ستون}}",
   "@columnCount": {
     "placeholders": {
       "count": {}
     }
   },
-  "mapStyleHuaweiNormal": "پتال مپس",
-  "@mapStyleHuaweiNormal": {},
-  "mapStyleHuaweiTerrain": "پتال مپس (نمایش زمین)",
-  "@mapStyleHuaweiTerrain": {},
   "mapStyleOsmHot": "اوپن‌استریت‌مپ بشردوستانه",
   "@mapStyleOsmHot": {},
   "subtitlePositionBottom": "پایین",
@@ -1103,8 +1099,6 @@
   "@settingsSystemDefault": {},
   "settingsConfirmationTile": "درخواست های تایید",
   "@settingsConfirmationTile": {},
-  "setHomeCustomCollection": "مجموعه سفارشی",
-  "@setHomeCustomCollection": {},
   "settingsKeepScreenOnDialogTitle": "صفحه را روشن نگه دار",
   "@settingsKeepScreenOnDialogTitle": {},
   "settingsShowBottomNavigationBar": "نمایش گزینه‌گان پیمایش پایین",
@@ -1536,5 +1530,7 @@
     "placeholders": {
       "count": {}
     }
-  }
+  },
+  "chipActionShowCollection": "نمایش در مجموعه",
+  "@chipActionShowCollection": {}
 }

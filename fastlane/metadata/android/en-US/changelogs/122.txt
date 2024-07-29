@@ -1,0 +1,3 @@
+In v1.11.3:
+- show selected albums together in Collection
+Full changelog available on GitHub

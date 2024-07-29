@@ -33,7 +33,7 @@ class FilterListDetails<T extends CollectionFilter> extends StatelessWidget {
   Widget build(BuildContext context) {
     final detailsTheme = context.watch<FilterListDetailsThemeData>();
 
-    final leading = filter.iconBuilder(context, detailsTheme.titleIconSize, showGenericIcon: false);
+    final leading = filter.iconBuilder(context, detailsTheme.titleIconSize, allowGenericIcon: false);
     final hasTitleLeading = leading != null;
 
     return Container(
@@ -84,10 +84,9 @@ class FilterListDetails<T extends CollectionFilter> extends StatelessWidget {
   }
 
   Widget _buildDateRow(BuildContext context, FilterListDetailsThemeData detailsTheme, bool hasTitleLeading) {
-    final locale = context.l10n.localeName;
     final use24hour = MediaQuery.alwaysUse24HourFormatOf(context);
     final date = entry?.bestDate;
-    final dateText = date != null ? formatDateTime(date, locale, use24hour) : AText.valueNotAvailable;
+    final dateText = date != null ? formatDateTime(date, context.locale, use24hour) : AText.valueNotAvailable;
 
     Widget leading = const Icon(AIcons.date);
     if (hasTitleLeading) {
@@ -121,7 +120,7 @@ class FilterListDetails<T extends CollectionFilter> extends StatelessWidget {
 
     List<Widget> leadingIcons = [
       if (pinned) const Icon(AIcons.pin),
-      if (removableStorage) const Icon(AIcons.removableStorage),
+      if (removableStorage) const Icon(AIcons.storageCard),
     ];
 
     Widget? leading;
@@ -143,8 +142,6 @@ class FilterListDetails<T extends CollectionFilter> extends StatelessWidget {
       child: Center(child: leading ?? const SizedBox()),
     );
 
-    final l10n = context.l10n;
-    final locale = l10n.localeName;
     final source = context.read<CollectionSource>();
 
     return IconTheme.merge(
@@ -154,7 +151,7 @@ class FilterListDetails<T extends CollectionFilter> extends StatelessWidget {
           leading,
           const SizedBox(width: 8),
           Text(
-            '${l10n.itemCount(source.count(filter))} • ${formatFileSize(locale, source.size(filter))}',
+            '${context.l10n.itemCount(source.count(filter))} • ${formatFileSize(context.locale, source.size(filter))}',
             style: detailsTheme.captionStyle,
             softWrap: false,
             overflow: TextOverflow.fade,

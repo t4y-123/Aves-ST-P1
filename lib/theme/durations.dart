@@ -29,11 +29,10 @@ class ADurations {
   // collection animations
   static const filterBarRemovalAnimation = Duration(milliseconds: 400);
   static const collectionOpOverlayAnimation = Duration(milliseconds: 300);
-  static const sectionHeaderAnimation = Duration(milliseconds: 200);
-  static const thumbnailOverlayAnimation = Duration(milliseconds: 200);
 
   // search animations
   static const filterRowExpandAnimation = Duration(milliseconds: 300);
+  static const searchBodyTransition = Duration(milliseconds: 300);
 
   // viewer animations
   static const thumbnailScrollerScrollAnimation = Duration(milliseconds: 200);
@@ -60,7 +59,7 @@ class ADurations {
   static const highlightJumpDelay = Duration(milliseconds: 400);
   static const highlightScrollInitDelay = Duration(milliseconds: 800);
   static const motionPhotoAutoPlayDelay = Duration(milliseconds: 700);
-  static const videoPauseAppInactiveDelay = Duration(milliseconds: 300);
+  static const appInactiveReactionDelay = Duration(milliseconds: 300);
   static const videoOverlayHideDelay = Duration(milliseconds: 500);
   static const videoProgressTimerInterval = Duration(milliseconds: 300);
   static const doubleBackTimerDelay = Duration(milliseconds: 1000);

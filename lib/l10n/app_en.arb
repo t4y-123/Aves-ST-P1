@@ -3,7 +3,7 @@
   "welcomeMessage": "Welcome to Aves",
   "welcomeOptional": "Optional",
   "welcomeTermsToggle": "I agree to the terms and conditions",
-  "itemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "itemCount": "{count, plural, =1{{count} item} other{{count} items}}",
   "@itemCount": {
     "placeholders": {
       "count": {
@@ -11,7 +11,7 @@
       }
     }
   },
-  "columnCount": "{count, plural, =1{1 column} other{{count} columns}}",
+  "columnCount": "{count, plural, =1{{count} column} other{{count} columns}}",
   "@columnCount": {
     "placeholders": {
       "count": {
@@ -20,26 +20,26 @@
     }
   },
 
-  "timeSeconds": "{seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "timeSeconds": "{count, plural, =1{{count} second} other{{count} seconds}}",
   "@timeSeconds": {
     "placeholders": {
-      "seconds": {
+      "count": {
         "format": "decimalPattern"
       }
     }
   },
-  "timeMinutes": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}",
+  "timeMinutes": "{count, plural, =1{{count} minute} other{{count} minutes}}",
   "@timeMinutes": {
     "placeholders": {
-      "minutes": {
+      "count": {
         "format": "decimalPattern"
       }
     }
   },
-  "timeDays": "{days, plural, =1{1 day} other{{days} days}}",
+  "timeDays": "{count, plural, =1{{count} day} other{{count} days}}",
   "@timeDays": {
     "placeholders": {
-      "days": {
+      "count": {
         "format": "decimalPattern"
       }
     }
@@ -85,10 +85,12 @@
   "sourceStateLocatingPlaces": "Locating places",
 
   "chipActionDelete": "Delete",
+  "chipActionShowCollection": "Show in Collection",
   "chipActionGoToAlbumPage": "Show in Albums",
   "chipActionGoToCountryPage": "Show in Countries",
   "chipActionGoToPlacePage": "Show in Places",
   "chipActionGoToTagPage": "Show in Tags",
+  "chipActionGoToExplorerPage": "Show in Explorer",
   "chipActionFilterOut": "Filter out",
   "chipActionFilterIn": "Filter in",
   "chipActionHide": "Hide",
@@ -236,8 +238,6 @@
   "mapStyleGoogleNormal": "Google Maps",
   "mapStyleGoogleHybrid": "Google Maps (Hybrid)",
   "mapStyleGoogleTerrain": "Google Maps (Terrain)",
-  "mapStyleHuaweiNormal": "Petal Maps",
-  "mapStyleHuaweiTerrain": "Petal Maps (Terrain)",
   "mapStyleOsmHot": "Humanitarian OSM",
   "mapStyleStamenWatercolor": "Stamen Watercolor",
 
@@ -770,6 +770,11 @@
 
   "binPageTitle": "Recycle Bin",
 
+  "explorerPageTitle": "Explorer",
+  "explorerActionSelectStorageVolume": "Select storage",
+
+  "selectStorageVolumeDialogTitle": "Select Storage",
+
   "searchCollectionFieldHint": "Search collection",
   "searchRecentSectionTitle": "Recent",
   "searchDateSectionTitle": "Date",
@@ -802,7 +807,7 @@
   "settingsNavigationSectionTitle": "Navigation",
   "settingsHomeTile": "Home",
   "settingsHomeDialogTitle": "Home",
-  "setHomeCustomCollection": "Custom collection",
+  "setHomeCustom": "Custom",
   "settingsShowBottomNavigationBar": "Show bottom navigation bar",
   "settingsKeepScreenOnTile": "Keep screen on",
   "settingsKeepScreenOnDialogTitle": "Keep Screen On",

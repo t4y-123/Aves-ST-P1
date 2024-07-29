@@ -115,8 +115,9 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
     return AvesFilterChip(
       key: chipKey,
       filter: _filter,
+      showLeading: showText,
       showText: showText,
-      showGenericIcon: false,
+      allowGenericIcon: false,
       decoration: AvesFilterDecoration(
         radius: radius(extent),
         widget: Padding(
@@ -171,8 +172,7 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
   Color _detailColor(BuildContext context) => Theme.of(context).colorScheme.onSurfaceVariant;
 
   Widget _buildDetails(BuildContext context, CollectionSource source, T filter) {
-    final locale = context.l10n.localeName;
-    final numberFormat = NumberFormat.decimalPattern(locale);
+    final countFormatter = NumberFormat.decimalPattern(context.locale);
 
     final padding = min<double>(8.0, extent / 16);
     final iconSize = detailIconSize(extent);
@@ -195,7 +195,7 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
             padding: EdgeInsetsDirectional.only(end: padding),
             duration: ADurations.chipDecorationAnimation,
             child: Icon(
-              AIcons.removableStorage,
+              AIcons.storageCard,
               color: _detailColor(context),
               size: iconSize,
             ),
@@ -211,7 +211,7 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
             ),
           ),
         Text(
-          locked ? AText.valueNotAvailable : numberFormat.format(source.count(filter)),
+          locked ? AText.valueNotAvailable : countFormatter.format(source.count(filter)),
           style: TextStyle(
             color: _detailColor(context),
             fontSize: fontSize,

@@ -118,11 +118,6 @@ class PlatformMediaEditService implements MediaEditService {
     required String destinationAlbum,
     required NameConflictStrategy nameConflictStrategy,
   }) {
-    // TODO TLAD remove log when OOMs are inspected
-    entries.where((v) => (v.sizeBytes ?? 0) > 20000000).forEach((entry) {
-      reportService.log('convert large entry=$entry size=${entry.sizeBytes}');
-    });
-
     try {
       return _opStream
           .receiveBroadcastStream(<String, dynamic>{
@@ -193,15 +188,17 @@ class PlatformMediaEditService implements MediaEditService {
 
 @immutable
 class EntryConvertOptions extends Equatable {
+  final EntryConvertAction action;
   final String mimeType;
   final bool writeMetadata;
   final LengthUnit lengthUnit;
   final int width, height, quality;
 
   @override
-  List<Object?> get props => [mimeType, writeMetadata, lengthUnit, width, height, quality];
+  List<Object?> get props => [action, mimeType, writeMetadata, lengthUnit, width, height, quality];
 
   const EntryConvertOptions({
+    required this.action,
     required this.mimeType,
     required this.writeMetadata,
     required this.lengthUnit,

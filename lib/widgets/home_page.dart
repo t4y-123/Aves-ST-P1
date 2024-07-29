@@ -27,6 +27,7 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/common/search/route.dart';
 import 'package:aves/widgets/editor/entry_editor_page.dart';
+import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/intent.dart';
@@ -71,11 +72,14 @@ class _HomePageState extends State<HomePage> {
   int? _widgetId;
   String? _initialRouteName, _initialSearchQuery;
   Set<CollectionFilter>? _initialFilters;
+  String? _initialExplorerPath;
+  List<String>? _secureUris;
   FgwServiceOpenType? _fgwOpenType;
 
   static const allowedShortcutRoutes = [
-    CollectionPage.routeName,
     AlbumListPage.routeName,
+    CollectionPage.routeName,
+    ExplorerPage.routeName,
     SearchPage.routeName,
   ];
 
@@ -102,6 +106,8 @@ class _HomePageState extends State<HomePage> {
     final safeMode = intentData[IntentDataKeys.safeMode] ?? false;
     final intentAction = intentData[IntentDataKeys.action];
     _initialFilters = null;
+    _initialExplorerPath = null;
+    _secureUris = null;
 
     await androidFileUtils.init();
     if (!{
@@ -113,7 +119,7 @@ class _HomePageState extends State<HomePage> {
       unawaited(appInventory.initAppNames());
     }
 
-    if (intentData.isNotEmpty) {
+    if (intentData.values.whereNotNull().isNotEmpty) {
       await reportService.log('Intent data=$intentData');
       switch (intentAction) {
         case IntentActions.view:
@@ -144,6 +150,7 @@ class _HomePageState extends State<HomePage> {
             uri = intentData[IntentDataKeys.uri];
             mimeType = intentData[IntentDataKeys.mimeType];
           }
+          _secureUris = intentData[IntentDataKeys.secureUris];
           if (uri != null) {
             _viewerEntry = await _initViewerEntry(
               uri: uri,
@@ -232,6 +239,7 @@ class _HomePageState extends State<HomePage> {
             ? (extraFilters as List).cast<String>().map(CollectionFilter.fromJson).whereNotNull().toSet()
             : null;
       }
+      _initialExplorerPath = intentData[IntentDataKeys.explorerPath];
     }
     context.read<ValueNotifier<AppMode>>().value = appMode;
     unawaited(reportService.setCustomKey('app_mode', appMode.toString()));
@@ -245,11 +253,10 @@ class _HomePageState extends State<HomePage> {
         unawaited(GlobalSearch.registerCallback());
         unawaited(AnalysisService.registerCallback());
         final source = context.read<CollectionSource>();
+        source.safeMode = safeMode;
         if (source.initState != SourceInitializationState.full) {
           await source.init(
-            loadTopEntriesFirst:
-                settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty,
-            canAnalyze: !safeMode,
+            loadTopEntriesFirst: settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty,
           );
         }
       case AppMode.screenSaver:
@@ -258,7 +265,7 @@ class _HomePageState extends State<HomePage> {
           canAnalyze: false,
         );
       case AppMode.view:
-        if (_isViewerSourceable(_viewerEntry)) {
+        if (_isViewerSourceable(_viewerEntry) && _secureUris == null) {
           final directory = _viewerEntry?.directory;
           if (directory != null) {
             unawaited(AnalysisService.registerCallback());
@@ -292,9 +299,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool _isViewerSourceable(AvesEntry? viewerEntry) {
-    return viewerEntry != null &&
-        viewerEntry.directory != null &&
-        !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
+    return viewerEntry != null && viewerEntry.directory != null && !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
   }
 
   Future<AvesEntry?> _initViewerEntry({required String uri, required String? mimeType}) async {
@@ -332,62 +337,65 @@ class _HomePageState extends State<HomePage> {
 
         final source = context.read<CollectionSource>();
         if (source.initState != SourceInitializationState.none) {
-          // wait for collection to pass the `loading` state
-          final completer = Completer();
-          void _onSourceStateChanged() {
-            if (source.state != SourceState.loading) {
-              source.stateNotifier.removeListener(_onSourceStateChanged);
-              completer.complete();
+          final album = viewerEntry.directory;
+          if (album != null) {
+            // wait for collection to pass the `loading` state
+            final completer = Completer();
+            void _onSourceStateChanged() {
+              if (source.state != SourceState.loading) {
+                source.stateNotifier.removeListener(_onSourceStateChanged);
+                completer.complete();
+              }
             }
-          }
 
-          source.stateNotifier.addListener(_onSourceStateChanged);
-          await completer.future;
-          switch (_fgwOpenType) {
-            case null:
-            case FgwServiceOpenType.shareByCopy:
-              final album = viewerEntry.directory;
-              if (album != null) {
+            source.stateNotifier.addListener(_onSourceStateChanged);
+            await completer.future;
+            switch (_fgwOpenType) {
+              case null:
+              case FgwServiceOpenType.shareByCopy:
+                final album = viewerEntry.directory;
+                if (album != null) {
+            collection = CollectionLens(
+              source: source,
+              filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
+              listenToSource: false,
+              // if we group bursts, opening a burst sub-entry should:
+              // - identify and select the containing main entry,
+              // - select the sub-entry in the Viewer page.
+              stackBursts: false,
+            );
+                }
+              case FgwServiceOpenType.usedRecord:
+              case FgwServiceOpenType.curFilters:
+                Set<CollectionFilter> filters = {};
+                if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+                  filters = {FgwUsedFilter.instance};
+                } else {
+                  filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
+                }
+                debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
                 collection = CollectionLens(
                   source: source,
-                  filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
+                  filters: filters,
                   listenToSource: false,
                   // if we group bursts, opening a burst sub-entry should:
                   // - identify and select the containing main entry,
                   // - select the sub-entry in the Viewer page.
-                  groupBursts: false,
+                  stackBursts: false,
                 );
+                debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
+            }
+            final viewerEntryPath = viewerEntry.path;
+            final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+            if (collectionEntry != null) {
+              viewerEntry = collectionEntry;
+            } else {
+              debugPrint('collection does not contain viewerEntry=$viewerEntry');
+              collection = null;
 
-              }
-            case FgwServiceOpenType.usedRecord:
-            case FgwServiceOpenType.curFilters:
-              Set<CollectionFilter> filters = {};
-              if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
-                filters = {FgwUsedFilter.instance};
-              } else {
-                filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
-              }
-              debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
-              collection = CollectionLens(
-                source: source,
-                filters: filters,
-                listenToSource: false,
-                // if we group bursts, opening a burst sub-entry should:
-                // - identify and select the containing main entry,
-                // - select the sub-entry in the Viewer page.
-                groupBursts: false,
-              );
-              debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
-          }
-          final viewerEntryPath = viewerEntry.path;
-          final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
-          if (collectionEntry != null) {
-            viewerEntry = collectionEntry;
-          } else {
-            debugPrint('collection does not contain viewerEntry=$viewerEntry');
-            collection = null;
           }
         }
+
         return DirectMaterialPageRoute(
           settings: const RouteSettings(name: EntryViewerPage.routeName),
           builder: (_) {
@@ -408,8 +416,7 @@ class _HomePageState extends State<HomePage> {
         );
       default:
         routeName = _initialRouteName ?? settings.homePage.routeName;
-        filters =
-            _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
+        filters = _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
     }
     Route buildRoute(WidgetBuilder builder) => DirectMaterialPageRoute(
           settings: RouteSettings(name: routeName),
@@ -475,6 +482,11 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => const AlbumListPage());
       case TagListPage.routeName:
         return buildRoute((context) => const TagListPage());
+      case ExplorerPage.routeName:
+        final path = _initialExplorerPath ?? settings.homeCustomExplorerPath;
+        return buildRoute((context) => ExplorerPage(path: path));
+      case HomeWidgetSettingsPage.routeName:
+        return buildRoute((context) => HomeWidgetSettingsPage(widgetId: _widgetId!));
       case ScreenSaverPage.routeName:
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:

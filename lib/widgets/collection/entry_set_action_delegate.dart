@@ -8,6 +8,7 @@ import 'package:aves/model/entry/extensions/metadata_edition.dart';
 import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
@@ -24,6 +25,7 @@ import 'package:aves/services/common/services.dart';
 import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/themes.dart';
+import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:aves/utils/mime_utils.dart';
 import 'package:aves/widgets/common/action_mixins/entry_editor.dart';
@@ -47,8 +49,11 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+
+import 'collection_page.dart';
 
 class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, EntryEditorMixin, EntryStorageMixin {
   bool isVisible(
@@ -109,6 +114,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
         return canWrite && isMain && isSelecting && !isTrash;
       case EntrySetAction.restore:
         return canWrite && isMain && isSelecting && isTrash;
@@ -163,6 +170,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
         return hasSelection;
     }
   }
@@ -230,6 +239,10 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         _editTags(context);
       case EntrySetAction.removeMetadata:
         _removeMetadata(context);
+      case EntrySetAction.shareByCopy:
+        _move(context, moveType: MoveType.shareByCopy);
+      case EntrySetAction.shareByDateNow:
+        setDateToNow(context);
     }
   }
 
@@ -292,10 +305,11 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     required BuildContext context,
     required Set<AvesEntry> entries,
     required bool enableBin,
+    bool isShareByCopyDelete = false,
   }) async {
     final pureTrash = entries.every((entry) => entry.trashed);
     if (enableBin && !pureTrash) {
-      await doMove(context, moveType: MoveType.toBin, entries: entries);
+      await doMove(context, moveType: MoveType.toBin, entries: entries,isShareByCopyDelete:isShareByCopyDelete);
       return;
     }
 
@@ -304,12 +318,15 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     final storageDirs = entries.map((e) => e.storageDirectory).whereNotNull().toSet();
     final todoCount = entries.length;
 
-    if (!await showSkippableConfirmationDialog(
-      context: context,
-      type: ConfirmationDialog.deleteForever,
-      message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
-      confirmationButtonLabel: l10n.deleteButtonLabel,
-    )) return;
+    // in remove the share by copy delete, should not ask confirm.
+    if(!isShareByCopyDelete){
+      if (!await showSkippableConfirmationDialog(
+        context: context,
+        type: ConfirmationDialog.deleteForever,
+        message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
+        confirmationButtonLabel: l10n.deleteButtonLabel,
+      )) return;
+    }
 
     if (!await checkStoragePermissionForAlbums(context, storageDirs, entries: entries)) return;
 
@@ -406,6 +423,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     Set<AvesEntry> todoItems,
     Future<Set<EntryDataType>> Function(AvesEntry entry) op, {
     bool showResult = true,
+    bool isShareByCopy = false,
   }) async {
     final selectionDirs = todoItems.map((e) => e.directory).whereNotNull().toSet();
     final todoCount = todoItems.length;
@@ -456,7 +474,6 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         if (dataTypes.contains(EntryDataType.aspectRatio)) {
           source.onAspectRatioChanged();
         }
-
         if (showResult) {
           final l10n = context.l10n;
           final successCount = successOps.length;
@@ -465,7 +482,33 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
             showFeedback(context, FeedbackType.warn, l10n.collectionEditFailureFeedback(count));
           } else {
             final count = editedOps.length;
-            showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count));
+            // for the move feedback will dismiss in 3seconds,
+            // add a edit feed back action to jump to the copied dir.
+            if(isShareByCopy){
+              final navigator = Navigator.maybeOf(context);
+              bool highlightTest(AvesEntry entry) => todoItems.contains(entry);
+              SnackBarAction action = SnackBarAction(
+                label: l10n.showButtonLabel,
+                onPressed: () {
+                  if (navigator != null) {
+                    unawaited(Navigator.maybeOf(context)?.pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        settings: const RouteSettings(name: CollectionPage.routeName),
+                        builder: (context) => CollectionPage(
+                          source: source,
+                          filters: {AlbumFilter(androidFileUtils.avesShareByCopyPath,null)},
+                          highlightTest:highlightTest ,
+                        ),
+                      ),
+                          (route) => false,
+                    ));
+                  }
+                },
+              );
+              showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count),action);
+            }else{
+              showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count));
+            }
           }
         }
       },
@@ -526,6 +569,27 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     if (entries == null || entries.isEmpty) return;
 
     await _edit(context, entries, (entry) => entry.flip());
+  }
+
+  Future<void> setDateToNow(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier,
+    bool showResult = true,bool showConfirm = true,bool isShareByCopy = false}) async {
+    entries ??= await _getEditableTargetItems(context, canEdit: (entry) => entry.canEditDate);
+    if (entries == null || entries.isEmpty) return;
+
+    final dateTime = DateTime.now();
+    final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(dateTime); // Format the date as needed
+
+    if (showConfirm && !await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.setDateToNow,
+      message: context.l10n.setDateToNowDialogMessage(formattedDateTime),
+      confirmationButtonLabel: context.l10n.continueButtonLabel,
+    )) return;
+
+    final modifier = DateModifier.setCustom(const {}, dateTime);
+    if (modifier == null) return;
+    await _edit(context, entries, (entry) => entry.editDate(modifier!),
+        showResult: showResult,isShareByCopy: isShareByCopy);
   }
 
   Future<void> editDate(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {

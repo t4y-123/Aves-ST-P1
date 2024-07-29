@@ -75,6 +75,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         case EntryAction.move:
           return targetEntry.canEdit;
         case EntryAction.copy:
+        case EntryAction.shareByCopy:
           return canWrite;
         case EntryAction.rotateCCW:
         case EntryAction.rotateCW:
@@ -129,6 +130,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         case EntryAction.showGeoTiffOnMap:
         case EntryAction.convertMotionPhotoToStillImage:
         case EntryAction.viewMotionPhotoVideo:
+        case EntryAction.shareByDateNow:
           return _metadataActionDelegate.isVisible(
             appMode: appMode,
             targetEntry: targetEntry,
@@ -148,6 +150,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         return targetEntry.canRotate;
       case EntryAction.flip:
         return targetEntry.canFlip;
+      case EntryAction.shareByDateNow:
       case EntryAction.editDate:
       case EntryAction.editLocation:
       case EntryAction.editTitleDescription:
@@ -205,6 +208,8 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         EntryPrinter(targetEntry).print(context);
       case EntryAction.rename:
         _rename(context, targetEntry);
+      case EntryAction.shareByCopy:
+        _move(context, targetEntry, moveType: MoveType.shareByCopy);
       case EntryAction.copy:
         _move(context, targetEntry, moveType: MoveType.copy);
       case EntryAction.move:
@@ -275,6 +280,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
       case EntryAction.rotateScreen:
         _rotateScreen(context);
       // metadata
+      case EntryAction.shareByDateNow:
       case EntryAction.editDate:
       case EntryAction.editLocation:
       case EntryAction.editTitleDescription:

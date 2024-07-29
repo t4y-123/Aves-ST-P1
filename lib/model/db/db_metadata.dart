@@ -8,6 +8,12 @@ import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
 
+import '../foreground_wallpaper/fgw_used_entry_record.dart';
+import '../foreground_wallpaper/privacy_guard_level.dart';
+import '../foreground_wallpaper/filtersSet.dart';
+import '../foreground_wallpaper/share_copied_entry.dart';
+import '../foreground_wallpaper/wallpaper_schedule.dart';
+
 abstract class MetadataDb {
   int get nextId;
 
@@ -118,4 +124,65 @@ abstract class MetadataDb {
   Future<void> addVideoPlayback(Set<VideoPlaybackRow> rows);
 
   Future<void> removeVideoPlayback(Set<int> ids);
+
+  //
+  // Privacy Guard Level,
+
+  Future<void> clearPrivacyGuardLevel();
+
+  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels();
+
+  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+
+  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row);
+
+  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+
+  // Filter Set for wallpaper,
+
+  Future<void> clearFilterSet();
+
+  Future<Set<FiltersSetRow>> loadAllFilterSet();
+
+  Future<void> addFilterSet(Set<FiltersSetRow> rows);
+
+  Future<void> updateFilterSetId(int id, FiltersSetRow row);
+
+  Future<void> removeFilterSet(Set<FiltersSetRow> rows);
+
+  // wallpaperScheduleTable
+
+  Future<void> clearWallpaperSchedules();
+
+  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules();
+
+  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+
+  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row);
+
+  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+
+  // wallpaperScheduleTable
+
+  Future<void> clearFgwUsedEntryRecord();
+
+  Future<Set<FgwUsedEntryRecordRow>> loadAllFgwUsedEntryRecord();
+
+  Future<void> addFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows);
+
+  Future<void> updateFgwUsedEntryRecord(int id, FgwUsedEntryRecordRow row);
+
+  Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows);
+
+  //
+  // share copied entries
+  Future<void> clearShareCopiedEntries();
+
+  Future<Set<ShareCopiedEntryRow>> loadAllShareCopiedEntries();
+
+  Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows);
+
+  Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row);
+
+  Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows);
 }

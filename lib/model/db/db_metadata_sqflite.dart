@@ -5,16 +5,23 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
+
+import '../foreground_wallpaper/fgw_used_entry_record.dart';
+import '../foreground_wallpaper/privacy_guard_level.dart';
+import '../foreground_wallpaper/share_copied_entry.dart';
+
 
 class SqfliteMetadataDb implements MetadataDb {
   late Database _db;
@@ -31,8 +38,27 @@ class SqfliteMetadataDb implements MetadataDb {
   static const trashTable = 'trash';
   static const videoPlaybackTable = 'videoPlayback';
 
-  static int _lastId = 0;
+  // t4y for foreground Wallpaper
+  static const privacyGuardLevelTable = 'privacyGuardLevel';
+  static const filtersSetTable = 'filtersSet';
+  static const wallpaperScheduleTable = 'wallpaperSchedule';
+  static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
+  static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
+  static const fgwUsedEntryTable = 'foregroundWallpaperUsedEntry';
 
+  //t4y share by copy:
+  static const shareCopiedEntryTable = 'shareCopiedEntry';
+
+  //End
+
+  static int _lastId = 0;
+  // In dart ,the int is 64-bit.
+  // The 64-bit signed integer records the number of ticks from a certain era to the present.
+  // Some systems (such as the Java standard library) agree that 1 tick is equal to 1 millisecond.
+  // This agreed time system can be used until about 292 million years later.
+  // Other systems (such as Win32) agree that 1 tick is equal to 100 nanoseconds.
+  // The time range covered by this system is 29227 years before and after the era.
+  // https://zh.wikipedia.org/wiki/9223372036854775807
   @override
   int get nextId => ++_lastId;
 
@@ -45,7 +71,7 @@ class SqfliteMetadataDb implements MetadataDb {
             'id INTEGER PRIMARY KEY'
             ', contentId INTEGER'
             ', uri TEXT'
-            ', path TEXT'
+            ', path TEXT UNIQUE'
             ', sourceMimeType TEXT'
             ', width INTEGER'
             ', height INTEGER'
@@ -106,6 +132,45 @@ class SqfliteMetadataDb implements MetadataDb {
         await db.execute('CREATE TABLE $videoPlaybackTable('
             'id INTEGER PRIMARY KEY'
             ', resumeTimeMillis INTEGER'
+            ')');
+        //T4y: Foreground Wallpaper tables
+        await db.execute('CREATE TABLE $privacyGuardLevelTable('
+            'id INTEGER PRIMARY KEY'
+            ', guardLevel INTEGER'
+            ', labelName TEXT'
+            ', color INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $filtersSetTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', filters TEXT'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $wallpaperScheduleTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', privacyGuardLevelId INTEGER'
+            ', filtersSetId INTEGER'
+            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', displayType TEXT' // Values can be 'random'  or 'most recent not used'
+            ', interval INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $fgwUsedEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', privacyGuardLevelId INTEGER'
+            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', entryId INTEGER'
+            ', dateMillis INTEGER'
+            ')');
+        await db.execute('CREATE TABLE $shareCopiedEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', dateMillis INTEGER'
             ')');
       },
       onUpgrade: MetadataDbUpgrader.upgradeDb,
@@ -615,5 +680,249 @@ class SqfliteMetadataDb implements MetadataDb {
       where: 'id IN (${ids.join(',')})',
     );
     return rows.map(mapRow).toSet();
+  }
+
+  // Privacy Guard LevelS
+  @override
+  Future<void> clearPrivacyGuardLevel() async {
+    final count = await _db.delete(privacyGuardLevelTable, where: '1');
+    debugPrint('clearPrivacyGuardLevel deleted $count rows');
+  }
+
+  @override
+  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels() async {
+    final rows = await _db.query(privacyGuardLevelTable);
+    return rows.map(PrivacyGuardLevelRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertPrivacyGuardLevel(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row) async {
+    final batch = _db.batch();
+    batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertPrivacyGuardLevel(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [row.privacyGuardLevelID]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertPrivacyGuardLevel(Batch batch, PrivacyGuardLevelRow row) {
+    batch.insert(
+      privacyGuardLevelTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Filter Set for wallpaper,
+  @override
+  Future<void> clearFilterSet() async {
+    final count = await _db.delete(filtersSetTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FiltersSetRow>> loadAllFilterSet() async {
+    final rows = await _db.query(filtersSetTable);
+    return rows.map(FiltersSetRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFilterSet(Set<FiltersSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFilterSet(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFilterSetId(int id, FiltersSetRow row) async {
+    final batch = _db.batch();
+    batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFilterSet(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFilterSet(Set<FiltersSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFilterSet(Batch batch, FiltersSetRow row) {
+    batch.insert(
+      filtersSetTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // wallpaper Schedule Table
+  @override
+  Future<void> clearWallpaperSchedules() async {
+    final count = await _db.delete(wallpaperScheduleTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules() async {
+    final rows = await _db.query(wallpaperScheduleTable);
+    return rows.map(WallpaperScheduleRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertWallpaperSchedule(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row) async {
+    final batch = _db.batch();
+    batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertWallpaperSchedule(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertWallpaperSchedule(Batch batch, WallpaperScheduleRow row) {
+    batch.insert(
+      wallpaperScheduleTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // foreground wallpaper used entry record Table
+  @override
+  Future<void> clearFgwUsedEntryRecord() async {
+    final count = await _db.delete(fgwUsedEntryTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FgwUsedEntryRecordRow>> loadAllFgwUsedEntryRecord() async {
+    final rows = await _db.query(fgwUsedEntryTable);
+    return rows.map(FgwUsedEntryRecordRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFgwUsedEntryRecord(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFgwUsedEntryRecord(int id, FgwUsedEntryRecordRow row) async {
+    final batch = _db.batch();
+    batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFgwUsedEntryRecord(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFgwUsedEntryRecord(Batch batch, FgwUsedEntryRecordRow row) {
+    batch.insert(
+      fgwUsedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  //t4y: share by copy copied entries
+  @override
+  Future<void> clearShareCopiedEntries() async {
+    final count = await _db.delete(shareCopiedEntryTable, where: '1');
+    debugPrint('clearShareCopiedEntries $shareCopiedEntryTable deleted $count rows');
+  }
+
+  @override
+  Future<Set<ShareCopiedEntryRow>> loadAllShareCopiedEntries() async {
+    final rows = await _db.query(shareCopiedEntryTable);
+    return rows.map(ShareCopiedEntryRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    debugPrint('addShareCopiedEntries.add(_db:\n$rows');
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertShareCopiedEntries(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row) async {
+    final batch = _db.batch();
+    batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertShareCopiedEntries(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertShareCopiedEntries(Batch batch, ShareCopiedEntryRow row) {
+    debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
+    batch.insert(
+      shareCopiedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

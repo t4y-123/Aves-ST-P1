@@ -1068,5 +1068,131 @@
   "filePickerDoNotShowHiddenFiles": "Don’t show hidden files",
   "filePickerOpenFrom": "Open from",
   "filePickerNoItems": "No items",
-  "filePickerUseThisFolder": "Use this folder"
+  "filePickerUseThisFolder": "Use this folder",
+
+
+  "appExportForegroundWallpaper": "ForegroundWallpaper",
+
+  "entryActionShareByCopy": "share by copy",
+  "entryActionShareByDateNow": "set date now",
+  "entrySetActionShareByCopy": "share by copy",
+  "entrySetActionShareByDateNow": "set date now",
+
+  "settingsShareByCopyTile": "Share by Copy",
+  "settingsShareByCopyPageTitle": "Share by Copy",
+  "albumPickPageTitleShareByCopy": "Share by Copy",
+  "settingsShowAvesShareCopiedItems": "Show Aves share copied items dir",
+  "settingsShareByCopyAutoRemove": "Auto remove expired copied items",
+  "settingsShareByCopyAutoRemoveUseBin": "Use bin when remove expired copied items",
+  "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
+  "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
+
+  "settingsShareByCopyExpiredInterval": "Expired Interval",
+
+
+  "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
+  "settingsConfirmationSetDateToNowItems": "Ask before setting items' date to now",
+
+  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake them easier show in others APP recent items.\n\nEverytime make a new share copy, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin is enabled).\n\nYou can change this in settings.\n\nAre you sure continue?",
+  "settingsConfirmationShareByCopy": "Ask before share by copy items",
+
+  "filterFgwUsedLabel": "Fgw used entries",
+  "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",
+
+
+  "settingsPresentationSectionTitle": "Presentation",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
+  "settingsPresentationForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
+
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage wallpaper schedules",
+  "settingsWallpaperSchedulesManagerTitle": "Manage Wallpaper Schedules",
+
+
+  "fgwScheduleGroupSetType346": "3/4/6,for home and lock screen",
+  "fgwScheduleGroupSetType333": "3/3/3,for only home screen",
+
+  "settingsFgwScheduleResetToDefault": "Reset to default",
+  "confirmResetAllScheduleToDefault": "This will clear all current guard levels, filter sets, and schedules, reset to default values.\ncontinue?",
+
+  "settingsAddNewScheduleGroup": "Add new group",
+  "confirmAddNewScheduleGroup": "This will add a new set of \n[guard levelscorresponding/filters sets/schedules].Continue?",
+
+  "settingsClearRecentUsedEntryRecord": "Clear wallpaper used records",
+  "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries {num} record \nContinue?",
+
+  "settingsSetAllFgwScheduleDisplayType": "Set all schedules display order type",
+  "confirmSetAllFgwScheduleDisplayType": "This will set all schedules display type in a same value.Continue?",
+
+   "resetCompletedFeedback": "reset complete.",
+   "clearCompletedFeedback": "clear complete.",
+   "applyCompletedFeedback": "apply complete.",
+
+  "settingsPrivacyGuardLevelTabTypes": "Guard Level",
+  "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsFgwScheduleBanner": "Can only edit schedule in guard level edit page.",
+  "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
+  "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
+  "settingsForegroundWallpaperConfigAddItem": "Add Item",
+  "settingsFgwScheduleSyncButtonText": "Sync Schedules Now",
+  "settingsFgwScheduleSyncButtonAlert": "Sync Schedules tapped,please wait a few second.",
+
+  "guardLevelTitle": "Guard Level",
+  "guardLevelNamePrefix": "Level",
+  "renameLabelNameTileTitle": "Label Name",
+  "renameLabelNameDialogLabel": "New name",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "No need to name a same name",
+  "settingsCopySchedulesFromExist": "Copy schedules from exist ",
+  "settingsGuardLevelColor": "Color:",
+  "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
+  "settingsCollectionScheduleUpdateTypeMultiSelectionNone": "None",
+  "settingsGuardLevelIsActiveTitle": "Active:",
+
+
+  "settingsFilterSetTabTypes": "Filter Set",
+  "settingsFilterSetTile": "Filter Set Setting",
+  "settingsScheduleIntervalTile": "Interval:",
+
+  "settingsWallpaperScheduleTabTypes": "Schedule",
+  "settingsScheduleNamePrefix": "Schedule: ",
+  "settingsGuardLevelScheduleSubPagePrefix": "Schedule Setting",
+
+  "wallpaperUpdateTypeHome": "home",
+  "wallpaperUpdateTypeLock": "lock",
+  "wallpaperUpdateTypeBoth": "both",
+  "wallpaperUpdateTypeWidget": "widget",
+
+  "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
+  "settingsSelectOneGuardLevelTitle": "Select one guard level",
+  "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
+  "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
+
+  "fgwDisplayType": "Display Type",
+  "fgwDisplayRandom": "Random",
+  "fgwDisplayMostRecentNotUsed": "Most recent not used",
+  "settingsScheduleDisplayTypeTile": "Entries Display Type",
+  "settingsScheduleDisplayTypeDialogTitle": "Entries Display Type",
+  "settingsScheduleIsActiveTitle": "Active:",
+
+  "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,please check your settings.",
+
+  "initGuardLevelName01": "Exposure",
+  "initGuardLevelName02": "Moderate",
+  "initGuardLevelName03": "Safe",
+
+  "initFiltersSet346Name01": "Home: Exposure",
+  "initFiltersSet346Name02": "Home: Moderate",
+  "initFiltersSet346Name03": "Home & Lock: Safe",
+  "initFiltersSet346Name04": "Lock: Moderate & Exposure",
+
+  "initFiltersSet333Name01": "Home: Exposure",
+  "initFiltersSet333Name02": "Home: Moderate",
+  "initFiltersSet333Name03": "Home: Safe",
+
+
+  "foregroundWallpaperService": "Foreground Wallpaper Service",
+  "startWallpaperService": "Start Wallpaper Service",
+  "stopWallpaperService": "Stop Wallpaper Service"
+
 }

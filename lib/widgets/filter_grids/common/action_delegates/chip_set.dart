@@ -10,6 +10,7 @@ import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/fgw_service_handler.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/themes.dart';
@@ -78,6 +79,8 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       // general
       case ChipSetAction.configureView:
         return true;
+      case ChipSetAction.foregroundWallpaperService:
+        return true;
       case ChipSetAction.select:
         return appMode.canSelectFilter && !isSelecting;
       case ChipSetAction.selectAll:
@@ -138,6 +141,9 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       // browsing
       case ChipSetAction.search:
       case ChipSetAction.toggleTitleSearch:
+        // t4y
+      case ChipSetAction.foregroundWallpaperService:
+
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
         return true;
@@ -211,8 +217,33 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       case ChipSetAction.rename:
       case ChipSetAction.configureVault:
         break;
+      // t4y
+      case ChipSetAction.foregroundWallpaperService:
+        _changeForegroundWallpaperState(context);
     }
   }
+
+  // t4y:
+  Future<void> _changeForegroundWallpaperState(BuildContext context) async {
+      final isServiceRunning = await ForegroundWallpaperService.isServiceRunning( );
+      final l10n = context.l10n;
+      if(!isServiceRunning){
+        await ForegroundWallpaperService.startService( );
+        showFeedback(
+            context,
+            FeedbackType.info,
+            l10n.startWallpaperService
+        );
+      }else{
+        await ForegroundWallpaperService.stopService( );
+        showFeedback(
+            context,
+            FeedbackType.info,
+            l10n.stopWallpaperService
+        );
+      }
+  }
+  // t4y End
 
   void browse(BuildContext context) => context.read<Selection<FilterGridItem<T>>?>()?.browse();
 

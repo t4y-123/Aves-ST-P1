@@ -45,6 +45,10 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.editRating => l10n.entryInfoActionEditRating,
       EntrySetAction.editTags => l10n.entryInfoActionEditTags,
       EntrySetAction.removeMetadata => l10n.entryInfoActionRemoveMetadata,
+     //t4y:
+      EntrySetAction.shareByCopy =>  l10n.entryActionShareByCopy,
+      EntrySetAction.shareByDateNow =>  l10n.entryActionShareByDateNow,
+
     };
   }
 
@@ -90,6 +94,9 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.editRating => AIcons.rating,
       EntrySetAction.editTags => AIcons.tag,
       EntrySetAction.removeMetadata => AIcons.clear,
+      //t4y:
+      EntrySetAction.shareByCopy =>  AIcons.shareByCopy,
+      EntrySetAction.shareByDateNow =>  AIcons.shareByDateNow,
     };
   }
 }

@@ -47,6 +47,7 @@ class AIcons {
   static const country = Icons.flag_outlined;
   static const state = Icons.flag_outlined;
   static const place = Icons.place_outlined;
+  static const mainStorage = Icons.smartphone_outlined;
   static const mimeType = Icons.code_outlined;
   static const name = Icons.abc_outlined;
   static const newTier = Icons.fiber_new_outlined;
@@ -195,6 +196,16 @@ class AIcons {
   static const videoThumb = Icons.play_circle_outline;
   static const selected = Icons.check_circle_outline;
   static const unselected = Icons.radio_button_unchecked;
+
+  // t4y for classified personal features.
+  // classified setttings
+  static const presentation = Icons.security;
+  static const active = Icons.lightbulb_outline;
+  static const inactive = Icons.code_off_sharp;
+  static const fgwUsed = Icons.auto_stories;
+  static const shareByCopy = Icons.copy_all;
+  static const shareByDateNow = Icons.update;
+
 
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking

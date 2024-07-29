@@ -7,10 +7,13 @@ import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
+import '../foreground_wallpaper/enum/fgw_schedule_item.dart';
+
 class SettingsDefaults {
   // app
-  static const hasAcceptedTerms = false;
-  static const canUseAnalysisService = true;
+  static const hasAcceptedTerms = true; // t4y temp set true accept for test
+
+  static const canUseAnalysisService = false; // t4y temp set false accept for test
   static const isInstalledAppAccessAllowed = false;
   static const isErrorReportingAllowed = false;
   static const tileLayout = TileLayout.grid;
@@ -18,7 +21,8 @@ class SettingsDefaults {
 
   // display
   static const displayRefreshRateMode = DisplayRefreshRateMode.auto;
-  static const themeBrightness = AvesThemeBrightness.system;
+  // static const themeBrightness = AvesThemeBrightness.system;
+  static const themeBrightness = AvesThemeBrightness.dark; // t4y temp set false accept for test
   static const themeColorMode = AvesThemeColorMode.polychrome;
   static const enableDynamicColor = false;
   static const enableBlurEffect = true; // `enableBlurEffect` has a contextual default value
@@ -27,8 +31,10 @@ class SettingsDefaults {
 
   // navigation
   static const mustBackTwiceToExit = true;
-  static const keepScreenOn = KeepScreenOn.viewerOnly;
-  static const homePage = HomePageSetting.collection;
+  static const keepScreenOn = KeepScreenOn.always;// t4y temp for test
+  //static const keepScreenOn = KeepScreenOn.viewerOnly;
+  static const homePage = HomePageSetting.albums;// t4y prefer albums
+  //static const homePage = HomePageSetting.collection;
   static const enableBottomNavigationBar = true;
   static const confirm = true;
   static const setMetadataDateBeforeFileOp = false;
@@ -49,10 +55,17 @@ class SettingsDefaults {
   static const collectionBrowsingQuickActions = [
     EntrySetAction.searchCollection,
   ];
+  // t4y: for some app, the share way never get the original as-si pic.They will compress the pic.
   static const collectionSelectionQuickActions = [
-    EntrySetAction.share,
+    EntrySetAction.shareByCopy,
+    EntrySetAction.shareByDateNow,
     EntrySetAction.delete,
   ];
+  // t4y: collectionSelectionQuickActions pre value
+  // static const collectionSelectionQuickActions = [
+  //   EntrySetAction.share,
+  //   EntrySetAction.delete,
+  // ];
   static const showThumbnailFavourite = true;
   static const showThumbnailHdr = true;
   static const thumbnailLocationIcon = ThumbnailOverlayLocationIcon.none;
@@ -66,21 +79,33 @@ class SettingsDefaults {
   static const albumGroupFactor = AlbumChipGroupFactor.importance;
   static const chipListSortFactor = ChipSortFactor.name;
 
-  // viewer
+  // viewer ,
+  // t4y: personal prefer value
   static const viewerQuickActions = [
     EntryAction.rotateScreen,
     EntryAction.toggleFavourite,
-    EntryAction.share,
+    EntryAction.shareByCopy,
+    EntryAction.shareByDateNow,
     EntryAction.delete,
   ];
-  static const showOverlayOnOpening = true;
+  // t4y: pre value.
+  // static const viewerQuickActions = [
+  //   EntryAction.rotateScreen,
+  //   EntryAction.toggleFavourite,
+  //   EntryAction.share,
+  //   EntryAction.delete,
+  // ];
+
+  static const showOverlayOnOpening = false; // t4y : I prefer not show on Opening
+  //static const showOverlayOnOpening = true;
   static const showOverlayMinimap = false;
   static const overlayHistogramStyle = OverlayHistogramStyle.none;
   static const showOverlayInfo = true;
   static const showOverlayDescription = false;
   static const showOverlayRatingTags = false;
   static const showOverlayShootingDetails = false;
-  static const showOverlayThumbnailPreview = false;
+  static const showOverlayThumbnailPreview = true;// t4y : I prefer ThumbnailPreview
+  //static const showOverlayThumbnailPreview = false;
   static const viewerGestureSideTapNext = false;
   static const viewerUseCutout = true;
   static const enableMotionPhotoAutoPlay = false;
@@ -135,4 +160,24 @@ class SettingsDefaults {
   // platform settings
   static const isRotationLocked = false;
   static const areAnimationsRemoved = false;
+
+  //t4y: foreground wallpaper
+  static const int fgwNewUpdateInterval = 3;
+  static const int defaultPrivacyGuardLevel = 1;
+  //for easily test, debug set to most recent,else, release change to random.
+  static const fgwDisplayedItem = FgwDisplayedType.mostRecent;
+  // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
+  // set to type333 in release for some os,like miui,
+  //  third part app will not be able to set the lock screen wallpaper for having strict limit.
+  static const fgwScheduleSet = FgwScheduleSetType.type346;
+  //
+  static const int maxFgwUsedEntryRecord = 10;
+  static const int resetPrivacyGuardLevelDuration = 5; // seconds
+  // diff type share.
+  static const confirmSetDateToNow = true;
+  static const confirmShareByCopy = true;
+  static const shareByCopyExpiredAutoRemove = true;
+  static const shareByCopyExpiredRemoveUseBin = true;
+  static const shareByCopyRemoveInterval = 5; // seconds
+
 }

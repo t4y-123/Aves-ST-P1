@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_schedule_group_helper.dart';
+import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -17,6 +18,7 @@ import 'package:aves/utils/debouncer.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+
 
 class MediaStoreSource extends CollectionSource {
   final Debouncer _changeDebouncer = Debouncer(delay: ADurations.mediaContentChangeDebounceDelay);
@@ -61,6 +63,11 @@ class MediaStoreSource extends CollectionSource {
     await vaults.init();
     await favourites.init();
     await covers.init();
+
+    //t4y: for foreground wallpaper initialize.
+    await foregroundWallpaperHelper.initWallpaperSchedules();
+    await shareCopiedEntries.init();
+
     final currentTimeZoneOffset = await deviceService.getDefaultTimeZoneRawOffsetMillis();
     if (currentTimeZoneOffset != null) {
       final catalogTimeZoneOffset = settings.catalogTimeZoneRawOffsetMillis;

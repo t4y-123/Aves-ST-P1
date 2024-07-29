@@ -6,6 +6,7 @@ import 'package:aves/model/apps.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -13,6 +14,7 @@ import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/foreground_wallpaper_widget_service.dart';
 import 'package:aves/services/global_search.dart';
 import 'package:aves/services/intent_service.dart';
 import 'package:aves/services/widget_service.dart';
@@ -30,6 +32,7 @@ import 'package:aves/widgets/filter_grids/albums_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/intent.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
+import 'package:aves/widgets/settings/foreground_wallpaper_widget_settings_page.dart';
 import 'package:aves/widgets/settings/home_widget_settings_page.dart';
 import 'package:aves/widgets/settings/screen_saver_settings_page.dart';
 import 'package:aves/widgets/viewer/entry_viewer_page.dart';
@@ -40,6 +43,14 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+
+import '../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
+import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
+import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
+import '../model/foreground_wallpaper/share_copied_entry.dart';
+import '../services/common/image_op_events.dart';
+import '../services/media/enums.dart';
+
 
 class HomePage extends StatefulWidget {
   static const routeName = '/';
@@ -63,6 +74,7 @@ class _HomePageState extends State<HomePage> {
   Set<CollectionFilter>? _initialFilters;
   String? _initialExplorerPath;
   List<String>? _secureUris;
+  FgwServiceOpenType? _fgwOpenType;
 
   static const allowedShortcutRoutes = [
     AlbumListPage.routeName,
@@ -112,6 +124,7 @@ class _HomePageState extends State<HomePage> {
       switch (intentAction) {
         case IntentActions.view:
         case IntentActions.widgetOpen:
+        case IntentActions.foregroundWallpaperWidgetOpen:
           String? uri, mimeType;
           final widgetId = intentData[IntentDataKeys.widgetId];
           if (widgetId != null) {
@@ -127,7 +140,12 @@ class _HomePageState extends State<HomePage> {
               case WidgetOpenPage.viewer:
                 uri = settings.getWidgetUri(widgetId);
             }
-            unawaited(WidgetService.update(widgetId));
+            // t4y: for foreground update diff.
+            if (intentAction == IntentActions.widgetOpen) {
+              unawaited(WidgetService.update(widgetId));
+            } else if (intentAction == IntentActions.foregroundWallpaperWidgetOpen) {
+              unawaited(ForegroundWallpaperWidgetService.update(widgetId));
+            }
           } else {
             uri = intentData[IntentDataKeys.uri];
             mimeType = intentData[IntentDataKeys.mimeType];
@@ -142,6 +160,33 @@ class _HomePageState extends State<HomePage> {
               appMode = AppMode.view;
             }
           }
+        case IntentActions.fgwUsedRecordOpen:
+        case IntentActions.fgwUsedViewOpen:
+        case IntentActions.fgwDuplicateOpen:
+          await settings.reload();
+          debugPrint('$runtimeType get into IntentActions $intentAction');
+          _viewerEntry = await _initViewerEntry(
+            uri: settings.getFgwCurEntryUri(WallpaperUpdateType.home, 0),
+            mimeType: settings.getFgwCurEntryMime(WallpaperUpdateType.home, 0),
+          );
+          if (_viewerEntry != null) {
+            switch (intentAction) {
+              case IntentActions.fgwUsedRecordOpen:
+                appMode = AppMode.view;
+                _fgwOpenType = FgwServiceOpenType.usedRecord;
+              case IntentActions.fgwUsedViewOpen:
+                appMode = AppMode.view;
+                _fgwOpenType = FgwServiceOpenType.curFilters;
+              case IntentActions.fgwDuplicateOpen:
+                appMode = AppMode.main;
+                _fgwOpenType = FgwServiceOpenType.shareByCopy;
+                _initialFilters = {AlbumFilter(androidFileUtils.avesShareByCopyPath, null)};
+                _initialRouteName = CollectionPage.routeName;
+              default:
+                break;
+            }
+          }
+          debugPrint('$runtimeType fgw intentActions $intentAction appMode $appMode');
         case IntentActions.edit:
           _viewerEntry = await _initViewerEntry(
             uri: intentData[IntentDataKeys.uri],
@@ -178,6 +223,9 @@ class _HomePageState extends State<HomePage> {
         case IntentActions.widgetSettings:
           _initialRouteName = HomeWidgetSettingsPage.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
+        case IntentActions.foregroundWallpaperWidgetSettings:
+          _initialRouteName = ForegroundWallpaperWidgetSettings.routeName;
+          _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
           final extraRoute = intentData[IntentDataKeys.page];
@@ -187,7 +235,9 @@ class _HomePageState extends State<HomePage> {
       }
       if (_initialFilters == null) {
         final extraFilters = intentData[IntentDataKeys.filters];
-        _initialFilters = extraFilters != null ? (extraFilters as List).cast<String>().map(CollectionFilter.fromJson).whereNotNull().toSet() : null;
+        _initialFilters = extraFilters != null
+            ? (extraFilters as List).cast<String>().map(CollectionFilter.fromJson).whereNotNull().toSet()
+            : null;
       }
       _initialExplorerPath = intentData[IntentDataKeys.explorerPath];
     }
@@ -300,7 +350,11 @@ class _HomePageState extends State<HomePage> {
 
             source.stateNotifier.addListener(_onSourceStateChanged);
             await completer.future;
-
+            switch (_fgwOpenType) {
+              case null:
+              case FgwServiceOpenType.shareByCopy:
+                final album = viewerEntry.directory;
+                if (album != null) {
             collection = CollectionLens(
               source: source,
               filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
@@ -310,14 +364,35 @@ class _HomePageState extends State<HomePage> {
               // - select the sub-entry in the Viewer page.
               stackBursts: false,
             );
+                }
+              case FgwServiceOpenType.usedRecord:
+              case FgwServiceOpenType.curFilters:
+                Set<CollectionFilter> filters = {};
+                if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+                  filters = {FgwUsedFilter.instance};
+                } else {
+                  filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
+                }
+                debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
+                collection = CollectionLens(
+                  source: source,
+                  filters: filters,
+                  listenToSource: false,
+                  // if we group bursts, opening a burst sub-entry should:
+                  // - identify and select the containing main entry,
+                  // - select the sub-entry in the Viewer page.
+                  stackBursts: false,
+                );
+                debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
+            }
             final viewerEntryPath = viewerEntry.path;
-            final collectionEntry = collection.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+            final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
             if (collectionEntry != null) {
               viewerEntry = collectionEntry;
             } else {
               debugPrint('collection does not contain viewerEntry=$viewerEntry');
               collection = null;
-            }
+
           }
         }
 
@@ -349,6 +424,59 @@ class _HomePageState extends State<HomePage> {
         );
 
     final source = context.read<CollectionSource>();
+    switch (_fgwOpenType) {
+      case null:
+      case FgwServiceOpenType.usedRecord:
+      case FgwServiceOpenType.curFilters:
+        break;
+      case FgwServiceOpenType.shareByCopy:
+        if (_viewerEntry != null) {
+          await shareCopiedEntries.init();
+          debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
+          source.pauseMonitoring();
+          final entriesByDestination = <String, Set<AvesEntry>>{};
+          final entries = {_viewerEntry!};
+          entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
+          final destinationAlbums = entriesByDestination.keys.toSet();
+
+          final processed = <MoveOpEvent>{};
+          final completer = Completer<Set<String>>();
+          final opId = mediaEditService.newOpId;
+          mediaEditService
+              .move(
+            opId: opId,
+            entriesByDestination: entriesByDestination,
+            copy: true,
+            // there should be no file conflict, as the target directory itself does not exist
+            nameConflictStrategy: NameConflictStrategy.rename,
+          )
+              .listen(
+            processed.add,
+            onError: completer.completeError,
+            onDone: () async {
+              final successOps = processed.where((e) => e.success).toSet();
+              // mov
+              final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
+              await source.updateAfterMove(
+                todoEntries: entries,
+                moveType: MoveType.shareByCopy,
+                destinationAlbums: destinationAlbums,
+                movedOps: movedOps,
+              );
+              // delete (when trying to move to bin obsolete entries)
+              final deletedOps = successOps.where((v) => v.deleted).toSet();
+              final deletedUris = deletedOps.map((event) => event.uri).toSet();
+              await source.removeEntries(deletedUris, includeTrash: true);
+              source.resumeMonitoring();
+              completer.complete(deletedUris);
+            },
+          );
+          await completer.future;
+          await shareCopiedEntries.add({_viewerEntry!});
+          debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
+        }
+    }
+
     switch (routeName) {
       case AlbumListPage.routeName:
         return buildRoute((context) => const AlbumListPage());
@@ -363,6 +491,10 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:
         return buildRoute((context) => const ScreenSaverSettingsPage());
+      case HomeWidgetSettingsPage.routeName:
+        return buildRoute((context) => HomeWidgetSettingsPage(widgetId: _widgetId!));
+      case ForegroundWallpaperWidgetSettings.routeName:
+        return buildRoute((context) => ForegroundWallpaperWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
         return SearchPageRoute(
           delegate: CollectionSearchDelegate(

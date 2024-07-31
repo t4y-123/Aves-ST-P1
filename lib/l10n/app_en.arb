@@ -1093,7 +1093,7 @@
   "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
   "settingsConfirmationSetDateToNowItems": "Ask before setting items' date to now",
 
-  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake them easier show in others APP recent items.\n\nEverytime make a new share copy, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin is enabled).\n\nYou can change this in settings.\n\nAre you sure continue?",
+  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake easier shown in others APP recent items.\n\nEverytime copied, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin enabled) except in view mode or called by notification.\n\nYou can change some settings.\n\nAre you sure continue?",
   "settingsConfirmationShareByCopy": "Ask before share by copy items",
 
   "filterFgwUsedLabel": "Fgw used entries",

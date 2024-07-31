@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.fgw.*
 import deckers.thibault.aves.ForegroundWallpaperService
+import deckers.thibault.aves.utils.servicePendingIntent
 
 // Define the WallpaperWorker class
 class WallpaperWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
@@ -81,14 +82,13 @@ object WallpaperScheduleHelper {
         }
 
         // Set a new AlarmManager
-        val intent = Intent(context, ForegroundWallpaperService::class.java).apply {
-            action = FgwIntentAction.NEXT
+        val newPendingIntent = context.servicePendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT,key.hashCode())
+      if (newPendingIntent != null){
+            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
+            Log.d(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled with key $key and schedule.interval ${schedule.interval}")
+        }else{
+            Log.e(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled newPendingIntent key:$key")
         }
-
-        val newPendingIntent = PendingIntent.getService(context, key.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
-//        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
-        alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
-        Log.d(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled with key $key and schedule.interval ${schedule.interval}")
     }
 
     private fun cancelAlarmWork(context: Context, key: String) {
@@ -122,11 +122,8 @@ object WallpaperScheduleHelper {
 
     private fun getPendingIntent(context: Context, key: String): PendingIntent? {
         Log.d(LOG_TAG, "getPendingIntent key [${key}] key.hashCode() [${key.hashCode()}] context [$context]")
-        val intent = Intent(context, ForegroundWallpaperService::class.java).apply {
-            action = FgwIntentAction.NEXT
-        }
-        val returnPendingIntent = PendingIntent.getService(context, key.hashCode(), intent, PendingIntent.FLAG_NO_CREATE)
-        Log.d(LOG_TAG, "getPendingIntent returnPendingIntent [${returnPendingIntent}] ")
+        val returnPendingIntent = context.servicePendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT,key.hashCode())
+       Log.d(LOG_TAG, "getPendingIntent returnPendingIntent [${returnPendingIntent}] ")
         return returnPendingIntent
     }
 

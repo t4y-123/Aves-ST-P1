@@ -361,7 +361,10 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     bool hideShowAction = false,
     VoidCallback? onSuccess,
     bool isShareByCopyDelete =false,
+    bool shareByCopyNeedRemove = true,
   }) async {
+    final isViewerMode = context.read<ValueNotifier<AppMode>>().value == AppMode.view;
+    debugPrint('$runtimeType doMove in viewerMode?[$isViewerMode]:${context.read<ValueNotifier<AppMode>>().value}');
     if (moveType == MoveType.toBin && !isShareByCopyDelete) {
       final l10n = context.l10n;
       if (!await showSkippableConfirmationDialog(
@@ -372,7 +375,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       )) return;
     }
     // t4y delete the expired items first.
-    if (moveType == MoveType.shareByCopy) {
+    // when share by copy in viewer mode, not need to delete pre.
+    if (moveType == MoveType.shareByCopy && shareByCopyNeedRemove &&!isViewerMode) {
       await deleteExpiredShareCopied(context);
     }
 

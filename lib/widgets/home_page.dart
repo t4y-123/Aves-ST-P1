@@ -48,8 +48,7 @@ import '../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
 import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
 import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
 import '../model/foreground_wallpaper/share_copied_entry.dart';
-import '../services/common/image_op_events.dart';
-import '../services/media/enums.dart';
+import 'collection/entry_set_action_delegate.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -446,43 +445,12 @@ class _HomePageState extends State<HomePage> {
           source.pauseMonitoring();
           final entriesByDestination = <String, Set<AvesEntry>>{};
           final entries = {_viewerEntry!};
-          entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
-          final destinationAlbums = entriesByDestination.keys.toSet();
+          // t4y: for every time only copy one entry,
+          // it is more natural not remove pre copied to accumulate more item to share.
+          await EntrySetActionDelegate().doMove(context, moveType: MoveType.shareByCopy,
+              entries: entries,shareByCopyNeedRemove:false);
 
-          final processed = <MoveOpEvent>{};
-          final completer = Completer<Set<String>>();
-          final opId = mediaEditService.newOpId;
-          mediaEditService
-              .move(
-            opId: opId,
-            entriesByDestination: entriesByDestination,
-            copy: true,
-            // there should be no file conflict, as the target directory itself does not exist
-            nameConflictStrategy: NameConflictStrategy.rename,
-          )
-              .listen(
-            processed.add,
-            onError: completer.completeError,
-            onDone: () async {
-              final successOps = processed.where((e) => e.success).toSet();
-              // mov
-              final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
-              await source.updateAfterMove(
-                todoEntries: entries,
-                moveType: MoveType.shareByCopy,
-                destinationAlbums: destinationAlbums,
-                movedOps: movedOps,
-              );
-              // delete (when trying to move to bin obsolete entries)
-              final deletedOps = successOps.where((v) => v.deleted).toSet();
-              final deletedUris = deletedOps.map((event) => event.uri).toSet();
-              await source.removeEntries(deletedUris, includeTrash: true);
-              source.resumeMonitoring();
-              completer.complete(deletedUris);
-            },
-          );
-          await completer.future;
-          await shareCopiedEntries.add({_viewerEntry!});
+          entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
           debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
         }
     }

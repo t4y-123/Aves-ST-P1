@@ -59,7 +59,7 @@ object FgwConstant {
 }
 
 // Data classes to represent the complex objects
-data class PrivacyGuardLevelRow(val id: Int, val level: Int, val name: String, val color: Int)
+data class PrivacyGuardLevelRow(val id: Int, val level: Int, val name: String, val color: Int,val isActive: Boolean)
 data class WallpaperScheduleRow(
     val id: Int, val order: Int, val labelName: String, val guardLevelId: Int, val filtersSetId: Int,
     val updateType: String, val widgetId: Int,val displayType:String, val interval: Int, val isActive: Boolean

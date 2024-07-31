@@ -63,7 +63,10 @@ class ForegroundWallpaperTileService : TileService() {
             ForegroundWallpaperService.stop(this)
             tile.state = Tile.STATE_INACTIVE
             Log.d(LOG_TAG, "Tile unavailable, stopping service and setting tile state to inactive")
-        } 
+        }
+        if (tile.state == Tile.STATE_ACTIVE) {
+            WallpaperScheduleHelper.handleSchedules(tileServiceContext, FgwServiceFlutterHandler.scheduleList)
+        }
         if (getIsTileClickRunning(this)) {
             ForegroundWallpaperService.startForeground(this)
             tile.state = Tile.STATE_ACTIVE

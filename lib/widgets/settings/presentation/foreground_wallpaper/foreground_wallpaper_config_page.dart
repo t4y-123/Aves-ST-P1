@@ -86,6 +86,7 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
           activeItems: _activeWallpaperSchedules,
           title: (item) => Text(item?.labelName ?? 'Empty'),
           applyChangesAction: _wallpaperSchedulesActions.applyWallpaperScheduleReorder,
+          editAction:_wallpaperSchedulesActions.editWallpaperSchedule,
           canRemove: false,
           bannerString: l10n.settingsFgwScheduleBanner,
         ),

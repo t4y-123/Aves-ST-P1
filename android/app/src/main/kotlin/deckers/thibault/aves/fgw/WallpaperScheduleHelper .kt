@@ -86,8 +86,9 @@ object WallpaperScheduleHelper {
         }
 
         val newPendingIntent = PendingIntent.getService(context, key.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
-        Log.d(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled with key $key")
+//        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
+        alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
+        Log.d(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled with key $key and schedule.interval ${schedule.interval}")
     }
 
     private fun cancelAlarmWork(context: Context, key: String) {

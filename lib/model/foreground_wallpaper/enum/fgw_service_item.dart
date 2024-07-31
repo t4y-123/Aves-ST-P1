@@ -15,7 +15,7 @@ extension ExtraFgwSyncItem on FgwSyncItem {
     // TODO: Handle this case.
       FgwSyncItem.curLevel => (await fgwScheduleHelper.getCurGuardLevel()).guardLevel.toString(),
       FgwSyncItem.activeLevels => privacyGuardLevels.all.where((e) => e.isActive).toList().toString(),
-      FgwSyncItem.schedules => (await fgwScheduleHelper.getCurSchedules(curPrivacyGuardLevel: curPrivacyGuardLevel)).toList().toString(),
+      FgwSyncItem.schedules => (await fgwScheduleHelper.getCurActiveSchedules(curPrivacyGuardLevel: curPrivacyGuardLevel)).toList().toString(),
     // TODO: Handle this case.
       FgwSyncItem.curEntryName => (await fgwScheduleHelper.getCurEntry(source!, updateType!,
           widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel)).filenameWithoutExtension.toString(),

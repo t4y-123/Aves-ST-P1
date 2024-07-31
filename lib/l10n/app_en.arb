@@ -1129,7 +1129,7 @@
 
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsForegroundWallpaperConfigBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
-  "settingsFgwScheduleBanner": "Can only edit schedule in guard level edit page.",
+  "settingsFgwScheduleBanner": "Can only remove schedule in guard level edit page.",
   "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
   "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
   "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
@@ -1142,7 +1142,7 @@
   "guardLevelNamePrefix": "Level",
   "renameLabelNameTileTitle": "Label Name",
   "renameLabelNameDialogLabel": "New name",
-  "renameLabelNameDialogLabelAlreadyExistsHelper": "No need to name a same name",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "Illegal same name or contain char ','",
   "settingsCopySchedulesFromExist": "Copy schedules from exist ",
   "settingsGuardLevelColor": "Color:",
   "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
@@ -1166,7 +1166,7 @@
   "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
   "settingsSelectOneGuardLevelTitle": "Select one guard level",
   "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
-  "settingsWallpaperUpdateFixedInterval": "Fixed Interval\n( >=3s ): ",
+  "settingsWallpaperUpdateFixedInterval": "Inexact Fixed\n( >3s ): ",
 
   "fgwDisplayType": "Display Type",
   "fgwDisplayRandom": "Random",

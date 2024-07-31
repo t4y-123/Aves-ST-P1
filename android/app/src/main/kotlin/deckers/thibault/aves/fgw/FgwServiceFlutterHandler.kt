@@ -146,59 +146,94 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    private fun handleSyncFromDartToNative(context: Context,call: MethodCall, result: MethodChannel.Result) {
+    private fun handleSyncFromDartToNative(context: Context, call: MethodCall, result: MethodChannel.Result) {
         Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call")
         Log.d(LOG_TAG, "handleSyncFromDartToNative:start ${call.arguments}")
         defaultScope.launch {
-            // Current guard level
-            val tmpCurGuardLevel = call.argument<String>(FgwConstant.CUR_LEVEL)
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpCurGuardLevel ${tmpCurGuardLevel}")
+            try {
+                // Current guard level
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal tmpCurGuardLevel\n")
+                val tmpCurGuardLevel = call.argument<String>(FgwConstant.CUR_LEVEL)
 
-            // Active levels
-            val activeLevelsString = call.argument<String>(FgwConstant.ACTIVE_LEVELS)
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString ${activeLevelsString}")
-            if (tmpCurGuardLevel != null && activeLevelsString != null) {
-                curGuardLevel = tmpCurGuardLevel.toInt()
-                FgwSeviceNotificationHandler.guardLevel = curGuardLevel
-                activeLevelsList = parseActiveLevelsString(activeLevelsString)
+                // Active levels
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal activeLevelsString\n")
+                val activeLevelsString = call.argument<String>(FgwConstant.ACTIVE_LEVELS)
+                if (tmpCurGuardLevel != null && activeLevelsString != null) {
+                    Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpCurGuardLevel $tmpCurGuardLevel")
+                    Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString $activeLevelsString")
+
+                    curGuardLevel = tmpCurGuardLevel.toInt()
+                    FgwSeviceNotificationHandler.guardLevel = curGuardLevel
+                    activeLevelsList = parseActiveLevelsString(activeLevelsString)
+                } else {
+                    Log.e(LOG_TAG, "Guard level or active levels string is null")
+                }
+
+                // Current entry file name
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Current entry file name\n")
+                val tmpEntryFileName = call.argument<String>(FgwConstant.CUR_ENTRY_NAME)
+                if (tmpEntryFileName != null) {
+                    Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpEntryFileName $tmpEntryFileName")
+                    entryFilename = tmpEntryFileName
+                } else {
+                    Log.e(LOG_TAG, "Entry file name is null")
+                }
+
+                // Schedules
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
+                val schedulesString = call.argument<String>(FgwConstant.SCHEDULES)
+                if (schedulesString != null) {
+                    Log.d(LOG_TAG, "handleSyncFromDartToNative:schedulesString $schedulesString")
+                    scheduleList = parseSchedulesString(schedulesString)
+                    WallpaperScheduleHelper.handleSchedules(context, scheduleList)
+                } else {
+                    Log.e(LOG_TAG, "Schedules string is null")
+                }
+
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel")
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsList $activeLevelsList")
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:entryFilename $entryFilename")
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:scheduleList $scheduleList")
+
+                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+                result.success(true)
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Exception in handleSyncFromDartToNative", e)
+                result.error("ERROR", "Exception in handleSyncFromDartToNative: ${e.message}", e)
             }
-
-            // Current entry file name
-            val tmpEntryFileName = call.argument<String>(FgwConstant.CUR_ENTRY_NAME)
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpEntryFileName ${tmpEntryFileName}")
-            if (tmpEntryFileName != null) {
-                entryFilename = tmpEntryFileName
-            }
-
-            // Schedules
-            val schedulesString = call.argument<String>(FgwConstant.SCHEDULES)
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:schedulesString $schedulesString")
-            if (schedulesString != null) {
-                scheduleList =  parseSchedulesString(schedulesString)
-                WallpaperScheduleHelper.handleSchedules(context,scheduleList)
-            }
-
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel")
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsList $activeLevelsList")
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:entryFilename $entryFilename")
-            Log.d(LOG_TAG, "handleSyncFromDartToNative:scheduleList $scheduleList")
-
-            FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
-            result.success(true)
         }
     }
 
-    private fun parseActiveLevelsString(activeLevelsString: String): List<PrivacyGuardLevelRow> {
-        return activeLevelsString.removePrefix("[").removeSuffix("]")
-            .split("), ")
-            .map { item ->
-                val parts = item.removePrefix("PrivacyGuardLevelRow(").removeSuffix(")").split(", ")
-                val id = parts[0].toInt()
-                val level = parts[1].toInt()
-                val name = parts[2]
-                val color = parseColorString(parts[3]) ?: 0
-                PrivacyGuardLevelRow(id, level, name, color)
+    fun parseActiveLevelsString(activeLevelsString: String): List<PrivacyGuardLevelRow> {
+        // Remove the surrounding brackets and split the string
+        val cleanedString = activeLevelsString.removePrefix("activeLevelsString [").removeSuffix("]")
+        val items = cleanedString.split("), PrivacyGuardLevelRow(")
+        Log.d(LOG_TAG, "parseActiveLevelsString:items $items")
+        val parsedItems = mutableListOf<PrivacyGuardLevelRow>()
+        for ((index, item) in items.withIndex()) {
+            val actualItem = when {
+                index == 0 -> item.removePrefix("[PrivacyGuardLevelRow(")
+                index == items.size - 1 -> item.removeSuffix(")")
+                else -> item
             }
+            val parts = actualItem.split(", ")
+            Log.d(LOG_TAG, "parseActiveLevelsString:parts $parts")
+            if (parts.size == 5) {
+                try {
+                    val id = parts[0].toInt()
+                    val level = parts[1].toInt()
+                    val name = parts[2]
+                    val color = parseColorString(parts[3]) ?: 0
+                    val active = parts[4].toBoolean()
+                    val privacyGuardLevelRow = PrivacyGuardLevelRow(id, level, name, color, active)
+                    parsedItems.add(privacyGuardLevelRow)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // Handle parsing errors if necessary
+                }
+            }
+        }
+        return parsedItems
     }
 
     private fun parseColorString(colorString: String?): Int? {
@@ -232,7 +267,7 @@ object FgwServiceFlutterHandler {
                 val order = parts[1].toInt()
                 val label = parts[2]
                 val guardLevelId = parts[3].toInt()
-                val scheduleId = parts[4].toInt()
+                val filterSetId = parts[4].toInt()
                 val updateType = parts[5]
                 val widgetId = parts[6].toInt()
                 val displayType = parts[7]
@@ -243,7 +278,7 @@ object FgwServiceFlutterHandler {
                     order,
                     label,
                     guardLevelId,
-                    scheduleId,
+                    filterSetId,
                     updateType,
                     widgetId,
                     displayType,

@@ -83,6 +83,15 @@ class FgwScheduleHelper {
     return curSchedules;
   }
 
+  Future<Set<WallpaperScheduleRow>> getCurActiveSchedules({PrivacyGuardLevelRow? curPrivacyGuardLevel,ScheduleRowType rowsType = ScheduleRowType.all}) async {
+    curPrivacyGuardLevel ??= await getCurGuardLevel();
+    final targetSet = wallpaperSchedules.getAll(rowsType);
+    final curSchedules = targetSet.where((e) => e.privacyGuardLevelId == curPrivacyGuardLevel?.privacyGuardLevelID
+        && e.isActive).toSet();
+    debugPrint('$runtimeType getScheduleEntries \n curPrivacyGuardLevel $curPrivacyGuardLevel \n curSchedules :$curSchedules');
+    return curSchedules;
+  }
+
   Future<List<AvesEntry>> getScheduleEntries(CollectionSource source, WallpaperUpdateType updateType,
       {int widgetId =0 ,PrivacyGuardLevelRow? curPrivacyGuardLevel}) async {
     curPrivacyGuardLevel ??= await getCurGuardLevel();
@@ -138,21 +147,21 @@ class FgwScheduleHelper {
     entries ??= await getScheduleEntries(source,updateType);
     recentUsedEntryRecord ??= await getRecentEntryRecord(updateType);
     final curEntryId = settings.getFgwCurEntryId(updateType, widgetId);
-    final curEntry = entries?.firstWhereOrNull((entry) => entry.id == curEntryId);
-    final mostRecentUsedEntryRecord = recentUsedEntryRecord?.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b);
+    final curEntry = entries.firstWhereOrNull((entry) => entry.id == curEntryId);
+    final mostRecentUsedEntryRecord = recentUsedEntryRecord.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b);
 
     if (curEntry == null) {
-      previousEntry = entries?.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord!.entryId);
+      previousEntry = entries.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord.entryId);
     } else {
-      final curUsedRecord = recentUsedEntryRecord?.firstWhereOrNull((usedEntry) => usedEntry.entryId == curEntryId);
+      final curUsedRecord = recentUsedEntryRecord.firstWhereOrNull((usedEntry) => usedEntry.entryId == curEntryId);
       if (curUsedRecord != null) {
-        final olderEntries = recentUsedEntryRecord?.where((usedEntry) => usedEntry.dateMillis < curUsedRecord.dateMillis);
-        final mostRecentOlderEntry = olderEntries!.isNotEmpty ? olderEntries.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b) : null;
-        if (entries!.isNotEmpty) {
+        final olderEntries = recentUsedEntryRecord.where((usedEntry) => usedEntry.dateMillis < curUsedRecord.dateMillis);
+        final mostRecentOlderEntry = olderEntries.isNotEmpty ? olderEntries.reduce((a, b) => a.dateMillis > b.dateMillis ? a : b) : null;
+        if (entries.isNotEmpty) {
           previousEntry = entries.firstWhere((entry) => entry.id == mostRecentOlderEntry?.entryId);
         }
       } else {
-        previousEntry = entries?.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord!.entryId);
+        previousEntry = entries.firstWhere((entry) => entry.id == mostRecentUsedEntryRecord.entryId);
       }
     }
     return previousEntry;

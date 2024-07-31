@@ -56,7 +56,7 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
           id: item!.id,
           isActive: true,
           orderNum: orderNum++,
-          labelName: '',
+          labelName: item.labelName,
           privacyGuardLevelId: item.privacyGuardLevelId,
           filtersSetId: item.filtersSetId,
           updateType: item.updateType,
@@ -73,7 +73,7 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
           id: item!.id,
           isActive: false,
           orderNum: orderNum++,
-          labelName: '',
+          labelName: item.labelName,
           privacyGuardLevelId: item.privacyGuardLevelId,
           filtersSetId: item.filtersSetId,
           updateType: item.updateType,
@@ -135,7 +135,7 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
   void editWallpaperSchedule(BuildContext context, WallpaperScheduleRow? item, List<WallpaperScheduleRow?> allItems,
       Set<WallpaperScheduleRow?> activeItems) {
     //t4y: for the all items in Config page will not be the latest data.
-    final WallpaperScheduleRow currentItem = wallpaperSchedules.bridgeAll.firstWhere((i) => i?.id == item!.id);
+    final WallpaperScheduleRow currentItem = wallpaperSchedules.bridgeAll.firstWhere((i) => i.id == item!.id);
     final curLevel =
     privacyGuardLevels.bridgeAll.firstWhereOrNull((e) => e.privacyGuardLevelID == currentItem.privacyGuardLevelId);
     if (curLevel != null) {
@@ -145,11 +145,11 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
           builder: (context) =>
               GuardLevelScheduleSubPage(
                 item: curLevel,
-                schedule: currentItem!,
+                schedule: currentItem,
               ),
         ),
       ).then((updatedItem) {
-        final WallpaperScheduleRow currentItem = wallpaperSchedules.bridgeAll.firstWhere((i) => i?.id == item!.id);
+        final WallpaperScheduleRow currentItem = wallpaperSchedules.bridgeAll.firstWhere((i) => i.id == item!.id);
         updatedItem = currentItem;
         if (updatedItem != null) {
           setState(() {
@@ -160,11 +160,26 @@ class WallpaperScheduleConfigActions with FeedbackMixin {
               allItems.add(updatedItem);
             }
             if (updatedItem.isActive) {
+              // Handle WallpaperScheduleRow specific logic
+              final row = updatedItem as WallpaperScheduleRow;
+              if (row.updateType == WallpaperUpdateType.home || row.updateType == WallpaperUpdateType.lock) {
+                // Remove items with the same privacyGuardLevelId
+                activeItems.removeWhere((element) =>
+                element is WallpaperScheduleRow &&
+                    element.privacyGuardLevelId == row.privacyGuardLevelId &&
+                    (element.updateType == WallpaperUpdateType.both));
+              } else if (row.updateType == WallpaperUpdateType.both) {
+                // Remove items with the same privacyGuardLevelId and updateType is home or lock
+                activeItems.removeWhere((element) =>
+                element is WallpaperScheduleRow &&
+                    element.privacyGuardLevelId == row.privacyGuardLevelId &&
+                    (element.updateType == WallpaperUpdateType.home ||
+                        element.updateType == WallpaperUpdateType.lock));
+              }
               activeItems.add(updatedItem);
             } else {
               activeItems.remove(updatedItem);
             }
-            wallpaperSchedules.setRows({updatedItem});
           });
         }
       });

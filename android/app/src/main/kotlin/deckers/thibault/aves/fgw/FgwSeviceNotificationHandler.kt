@@ -197,6 +197,7 @@ object FgwSeviceNotificationHandler {
 
         val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.level }?.level ?: 1
         val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.level }?.level ?: 1
+        Log.d(LOG_TAG, "updateGuardLeve minLevel ${minLevel} maxLevell: $maxLevel)")
 
         if(canChangeLevel){
             guardLevel = when {

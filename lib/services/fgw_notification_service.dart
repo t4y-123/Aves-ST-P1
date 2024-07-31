@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/media_store_source.dart';
 import 'package:aves/services/common/services.dart';
@@ -130,8 +131,8 @@ class FgwServiceHelper with FeedbackMixin{
     await _initDependencies();
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
-
-    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType);
+    final curLevel = await fgwScheduleHelper.getCurGuardLevel();
+    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType,curPrivacyGuardLevel: curLevel);
     if(entries.isEmpty){
       final guardLevel = await fgwScheduleHelper.getCurGuardLevel();
       final emptyMessage = _l10n.fgwScheduleEntryEmptyMessage('Level[${guardLevel.guardLevel}][$updateType]');
@@ -139,7 +140,16 @@ class FgwServiceHelper with FeedbackMixin{
       return Future.value(false);
     }
     final recentUsedEntryRecord = await fgwScheduleHelper.getRecentEntryRecord(updateType);
-    entries.sort(AvesEntrySort.compareByDate);
+
+    final curDisplayType = wallpaperSchedules.all.firstWhereOrNull((e)=>e.privacyGuardLevelId ==curLevel.privacyGuardLevelID)?.displayType;
+    if(curDisplayType!= null){
+      switch(curDisplayType){
+        case FgwDisplayedType.random:
+          entries.shuffle();
+        case FgwDisplayedType.mostRecent:
+          entries.sort(AvesEntrySort.compareByDate);
+      }
+    }
     debugPrint('$runtimeType entries [$entries]');
 
     AvesEntry? targetEntry;

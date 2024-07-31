@@ -22,7 +22,7 @@ class SettingsDefaults {
   // display
   static const displayRefreshRateMode = DisplayRefreshRateMode.auto;
   // static const themeBrightness = AvesThemeBrightness.system;
-  static const themeBrightness = AvesThemeBrightness.dark; // t4y temp set false accept for test
+  static const themeBrightness = AvesThemeBrightness.system;
   static const themeColorMode = AvesThemeColorMode.polychrome;
   static const enableDynamicColor = false;
   static const enableBlurEffect = true; // `enableBlurEffect` has a contextual default value

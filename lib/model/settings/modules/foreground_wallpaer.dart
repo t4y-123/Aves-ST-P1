@@ -73,6 +73,18 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   bool get shareByCopyExpiredRemoveUseBin => getBool(shareByCopyExpiredRemoveUseBinKey) ?? SettingsDefaults.shareByCopyExpiredRemoveUseBin;
   set shareByCopyExpiredRemoveUseBin(bool newValue) => set(shareByCopyExpiredRemoveUseBinKey, newValue);
 
+  static const shareByCopyCollectionPageAutoRemoveKey = 'share_by_copy_collection_page_auto_remove';
+  bool get shareByCopyCollectionPageAutoRemove => getBool(shareByCopyCollectionPageAutoRemoveKey) ?? SettingsDefaults.shareByCopyCollectionPageAutoRemove;
+  set shareByCopyCollectionPageAutoRemove(bool newValue) => set(shareByCopyCollectionPageAutoRemoveKey, newValue);
+
+  static const shareByCopyViewerPageAutoRemoveKey = 'share_by_copy_viewer_page_auto_remove';
+  bool get shareByCopyViewerPageAutoRemove => getBool(shareByCopyViewerPageAutoRemoveKey) ?? SettingsDefaults.shareByCopyViewerPageAutoRemove;
+  set shareByCopyViewerPageAutoRemove(bool newValue) => set(shareByCopyViewerPageAutoRemoveKey, newValue);
+
+  static const shareByCopyAppModeViewAutoRemoveKey = 'share_by_copy_app_mode_view_auto_remove';
+  bool get shareByCopyAppModeViewAutoRemove => getBool(shareByCopyAppModeViewAutoRemoveKey) ?? SettingsDefaults.shareByCopyAppModeViewAutoRemove;
+  set shareByCopyAppModeViewAutoRemove(bool newValue) => set(shareByCopyAppModeViewAutoRemoveKey, newValue);
+
   static const shareByCopyRemoveIntervalKey = 'share_by_copy_remove_interval';
   int get shareByCopyRemoveInterval => getInt(shareByCopyRemoveIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
   set shareByCopyRemoveInterval(int newValue) => set(shareByCopyRemoveIntervalKey, newValue);

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../model/foreground_wallpaper/fgw_schedule_group_helper.dart';
 import '../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
 import '../../../../model/settings/settings.dart';
+import '../../../../services/fgw_service_handler.dart';
 import '../../common/tiles.dart';
 
 
@@ -79,6 +80,30 @@ class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
             },
             tileTitle: context.l10n.settingsSetAllFgwScheduleDisplayType,
             dialogTitle:context.l10n.settingsSetAllFgwScheduleDisplayType,
+          ),
+          ListTile(
+            title: Text('${l10n.settingsFgwScheduleSyncButtonText} '),
+            trailing: ElevatedButton(
+              onPressed: () async {
+                await ForegroundWallpaperService.syncFgwScheduleChanges();
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text(context.l10n.settingsFgwScheduleSyncButtonText),
+                      content: Text(context.l10n.settingsFgwScheduleSyncButtonAlert),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(context.l10n.applyTooltip),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(l10n.applyButtonLabel),
+            ),
           ),
           ListTile(
             title: Text(l10n.settingsClearRecentUsedEntryRecord),

@@ -376,7 +376,9 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     }
     // t4y delete the expired items first.
     // when share by copy in viewer mode, not need to delete pre.
-    if (moveType == MoveType.shareByCopy && shareByCopyNeedRemove &&!isViewerMode) {
+    final needRemoveExpired = ((isViewerMode && settings.shareByCopyAppModeViewAutoRemove)
+        || shareByCopyNeedRemove);
+    if (moveType == MoveType.shareByCopy && needRemoveExpired) {
       await deleteExpiredShareCopied(context);
     }
 

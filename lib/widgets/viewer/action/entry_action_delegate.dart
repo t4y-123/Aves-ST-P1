@@ -450,6 +450,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         context,
         moveType: moveType,
         entries: {targetEntry},
+        shareByCopyNeedRemove: (settings.shareByCopyExpiredAutoRemove && settings.shareByCopyViewerPageAutoRemove)
       );
 
   Future<void> _convert(BuildContext context, AvesEntry targetEntry) async {

@@ -57,9 +57,9 @@ class SettingsDefaults {
   ];
   // t4y: for some app, the share way never get the original as-si pic.They will compress the pic.
   static const collectionSelectionQuickActions = [
-    EntrySetAction.shareByCopy,
-    EntrySetAction.shareByDateNow,
     EntrySetAction.delete,
+    EntrySetAction.shareByDateNow,
+    EntrySetAction.shareByCopy,
   ];
   // t4y: collectionSelectionQuickActions pre value
   // static const collectionSelectionQuickActions = [
@@ -82,11 +82,11 @@ class SettingsDefaults {
   // viewer ,
   // t4y: personal prefer value
   static const viewerQuickActions = [
+    EntryAction.delete,
     EntryAction.rotateScreen,
     EntryAction.toggleFavourite,
-    EntryAction.shareByCopy,
     EntryAction.shareByDateNow,
-    EntryAction.delete,
+    EntryAction.shareByCopy,
   ];
   // t4y: pre value.
   // static const viewerQuickActions = [
@@ -178,6 +178,11 @@ class SettingsDefaults {
   static const confirmShareByCopy = true;
   static const shareByCopyExpiredAutoRemove = true;
   static const shareByCopyExpiredRemoveUseBin = true;
+  // t4y: in collection page, default auto remove. in viewer page or view mode,
+  // it is fine copied one by one to accumulate many to share.
+  static const shareByCopyCollectionPageAutoRemove = true;
+  static const shareByCopyViewerPageAutoRemove = false;
+  static const shareByCopyAppModeViewAutoRemove = false;
   static const shareByCopyRemoveInterval = 5; // seconds
 
 }

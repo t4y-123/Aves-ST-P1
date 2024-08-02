@@ -35,6 +35,21 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
               onChanged: (v) => settings.shareByCopyExpiredAutoRemove = v,
               title: l10n.settingsShareByCopyAutoRemove,
             ),
+            SettingsSwitchListTile(
+              selector: (context, s) => s.shareByCopyCollectionPageAutoRemove,
+              onChanged: (v) => settings.shareByCopyCollectionPageAutoRemove = v,
+              title: l10n.settingsShareByCopyCollectionPageAutoRemove,
+            ),
+            SettingsSwitchListTile(
+              selector: (context, s) => s.shareByCopyViewerPageAutoRemove,
+              onChanged: (v) => settings.shareByCopyViewerPageAutoRemove = v,
+              title: l10n.settingsShareByCopyViewerPageAutoRemove,
+            ),
+            SettingsSwitchListTile(
+              selector: (context, s) => s.shareByCopyAppModeViewAutoRemove,
+              onChanged: (v) => settings.shareByCopyAppModeViewAutoRemove = v,
+              title: l10n.settingsShareByCopyAppModeViewAutoRemove,
+            ),
             if(settings.enableBin) SettingsSwitchListTile(
               selector: (context, s) => s.shareByCopyExpiredRemoveUseBin,
               onChanged: (v) => settings.shareByCopyExpiredRemoveUseBin = v,

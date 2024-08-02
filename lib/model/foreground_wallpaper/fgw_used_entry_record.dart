@@ -69,7 +69,6 @@ class FgwUsedEntryRecord with ChangeNotifier {
       entryId: entryId,
       dateMillis: dateMillis,
     );
-    debugPrint('$runtimeType set  FgwUsedEntryRecordRow  $row');
     _rows.add(row);
     await _removeOldestEntries();
     await metadataDb.addFgwUsedEntryRecord({row});
@@ -86,7 +85,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
   }
 
   Future<void> removeEntryIds(Set<int> rowIds) async {
-    debugPrint('$runtimeType removeFgwUsedEntryRecord ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
+    //debugPrint('$runtimeType removeFgwUsedEntryRecord ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
     final removedRows = _rows.where((row) => rowIds.contains(row.entryId)).toSet();
     await metadataDb.removeFgwUsedEntryRecord(removedRows);
     removedRows.forEach(_rows.remove);
@@ -101,7 +100,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
   }
 
   Future<void> _removeOldestEntries() async {
-    debugPrint('_removeOldestEntries start');
+    //debugPrint('_removeOldestEntries start');
     final Map<String, List<FgwUsedEntryRecordRow>> groupedRows = {};
     if (_rows.isNotEmpty) {
       // Group rows by key excluding entryId
@@ -118,11 +117,9 @@ class FgwUsedEntryRecord with ChangeNotifier {
         var entryIds = <int>{};
         rows.removeWhere((row) {
           if (entryIds.contains(row.entryId)) {
-            debugPrint('_removeOldestEntries remove (${row.entryId}); $groupedRows');
             return true;
           } else {
             entryIds.add(row.entryId);
-            //debugPrint('_removeOldestEntries entryIds.add(${row.entryId});  $groupedRows');
             return false;
           }
         });
@@ -139,7 +136,6 @@ class FgwUsedEntryRecord with ChangeNotifier {
             return 0;
           });
           final rowsToRemove = rows.sublist(0, rows.length - settings.maxFgwUsedEntryRecord);
-          debugPrint('_removeOldestEntries rowsToRemove $rowsToRemove');
           await metadataDb.removeFgwUsedEntryRecord(rowsToRemove.toSet());
           _rows.removeAll(rowsToRemove);
         }
@@ -172,15 +168,12 @@ class FgwUsedEntryRecord with ChangeNotifier {
 
   Future<void> addAvesEntry(AvesEntry entry, WallpaperUpdateType updateType,
       {int widgetId = 0, PrivacyGuardLevelRow? curLevel}) async {
-    debugPrint('addAvesEntry newRow $entry \n $updateType ');
     curLevel ??= await fgwScheduleHelper.getCurGuardLevel();
-    debugPrint('addAvesEntry curLevel $curLevel');
     final FgwUsedEntryRecordRow newRecord = await newRow(
       curLevel!.privacyGuardLevelID,
       updateType,
       entry.id,
     );
-    debugPrint('nextWallpaper newRow $newRecord');
     await add({newRecord});
   }
 }

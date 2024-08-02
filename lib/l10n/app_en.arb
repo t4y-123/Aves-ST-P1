@@ -1084,6 +1084,9 @@
   "settingsShowAvesShareCopiedItems": "Show Aves share copied items dir",
   "settingsShareByCopyAutoRemove": "Auto remove expired copied items",
   "settingsShareByCopyAutoRemoveUseBin": "Use bin when remove expired copied items",
+  "settingsShareByCopyCollectionPageAutoRemove": "Remove expired in launch collection page after copied",
+  "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
+  "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
   "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
   "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
 
@@ -1101,10 +1104,10 @@
 
 
   "settingsPresentationSectionTitle": "Presentation",
-  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
-  "settingsPresentationForegroundWallpaperConfigTile": "Foreground Wallpaper Config",
+  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper schedules config",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Schedules Config",
 
-  "settingsPresentationWallpaperAddDefaultScheduleTile": "Manage wallpaper schedules",
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Group manage wallpaper schedules",
   "settingsWallpaperSchedulesManagerTitle": "Manage Wallpaper Schedules",
 
 

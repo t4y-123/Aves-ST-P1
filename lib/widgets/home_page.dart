@@ -448,7 +448,7 @@ class _HomePageState extends State<HomePage> {
           // t4y: for every time only copy one entry,
           // it is more natural not remove pre copied to accumulate more item to share.
           await EntrySetActionDelegate().doMove(context, moveType: MoveType.shareByCopy,
-              entries: entries,shareByCopyNeedRemove:false);
+              entries: entries,shareByCopyNeedRemove:settings.shareByCopyAppModeViewAutoRemove);
 
           entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
           debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');

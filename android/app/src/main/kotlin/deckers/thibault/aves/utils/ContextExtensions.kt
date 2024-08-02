@@ -7,6 +7,7 @@ import android.app.Activity
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.app.PendingIntent.FLAG_NO_CREATE
 import android.app.PendingIntent.getActivity
 import android.app.PendingIntent.getBroadcast
 import android.app.PendingIntent.getService
@@ -60,6 +61,25 @@ inline fun <reified T : Service> Context.servicePendingIntent(
     }
     return getService(this, requestCode, intent, flags)
 }
+
+
+@SuppressLint("UnspecifiedImmutableFlag")
+inline fun <reified T : Service> Context.getExistingPendingIntent(
+    action: String,
+    requestCode: Int = 0,
+    configIntent: Intent.() -> Unit = {}
+): PendingIntent? {
+    val intent = Intent(this, T::class.java)
+    intent.action = action
+    configIntent.invoke(intent)
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        FLAG_NO_CREATE  or FLAG_MUTABLE
+    } else {
+        FLAG_NO_CREATE
+    }
+    return getService(this, requestCode, intent, flags)
+}
+
 
 @SuppressLint("UnspecifiedImmutableFlag")
 fun Context.activityPendingIntent(

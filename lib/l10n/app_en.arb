@@ -1142,7 +1142,7 @@
   "guardLevelNamePrefix": "Level",
   "renameLabelNameTileTitle": "Label Name",
   "renameLabelNameDialogLabel": "New name",
-  "renameLabelNameDialogLabelAlreadyExistsHelper": "Illegal same name or contain char ','",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "Illegal same name",
   "settingsCopySchedulesFromExist": "Copy schedules from exist ",
   "settingsGuardLevelColor": "Color:",
   "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
@@ -1153,6 +1153,7 @@
   "settingsFilterSetTabTypes": "Filter Set",
   "settingsFilterSetTile": "Filter Set Setting",
   "settingsScheduleIntervalTile": "Interval:",
+  "settingsScheduleIntervalFixedIntervalInfo": "Fixed interval are inexact.\nDepending on your device battery optimizations and restrictions.",
 
   "settingsWallpaperScheduleTabTypes": "Schedule",
   "settingsScheduleNamePrefix": "Schedule: ",

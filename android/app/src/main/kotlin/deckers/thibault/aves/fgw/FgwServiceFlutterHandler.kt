@@ -25,7 +25,8 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-
+import org.json.JSONArray
+import org.json.JSONObject
 
 object FgwServiceFlutterHandler {
     val LOG_TAG = LogUtils.createTag<FgwServiceFlutterHandler>()
@@ -148,7 +149,7 @@ object FgwServiceFlutterHandler {
 
     private fun handleSyncFromDartToNative(context: Context, call: MethodCall, result: MethodChannel.Result) {
         Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call")
-        Log.d(LOG_TAG, "handleSyncFromDartToNative:start ${call.arguments}")
+        Log.d(LOG_TAG, "handleSyncFromDartToNative:start call.arguments ${call.arguments}")
         defaultScope.launch {
             try {
                 // Current guard level
@@ -157,12 +158,12 @@ object FgwServiceFlutterHandler {
 
                 // Active levels
                 Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal activeLevelsString\n")
-                val activeLevelsString = call.argument<String>(FgwConstant.ACTIVE_LEVELS)
+                val activeLevelsString = call.argument<ArrayList<String>>(FgwConstant.ACTIVE_LEVELS)
                 if (tmpCurGuardLevel != null && activeLevelsString != null) {
                     Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpCurGuardLevel $tmpCurGuardLevel")
                     Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString $activeLevelsString")
 
-                    curGuardLevel = tmpCurGuardLevel.toInt()
+                    curGuardLevel = tmpCurGuardLevel.replace("\"", "").toInt()
                     FgwSeviceNotificationHandler.guardLevel = curGuardLevel
                     activeLevelsList = parseActiveLevelsString(activeLevelsString)
                 } else {
@@ -181,7 +182,7 @@ object FgwServiceFlutterHandler {
 
                 // Schedules
                 Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
-                val schedulesString = call.argument<String>(FgwConstant.SCHEDULES)
+                val schedulesString = call.argument<ArrayList<String>>(FgwConstant.SCHEDULES)
                 if (schedulesString != null) {
                     Log.d(LOG_TAG, "handleSyncFromDartToNative:schedulesString $schedulesString")
                     scheduleList = parseSchedulesString(schedulesString)
@@ -204,34 +205,24 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    fun parseActiveLevelsString(activeLevelsString: String): List<PrivacyGuardLevelRow> {
-        // Remove the surrounding brackets and split the string
-        val cleanedString = activeLevelsString.removePrefix("activeLevelsString [").removeSuffix("]")
-        val items = cleanedString.split("), PrivacyGuardLevelRow(")
-        Log.d(LOG_TAG, "parseActiveLevelsString:items $items")
+    fun parseActiveLevelsString(activeLevelsString: ArrayList<String>): List<PrivacyGuardLevelRow> {
         val parsedItems = mutableListOf<PrivacyGuardLevelRow>()
-        for ((index, item) in items.withIndex()) {
-            val actualItem = when {
-                index == 0 -> item.removePrefix("[PrivacyGuardLevelRow(")
-                index == items.size - 1 -> item.removeSuffix(")")
-                else -> item
+        try {
+            //val jsonArray = JSONArray(activeLevelsString)
+            for (i in 0 until activeLevelsString.size) {
+                val jsonObject = JSONObject(activeLevelsString[i])
+//                val jsonObject = jsonArray.getJSONObject(i)
+                val id = jsonObject.getInt("id")
+                val level = jsonObject.getInt("guardLevel")
+                val name = jsonObject.getString("labelName")
+                val color = parseColorString(jsonObject.getString("color")) ?: 0
+                val active = jsonObject.getInt("isActive") == 1
+                val privacyGuardLevelRow = PrivacyGuardLevelRow(id, level, name, color, active)
+                parsedItems.add(privacyGuardLevelRow)
             }
-            val parts = actualItem.split(", ")
-            Log.d(LOG_TAG, "parseActiveLevelsString:parts $parts")
-            if (parts.size == 5) {
-                try {
-                    val id = parts[0].toInt()
-                    val level = parts[1].toInt()
-                    val name = parts[2]
-                    val color = parseColorString(parts[3]) ?: 0
-                    val active = parts[4].toBoolean()
-                    val privacyGuardLevelRow = PrivacyGuardLevelRow(id, level, name, color, active)
-                    parsedItems.add(privacyGuardLevelRow)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Handle parsing errors if necessary
-                }
-            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(LOG_TAG, "Error parsing active levels string: ${e.message}")
         }
         return parsedItems
     }
@@ -258,34 +249,31 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    private fun parseSchedulesString(schedulesString: String): List<WallpaperScheduleRow> {
-        return schedulesString.removePrefix("[").removeSuffix("]")
-            .split("), ")
-            .map { item ->
-                val parts = item.removePrefix("WallpaperScheduleRow(").removeSuffix(")").split(", ")
-                val id = parts[0].toInt()
-                val order = parts[1].toInt()
-                val label = parts[2]
-                val guardLevelId = parts[3].toInt()
-                val filterSetId = parts[4].toInt()
-                val updateType = parts[5]
-                val widgetId = parts[6].toInt()
-                val displayType = parts[7]
-                val interval = parts[8].toInt()
-                val isActive = parts[9].toBoolean()
-                WallpaperScheduleRow(
-                    id,
-                    order,
-                    label,
-                    guardLevelId,
-                    filterSetId,
-                    updateType,
-                    widgetId,
-                    displayType,
-                    interval,
-                    isActive
+    fun parseSchedulesString(schedulesString: ArrayList<String>): List<WallpaperScheduleRow> {
+        val parsedItems = mutableListOf<WallpaperScheduleRow>()
+        try {
+            for (i in 0 until schedulesString.size) {
+                val jsonObject = JSONObject(schedulesString[i])
+                val id = jsonObject.getInt("id")
+                val order = jsonObject.getInt("orderNum")
+                val label = jsonObject.getString("labelName")
+                val guardLevelId = jsonObject.getInt("privacyGuardLevelId")
+                val filterSetId = jsonObject.getInt("filtersSetId")
+                val updateType = jsonObject.getString("updateType")
+                val widgetId = jsonObject.getInt("widgetId")
+                val displayType = jsonObject.getString("displayType")
+                val interval = jsonObject.getInt("interval")
+                val isActive = jsonObject.getInt("isActive") == 1
+                val wallpaperScheduleRow = WallpaperScheduleRow(
+                    id, order, label, guardLevelId, filterSetId, updateType, widgetId, displayType, interval, isActive
                 )
+                parsedItems.add(wallpaperScheduleRow)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(LOG_TAG, "Error parsing schedules string: ${e.message}")
+        }
+        return parsedItems
     }
 
     fun callDartNoArgsMethod(context: Context, opString: String) {

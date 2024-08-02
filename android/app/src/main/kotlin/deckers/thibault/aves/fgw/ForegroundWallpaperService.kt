@@ -55,7 +55,6 @@ class ForegroundWallpaperService : Service() {
 
     override fun onDestroy() {
         Log.i(LOG_TAG, "Clean foreground wallpaper flutterEngine")
-        FgwServiceFlutterHandler.callDartNoArgsMethod(serviceContext,FgwConstant.STOP)
         // Unregister receiver for screen events
         unregisterScreenStateReceiver()
         isRunning = false

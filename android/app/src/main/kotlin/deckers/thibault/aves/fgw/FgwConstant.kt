@@ -1,4 +1,5 @@
 package deckers.thibault.aves.fgw
+import android.content.Context
 
 @Suppress("ConstPropertyName")
 object FgwIntentAction {
@@ -25,9 +26,9 @@ object FgwIntentAction {
 
 @Suppress("ConstPropertyName")
 object FgwConstant {
-    const val CUR_TYPE_HOME = "WallpaperUpdateType.home"
-    const val CUR_TYPE_LOCK = "WallpaperUpdateType.lock"
-    const val CUR_TYPE_BOTH = "WallpaperUpdateType.both"
+    const val CUR_TYPE_HOME = "home"
+    const val CUR_TYPE_LOCK = "lock"
+    const val CUR_TYPE_BOTH = "both"
     const val CUR_TYPE_WIDGET = "widget"
     const val NOT_WIDGET_ID:Int = 0
     const val FGW_VIEW_OPEN = "fgw_view_open"
@@ -52,10 +53,19 @@ object FgwConstant {
     //sync data from Native side.
     const val SYNC_FGW_SCHEDULE_CHANGES = "syncFgwScheduleChanges"
 
-    // New keys
-    const val home_schedule_key = "WallpaperUpdateType.home-0"
-    const val lock_schedule_key = "WallpaperUpdateType.lock-0"
-    const val both_schedule_key = "WallpaperUpdateType.both-0"
+    // Use diff key with the package name prefix to diff in debug apk or release or flavor apk.
+    const val home_schedule_key = "home-0"
+    const val lock_schedule_key = "lock-0"
+    const val both_schedule_key = "both-0"
+
+    fun getScheduleKey(context: Context, baseKey: String): String {
+        val packageName = context.packageName
+        return "$packageName-$baseKey"
+    }
+
+    fun getHomeScheduleKey(context: Context) = getScheduleKey(context, "home-0")
+    fun getLockScheduleKey(context: Context) = getScheduleKey(context, "lock-0")
+    fun getBothScheduleKey(context: Context) = getScheduleKey(context, "both-0")
 }
 
 // Data classes to represent the complex objects

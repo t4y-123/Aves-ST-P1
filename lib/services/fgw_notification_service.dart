@@ -107,20 +107,22 @@ class FgwServiceHelper with FeedbackMixin{
     debugPrint('$runtimeType syncDataToKotlin start');
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
 
-    final syncDataMap = Map.fromEntries( (await Future.wait(syncItems.map((v) async {
+    final syncDataMap = Map.fromEntries((await Future.wait(syncItems.map((v) async {
       final data = await v.syncData(
         source: _source,
         updateType: updateType,
         widgetId: widgetId,
         curPrivacyGuardLevel: curLevel,
       );
+      debugPrint('$runtimeType syncDataToKotlin data: $data');
       return data != null ? MapEntry(v.name, data) : null;
-    }))).where((entry) => entry != null).cast<MapEntry<String, dynamic>>()
-    );
+    }))).where((entry) => entry != null).cast<MapEntry<String, dynamic>>());
+
+    final syncData = syncDataMap.map((key, value) => MapEntry(key, (value)));
 
     try {
-      await _syncDataChannel.invokeMethod('syncDataToKotlin', syncDataMap);
-      debugPrint('$runtimeType syncDataToKotlin result: $syncDataMap');
+      await _syncDataChannel.invokeMethod('syncDataToKotlin', syncData);
+      debugPrint('$runtimeType syncDataToKotlin result: $syncData');
     } catch (e) {
       debugPrint('$runtimeType syncDataToKotlin error: $e');
     }
@@ -225,7 +227,7 @@ class FgwServiceHelper with FeedbackMixin{
     // Return the map
     return {
       'curGuardLevel': settings.curPrivacyGuardLevel,
-      'activeLevels': activeGuardLevels.toString(),
+      'activeLevels': activeGuardLevels,
       'entryFileName': entryFilenameWithoutExtension,
     };
   }

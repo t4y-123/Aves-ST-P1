@@ -461,9 +461,8 @@ class _RenameLabelDialogState extends State<LabelNameDialog> {
 
   Future<void> _validate() async {
     final newName = _nameController.text;
-    bool coantianIllegal = newName.contains(',');
-    _existsNotifier.value = newName.isNotEmpty && newName == label || coantianIllegal;
-    _isValidNotifier.value = newName.isNotEmpty && !coantianIllegal && !_existsNotifier.value;
+    _existsNotifier.value = newName.isNotEmpty && newName == label;
+    _isValidNotifier.value = newName.isNotEmpty && !_existsNotifier.value;
   }
 
   void _submit(BuildContext context) {

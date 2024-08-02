@@ -24,9 +24,9 @@ class FgwScheduleHelper {
     await filtersSets.refresh();
     await wallpaperSchedules.refresh();
 
-    debugPrint('$runtimeType refreshSchedules\n privacyGuardLevels ${privacyGuardLevels.all} ');
-    debugPrint('$runtimeType refreshSchedules\n filtersSets ${filtersSets.all} ');
-    debugPrint('$runtimeType refreshSchedules\n wallpaperSchedules ${wallpaperSchedules.all} ');
+    debugPrint('$runtimeType refreshSchedules\n privacyGuardLevels ${privacyGuardLevels.all.toString()} ');
+    debugPrint('$runtimeType refreshSchedules\n filtersSets ${filtersSets.all.toString()} ');
+    debugPrint('$runtimeType refreshSchedules\n wallpaperSchedules ${wallpaperSchedules.all.toString()} ');
   }
 
   Future<PrivacyGuardLevelRow> getCurGuardLevel() async {

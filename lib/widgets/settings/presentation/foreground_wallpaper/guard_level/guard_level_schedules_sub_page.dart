@@ -109,6 +109,10 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
             context.l10n.settingsScheduleIntervalTile,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+          Text(
+            context.l10n.settingsScheduleIntervalFixedIntervalInfo,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+          ),
           Column(children: _buildIntervalOptions(current)),
         ],
       );

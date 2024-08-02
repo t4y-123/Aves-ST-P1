@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
@@ -417,6 +418,7 @@ class WallpaperScheduleRow extends Equatable implements Comparable<WallpaperSche
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
+  String toJson() => jsonEncode(toMap());
 
   Map<String, dynamic> toMap() => {
         'id': id,

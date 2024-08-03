@@ -4,7 +4,6 @@ import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/entry/extensions/location.dart';
-import 'package:aves/model/entry/extensions/metadata_edition.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
@@ -33,7 +32,6 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
-import '../metadata/date_modifier.dart';
 
 enum SourceInitializationState { none, directory, full }
 
@@ -337,6 +335,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     required MoveType moveType,
     required Set<String> destinationAlbums,
     required Set<MoveOpEvent> movedOps,
+    Function(Set<AvesEntry>)? onUpdatedEntries,
   }) async {
     if (movedOps.isEmpty) return;
 
@@ -392,7 +391,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         //   debugPrint('shareCopiedEntries.  await entry.editDate(modifier);\n[$entry]');
         // }));
       }
-
+      if (onUpdatedEntries != null) {
+        onUpdatedEntries(movedEntries);
+      }
     } else {
       await Future.forEach<MoveOpEvent>(movedOps, (movedOp) async {
         final newFields = movedOp.newFields;

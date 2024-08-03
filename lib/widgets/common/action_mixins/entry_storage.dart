@@ -271,6 +271,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         // move
         final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
         final movedEntries = movedOps.map((v) => v.uri).map((uri) => entries.firstWhereOrNull((entry) => entry.uri == uri)).whereNotNull().toSet();
+        //debugPrint('$runtimeType doQuickMove movedEntries:\n $movedEntries');
         await source.updateAfterMove(
           todoEntries: entries,
           moveType: moveType,

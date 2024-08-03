@@ -69,6 +69,8 @@ bool _shouldConfirm(ConfirmationDialog type) {
       return settings.confirmSetDateToNow;
     case ConfirmationDialog.shareByCopy:
       return settings.confirmShareByCopy;
+    case ConfirmationDialog.editAsCopiedFirst:
+      return settings.confirmEditAsCopiedFirst;
   }
 }
 
@@ -86,6 +88,8 @@ void _skipConfirmation(ConfirmationDialog type) {
       settings.confirmSetDateToNow = false;
     case ConfirmationDialog.shareByCopy:
       settings.confirmShareByCopy = false;
+    case ConfirmationDialog.editAsCopiedFirst:
+      settings.confirmEditAsCopiedFirst = false;
   }
 }
 

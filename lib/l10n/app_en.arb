@@ -1087,10 +1087,14 @@
   "settingsShareByCopyCollectionPageAutoRemove": "Remove expired in launch collection page after copied",
   "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
   "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
+  "settingsShareByCopyExpiredInterval": "Expired Interval",
+
+  "shareByCopySetDateTypeOnlyThisTime": "only this time copied",
+  "shareByCopySetDateTypeAllCopiedEntries": "all copied pre and now",
+  "settingsShareByCopySetDateTypeTileTitle": "Set date to now copied entries range: ",
+
   "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
   "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
-
-  "settingsShareByCopyExpiredInterval": "Expired Interval",
 
 
   "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
@@ -1098,6 +1102,10 @@
 
   "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake easier shown in others APP recent items.\n\nEverytime copied, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin enabled) except in view mode or called by notification.\n\nYou can change some settings.\n\nAre you sure continue?",
   "settingsConfirmationShareByCopy": "Ask before share by copy items",
+
+  "editAsCopiedFirstDialogMessage": "Data is precious.\n\nFor in some phone, it may override the original item without show any info while the user may want to keep the origin same as pre with a edited copied.\n\nSo,always copied and only edit the copied item.\n\n You need to back to collection page to find edited item.This copied will not be auto remove even cancel from edit.",
+  "settingsConfirmationEditAsCopiedFirst": "Ask before edit as copied first",
+
 
   "filterFgwUsedLabel": "Fgw used entries",
   "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",

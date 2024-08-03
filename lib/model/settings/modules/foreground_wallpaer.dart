@@ -1,8 +1,8 @@
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves_model/aves_model.dart';
 
 import '../../foreground_wallpaper/enum/fgw_schedule_item.dart';
+import '../enums/presentaion.dart';
 
 mixin ForegroundWallpaperSettings on SettingsAccess {
   static const defaultNewUpdateIntervalKey = 'default_wallpaper_updateIntervalKey';
@@ -89,6 +89,10 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   int get shareByCopyRemoveInterval => getInt(shareByCopyRemoveIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
   set shareByCopyRemoveInterval(int newValue) => set(shareByCopyRemoveIntervalKey, newValue);
 
+  static const shareByCopySetDateTypeKey = 'share_by_copy_set_date_type';
+  ShareByCopySetDateType get shareByCopySetDateType => getEnumOrDefault(shareByCopySetDateTypeKey, SettingsDefaults.shareByCopySetDateType,ShareByCopySetDateType.values);
+  set shareByCopySetDateType(ShareByCopySetDateType newValue) => set(shareByCopySetDateTypeKey, newValue.toString());
+
   static const fgwDisplayTypeKey = 'fgw_display_type';
   FgwDisplayedType get fgwDisplayType => getEnumOrDefault(fgwDisplayTypeKey, SettingsDefaults.fgwDisplayedItem,FgwDisplayedType.values);
   set fgwDisplayType(FgwDisplayedType newValue) => set(fgwDisplayTypeKey, newValue.toString());
@@ -96,5 +100,9 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   static const fgwScheduleSetKey = 'fgw_schedule_group_set';
   FgwScheduleSetType get fgwScheduleSet => getEnumOrDefault(fgwScheduleSetKey, SettingsDefaults.fgwScheduleSet,FgwScheduleSetType.values);
   set fgwScheduleSet(FgwScheduleSetType newValue) => set(fgwScheduleSetKey, newValue.toString());
+
+  static const confirmEditAsCopiedFirstKey = 'confirm_edit_as_copied_first';
+  set confirmEditAsCopiedFirst(bool newValue) => set(confirmEditAsCopiedFirstKey, newValue);
+  bool get confirmEditAsCopiedFirst => getBool(confirmEditAsCopiedFirstKey) ?? SettingsDefaults.confirmEditAsCopiedFirst;
 
 }

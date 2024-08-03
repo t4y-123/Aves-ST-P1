@@ -14,7 +14,7 @@ import '../../common/tiles.dart';
 
 class ForegroundWallpaperDefaultSchedulesManagerPage extends StatelessWidget
     with FeedbackMixin {
-  static const routeName = '/settings/classified/wallpaper_default_schedules';
+  static const routeName = '/settings/presentation/wallpaper_default_schedules';
 
   const ForegroundWallpaperDefaultSchedulesManagerPage({super.key});
 

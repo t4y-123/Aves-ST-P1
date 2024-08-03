@@ -8,6 +8,7 @@ import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
 import '../foreground_wallpaper/enum/fgw_schedule_item.dart';
+import 'enums/presentaion.dart';
 
 class SettingsDefaults {
   // app
@@ -184,5 +185,9 @@ class SettingsDefaults {
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
   static const shareByCopyRemoveInterval = 5; // seconds
-
+  static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
+  // t4y: Data is precious,
+  // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
+  // so,always force to copy a new item before edit, then edit the copied item.
+  static const confirmEditAsCopiedFirst = true;
 }

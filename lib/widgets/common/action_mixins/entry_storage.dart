@@ -10,6 +10,7 @@ import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/highlight.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/multipage.dart';
+import 'package:aves/model/settings/enums/presentaion.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -201,6 +202,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     VoidCallback? onSuccess,
     bool isShareByCopyDelete = false,
   }) async {
+    Set<AvesEntry> updatedEntries = {};
     final entries = entriesByDestination.values.expand((v) => v).toSet();
     final todoCount = entries.length;
     assert(todoCount > 0);
@@ -277,6 +279,11 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
           moveType: moveType,
           destinationAlbums: destinationAlbums,
           movedOps: movedOps,
+          onUpdatedEntries: (entries) {
+            updatedEntries.addAll(entries);
+            debugPrint('$runtimeType doQuickMove entries:\n $entries');
+            debugPrint('$runtimeType doQuickMove updatedEntries:\n $updatedEntries');
+          },
         );
 
         // delete (when trying to move to bin obsolete entries)
@@ -353,6 +360,19 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         }
       },
     );
+
+    if (moveType == MoveType.shareByCopy && settings.shareByCopyExpiredAutoRemove) {
+      // await deleteExpiredShareCopied(context);
+      final source = context.read<CollectionSource>();
+      final allCopiedEntries =  source.allEntries.where((entry) =>
+          {AlbumFilter(androidFileUtils.avesShareByCopyPath,null)}.any((f) => f.test(entry)
+              && !entry.trashed)).where(shareCopiedEntries.isShareCopied).toSet();
+      final todoEntries = switch (settings.shareByCopySetDateType){
+        ShareByCopySetDateType.onlyThisTimeCopiedEntries => updatedEntries.isNotEmpty ? updatedEntries :allCopiedEntries,
+        ShareByCopySetDateType.allCopiedEntries => allCopiedEntries,
+      };
+      await EntrySetActionDelegate().setDateToNow(context,entries:todoEntries,showConfirm: false,isShareByCopy: true);
+    }
   }
 
   Future<void> doMove(
@@ -425,15 +445,6 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       onSuccess: onSuccess,
       isShareByCopyDelete:isShareByCopyDelete,
     );
-
-    if (moveType == MoveType.shareByCopy && settings.shareByCopyExpiredAutoRemove) {
-      // await deleteExpiredShareCopied(context);
-      final source = context.read<CollectionSource>();
-      final todoEntries = source.allEntries.where((entry) =>
-          {AlbumFilter(androidFileUtils.avesShareByCopyPath,null)}.any((f) => f.test(entry)
-              && !entry.trashed)).where(shareCopiedEntries.isShareCopied).toSet();
-      await EntrySetActionDelegate().setDateToNow(context,entries:todoEntries,showConfirm: false,isShareByCopy: true);
-    }
   }
 
   Future<void> rename(

@@ -298,6 +298,12 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
       showFeedback(context, FeedbackType.warn, '${context.l10n.entryActionEdit} ${context.l10n.genericFailureFeedback}');
       return;
     };
+    if (!await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.editAsCopiedFirst,
+      message: context.l10n.editAsCopiedFirstDialogMessage,
+      confirmationButtonLabel: context.l10n.continueButtonLabel,
+    )) return;
     AvesEntry? copiedEntry;
     final entries =  {targetEntry};
     final source = context.read<CollectionSource>();

@@ -55,6 +55,11 @@ class ConfirmationDialogPage extends StatelessWidget {
             onChanged: (v) => settings.confirmShareByCopy = v,
             title: l10n.settingsConfirmationShareByCopy,
           ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmEditAsCopiedFirst,
+            onChanged: (v) => settings.confirmEditAsCopiedFirst = v,
+            title: l10n.settingsConfirmationEditAsCopiedFirst,
+          ),
         ]),
       ),
     );

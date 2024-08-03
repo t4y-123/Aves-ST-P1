@@ -6,10 +6,11 @@ import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:flutter/material.dart';
 
 import '../../../model/filters/album.dart';
+import '../../../model/settings/enums/presentaion.dart';
 import '../../../utils/android_file_utils.dart';
 import '../../common/action_mixins/feedback.dart';
 
-class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
+class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
   static const routeName = '/settings/classify/share_by_copy';
 
   const ShareByCopyPage({super.key});
@@ -26,8 +27,10 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
         child: ListView(
           children: [
             SettingsSwitchListTile(
-              selector: (context, s) => !s.hiddenFilters.contains(AlbumFilter(androidFileUtils.avesShareByCopyPath, null)),
-              onChanged: (v) => settings.changeFilterVisibility({AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}, v),
+              selector: (context, s) =>
+                  !s.hiddenFilters.contains(AlbumFilter(androidFileUtils.avesShareByCopyPath, null)),
+              onChanged: (v) =>
+                  settings.changeFilterVisibility({AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}, v),
               title: l10n.settingsShowAvesShareCopiedItems,
             ),
             SettingsSwitchListTile(
@@ -50,15 +53,24 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
               onChanged: (v) => settings.shareByCopyAppModeViewAutoRemove = v,
               title: l10n.settingsShareByCopyAppModeViewAutoRemove,
             ),
-            if(settings.enableBin) SettingsSwitchListTile(
-              selector: (context, s) => s.shareByCopyExpiredRemoveUseBin,
-              onChanged: (v) => settings.shareByCopyExpiredRemoveUseBin = v,
-              title: l10n.settingsShareByCopyAutoRemoveUseBin,
-            ),
+            if (settings.enableBin)
+              SettingsSwitchListTile(
+                selector: (context, s) => s.shareByCopyExpiredRemoveUseBin,
+                onChanged: (v) => settings.shareByCopyExpiredRemoveUseBin = v,
+                title: l10n.settingsShareByCopyAutoRemoveUseBin,
+              ),
             SettingsDurationListTile(
               selector: (context, s) => s.shareByCopyRemoveInterval,
               onChanged: (v) => settings.shareByCopyRemoveInterval = v,
               title: l10n.settingsShareByCopyExpiredInterval,
+            ),
+            SettingsSelectionListTile<ShareByCopySetDateType>(
+              values: ShareByCopySetDateType.values,
+              getName: (context, v) => v.getName(context),
+              selector: (context, s) => s.shareByCopySetDateType,
+              onSelection: (v) => settings.shareByCopySetDateType = v,
+              tileTitle: context.l10n.settingsShareByCopySetDateTypeTileTitle,
+              dialogTitle: context.l10n.settingsShareByCopySetDateTypeTileTitle,
             ),
             ListTile(
               title: Text('${l10n.settingsClearShareCopiedItemsRecord} '),
@@ -67,8 +79,8 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
                   context,
                   l10n.settingsClearShareCopiedItemsRecord,
                   l10n.confirmClearShareCopiedItemsRecord(shareCopiedEntries.all.length),
-                      () {
-                        _clearAllShareByCopyRecord(context);
+                  () {
+                    _clearAllShareByCopyRecord(context);
                   },
                 ),
                 child: Text(l10n.applyButtonLabel),
@@ -79,8 +91,8 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
       ),
     );
   }
-  void _showConfirmationDialog(BuildContext context, String title,
-      String content, VoidCallback onConfirm) {
+
+  void _showConfirmationDialog(BuildContext context, String title, String content, VoidCallback onConfirm) {
     showDialog(
       context: context,
       builder: (context) {
@@ -109,6 +121,6 @@ class ShareByCopyPage extends StatelessWidget  with FeedbackMixin {
 
   Future<void> _clearAllShareByCopyRecord(BuildContext context) async {
     await shareCopiedEntries.clear();
-    showFeedback(context, FeedbackType.info,context.l10n.clearCompletedFeedback );
+    showFeedback(context, FeedbackType.info, context.l10n.clearCompletedFeedback);
   }
 }

@@ -184,10 +184,19 @@ class FgwScheduleHelper {
       default:
         throw const FormatException('Invalid setWallpaper');
     }
-    bool result = await WallpaperHandler.instance.setWallpaperFromFile(entry.path!, location);
-    debugPrint('setFgWallpaper result: $result');
-    if (!result) {
-      debugPrint('setFgWallpaper fail result: $result');
-    }
+    // bool result = await WallpaperHandler.instance.setWallpaperFromFile(entry.path!, location);
+    //
+    // debugPrint('setFgWallpaper result: $result');
+    // if (!result) {
+    //   debugPrint('setFgWallpaper fail result: $result');
+    // }
+    unawaited(WallpaperHandler.instance.setWallpaperFromFile(entry.path!, location).then((result) {
+      debugPrint('setFgWallpaper result: $result with ${entry.path} in location $location');
+      if (!result) {
+        debugPrint('setFgWallpaper fail result: $result');
+      }
+    }).catchError((error) {
+      debugPrint('setFgWallpaper error: $error');
+    }));
   }
 }

@@ -31,6 +31,7 @@ Future<void> fgwNotificationServiceAsync() async {
   // await mobileServices.init();
   // await settings.init(monitorPlatformSettings: true);
   // await reportService.init();
+
   WidgetsFlutterBinding.ensureInitialized();
   initPlatformServices();
   await settings.init(monitorPlatformSettings: false);
@@ -82,7 +83,6 @@ class FgwServiceHelper with FeedbackMixin{
     });
     debugPrint(' await _source.init(canAnalyze: false);');
     await _source.init(canAnalyze: false);
-
     debugPrint(' await readyCompleter.future;,');
 
     await readyCompleter.future;
@@ -104,7 +104,6 @@ class FgwServiceHelper with FeedbackMixin{
       { WallpaperUpdateType updateType = WallpaperUpdateType.home, int widgetId = 0}) async {
     await reportService.log('syncDataToNative in start');
     await _initDependencies();
-    debugPrint('$runtimeType syncDataToKotlin start');
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
 
     final syncDataMap = Map.fromEntries((await Future.wait(syncItems.map((v) async {
@@ -192,7 +191,7 @@ class FgwServiceHelper with FeedbackMixin{
     if(activeLevels.any((item) => item.guardLevel == newGuardLevel)){
       settings.curPrivacyGuardLevel = newGuardLevel;
       await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
-      unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+      await (handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
           FgwServiceWallpaperType.next));
       return Future.value(true);
     }else{

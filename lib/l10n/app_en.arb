@@ -1202,9 +1202,43 @@
   "initFiltersSet333Name02": "Home: Moderate",
   "initFiltersSet333Name03": "Home: Safe",
 
+  "drawerScenarioPage": "Scenarios",
+  "scenarioPageTitle": "Scenario",
+  "scenarioEmpty": "No scenario",
+  "createScenarioButtonLabel": "Create Scenario",
+
+  "scenarioLoadTypeExclude": "Exclude (Only One)",
+  "scenarioLoadTypeUnion": "Union (Or)",
+  "scenarioLoadTypeIntersect": "Intersect (And)",
+  "scenarioNamePrefix": "Scenario",
+
+  "scenarioGroupImportance": "By importance",
+  "scenarioGroupUnionBeforeIntersect": "Union Before Intersect",
+  "scenarioGroupIntersectBeforeUnion": "Intersect Before Union",
+  "scenarioGroupNone": "Do not group",
+
+  "scenarioTierActivePinned": "Active Pinned",
+  "scenarioTierExcludeUnique": "Exclude (Unique)",
+  "scenarioTierIntersectAnd": "Intersect (And)",
+  "scenarioTierUnionOr": "Union Or",
+
+  "chipActionLockScenario": "Lock scenario",
+  "chipActionUnlockScenario": "Unlock scenario",
+  "chipActionSettingScenario": "Setting scenario",
+
+  "initScenarioName01": "Exposure Exclude",
+  "initScenarioName02": "Moderate Exclude",
+  "initScenarioName03": "Safe Exclude",
+
+  "initScenarioName04": "Exposure Interject",
+  "initScenarioName05": "Moderate Interject",
+  "initScenarioName06": "Safe Interject",
+
+  "initScenarioName07": "Exposure Union",
+  "initScenarioName08": "Moderate Union",
+  "initScenarioName09": "Safe Union",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",
   "stopWallpaperService": "Stop Wallpaper Service"
-
 }

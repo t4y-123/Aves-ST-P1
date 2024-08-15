@@ -36,7 +36,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
-abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, VaultAwareMixin {
+abstract class ChipSetActionDelegate<T extends CollectionFilter>
+    with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, VaultAwareMixin {
   Iterable<FilterGridItem<T>> get allItems;
 
   ChipSortFactor get sortFactor;
@@ -99,6 +100,10 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       case ChipSetAction.map:
       case ChipSetAction.slideshow:
       case ChipSetAction.stats:
+      // t4y: scenario only show and modify in main mode.
+      case ChipSetAction.lockScenario:
+      case ChipSetAction.unlockScenario:
+      case ChipSetAction.settingScenario:
         return isMain;
       // selecting (single/multiple filters)
       case ChipSetAction.hide:
@@ -141,9 +146,13 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       // browsing
       case ChipSetAction.search:
       case ChipSetAction.toggleTitleSearch:
-        // t4y
+      // t4y
+      // t4y: scenario only show and modify in main mode.
+      case ChipSetAction.lockScenario:
+      case ChipSetAction.unlockScenario:
+      case ChipSetAction.settingScenario:
       case ChipSetAction.foregroundWallpaperService:
-
+      //
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
         return true;
@@ -188,6 +197,10 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
         context.read<Query>().toggle();
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
+      // t4y:TODO: scenario action .
+      case ChipSetAction.lockScenario:
+      case ChipSetAction.unlockScenario:
+      case ChipSetAction.settingScenario:
         break;
       // browsing or selecting
       case ChipSetAction.map:
@@ -225,23 +238,15 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
 
   // t4y:
   Future<void> _changeForegroundWallpaperState(BuildContext context) async {
-      final isServiceRunning = await ForegroundWallpaperService.isServiceRunning( );
-      final l10n = context.l10n;
-      if(!isServiceRunning){
-        await ForegroundWallpaperService.startService( );
-        showFeedback(
-            context,
-            FeedbackType.info,
-            l10n.startWallpaperService
-        );
-      }else{
-        await ForegroundWallpaperService.stopService( );
-        showFeedback(
-            context,
-            FeedbackType.info,
-            l10n.stopWallpaperService
-        );
-      }
+    final isServiceRunning = await ForegroundWallpaperService.isServiceRunning();
+    final l10n = context.l10n;
+    if (!isServiceRunning) {
+      await ForegroundWallpaperService.startService();
+      showFeedback(context, FeedbackType.info, l10n.startWallpaperService);
+    } else {
+      await ForegroundWallpaperService.stopService();
+      showFeedback(context, FeedbackType.info, l10n.stopWallpaperService);
+    }
   }
   // t4y End
 
@@ -272,8 +277,11 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
       builder: (context) {
         return TileViewDialog<ChipSortFactor, void, TileLayout>(
           initialValue: initialValue,
-          sortOptions: sortOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
-          layoutOptions: layoutOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
+          sortOptions:
+              sortOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
+          layoutOptions: layoutOptions
+              .map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon))
+              .toList(),
           sortOrder: (factor, reverse) => factor.getOrderName(context, reverse),
           tileExtentController: extentController,
         );
@@ -394,7 +402,9 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter> with FeedbackMi
 
     final existingCover = covers.of(filter);
     final entryId = existingCover?.$1;
-    final customEntry = entryId != null ? context.read<CollectionSource>().visibleEntries.firstWhereOrNull((entry) => entry.id == entryId) : null;
+    final customEntry = entryId != null
+        ? context.read<CollectionSource>().visibleEntries.firstWhereOrNull((entry) => entry.id == entryId)
+        : null;
     final selectedCover = await showDialog<(AvesEntry?, String?, Color?)>(
       context: context,
       builder: (context) => CoverSelectionDialog(

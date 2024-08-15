@@ -8,7 +8,8 @@ import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
 import '../foreground_wallpaper/enum/fgw_schedule_item.dart';
-import 'enums/presentaion.dart';
+import '../scenario/enum/scenario_item.dart';
+import 'enums/presentation.dart';
 
 class SettingsDefaults {
   // app
@@ -173,7 +174,7 @@ class SettingsDefaults {
   static const fgwScheduleSet = FgwScheduleSetType.type346;
   //
   static const int maxFgwUsedEntryRecord = 10;
-  static const int resetPrivacyGuardLevelDuration = 5; // seconds
+  static const int resetPrivacyGuardLevelDuration = 15 ; // seconds
   // diff type share.
   static const confirmSetDateToNow = true;
   static const confirmShareByCopy = true;
@@ -184,10 +185,15 @@ class SettingsDefaults {
   static const shareByCopyCollectionPageAutoRemove = true;
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
-  static const shareByCopyRemoveInterval = 5; // seconds
+  static const shareByCopyRemoveInterval = 10 ; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
   // so,always force to copy a new item before edit, then edit the copied item.
   static const confirmEditAsCopiedFirst = true;
+
+  // filter grids
+  static const scenarioGroupFactor = ScenarioChipGroupFactor.importance;
+  static const scenarioChipListSortFactor = ChipSortFactor.name;
+
 }

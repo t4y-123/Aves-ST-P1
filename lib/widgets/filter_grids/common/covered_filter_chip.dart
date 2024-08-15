@@ -5,10 +5,12 @@ import 'package:aves/model/covers.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/source/location/country.dart';
+import 'package:aves/model/source/scenario.dart';
 import 'package:aves/model/source/tag.dart';
 import 'package:aves/model/vaults/vaults.dart';
 import 'package:aves/theme/durations.dart';
@@ -53,7 +55,8 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
 
     // height can actually be a little larger or smaller, when info includes icons or non-latin scripts
     // but it's not worth measuring text metrics, as the widget is flexible enough to absorb the difference
-    return textScaler.scale(AvesFilterChip.fontSize + detailFontSize(extent) + 4) + AvesFilterChip.decoratedContentVerticalPadding * 2;
+    return textScaler.scale(AvesFilterChip.fontSize + detailFontSize(extent) + 4) +
+        AvesFilterChip.decoratedContentVerticalPadding * 2;
   }
 
   static Radius radius(double extent) => Radius.circular(min<double>(AvesFilterChip.defaultRadius, extent / 4));
@@ -73,7 +76,9 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
               {
                 final album = filter.album;
                 return StreamBuilder<AlbumSummaryInvalidatedEvent>(
-                  stream: source.eventBus.on<AlbumSummaryInvalidatedEvent>().where((event) => event.directories == null || event.directories!.contains(album)),
+                  stream: source.eventBus
+                      .on<AlbumSummaryInvalidatedEvent>()
+                      .where((event) => event.directories == null || event.directories!.contains(album)),
                   builder: (context, snapshot) => _buildChip(context, source),
                 );
               }
@@ -81,7 +86,9 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
               {
                 final countryCode = filter.code;
                 return StreamBuilder<CountrySummaryInvalidatedEvent>(
-                  stream: source.eventBus.on<CountrySummaryInvalidatedEvent>().where((event) => event.countryCodes == null || event.countryCodes!.contains(countryCode)),
+                  stream: source.eventBus
+                      .on<CountrySummaryInvalidatedEvent>()
+                      .where((event) => event.countryCodes == null || event.countryCodes!.contains(countryCode)),
                   builder: (context, snapshot) => _buildChip(context, source),
                 );
               }
@@ -89,7 +96,19 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
               {
                 final tag = filter.tag;
                 return StreamBuilder<TagSummaryInvalidatedEvent>(
-                  stream: source.eventBus.on<TagSummaryInvalidatedEvent>().where((event) => event.tags == null || event.tags!.contains(tag)),
+                  stream: source.eventBus
+                      .on<TagSummaryInvalidatedEvent>()
+                      .where((event) => event.tags == null || event.tags!.contains(tag)),
+                  builder: (context, snapshot) => _buildChip(context, source),
+                );
+              }
+            case ScenarioFilter filter:
+              {
+                final scenarioId = filter.scenarioId;
+                return StreamBuilder<ScenarioSummaryInvalidatedEvent>(
+                  stream: source.eventBus
+                      .on<ScenarioSummaryInvalidatedEvent>()
+                      .where((event) => event.scenarioId == null || event.scenarioId!.contains(scenarioId)),
                   builder: (context, snapshot) => _buildChip(context, source),
                 );
               }

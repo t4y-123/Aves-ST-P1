@@ -13,6 +13,8 @@ import '../foreground_wallpaper/privacy_guard_level.dart';
 import '../foreground_wallpaper/filtersSet.dart';
 import '../foreground_wallpaper/share_copied_entry.dart';
 import '../foreground_wallpaper/wallpaper_schedule.dart';
+import '../scenario/scenario.dart';
+import '../scenario/scenario_step.dart';
 
 abstract class MetadataDb {
   int get nextId;
@@ -185,4 +187,28 @@ abstract class MetadataDb {
   Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row);
 
   Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows);
+
+  // Scenario
+
+  Future<void> clearScenarios();
+
+  Future<Set<ScenarioRow>> loadAllScenarios();
+
+  Future<void> addScenarios(Set<ScenarioRow> rows);
+
+  Future<void> updateScenarioById(int id, ScenarioRow row);
+
+  Future<void> removeScenarios(Set<ScenarioRow> rows);
+
+  // Scenario steps
+
+  Future<void> clearScenarioSteps();
+
+  Future<Set<ScenarioStepRow>> loadAllScenarioSteps();
+
+  Future<void> addScenarioSteps(Set<ScenarioStepRow> rows);
+
+  Future<void> updateScenarioStepById(int id, ScenarioStepRow row);
+
+  Future<void> removeScenarioSteps(Set<ScenarioStepRow> rows);
 }

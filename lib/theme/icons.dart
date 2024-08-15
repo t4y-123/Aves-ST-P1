@@ -38,7 +38,8 @@ class AIcons {
   // as of Flutter v3.16.3,
   // `label_important_outlined` matches text direction but is filled
   // `label_important_outline` is outlined but does not match text direction
-  static const important = IconData(labelImportantOutlineCodePoint, fontFamily: materialIconsFontFamily, matchTextDirection: true);
+  static const important =
+      IconData(labelImportantOutlineCodePoint, fontFamily: materialIconsFontFamily, matchTextDirection: true);
 
   static const language = Icons.translate_outlined;
   static final legal = MdiIcons.scaleBalance;
@@ -198,7 +199,7 @@ class AIcons {
   static const unselected = Icons.radio_button_unchecked;
 
   // t4y for classified personal features.
-  // classified setttings
+  // presentation settings
   static const presentation = Icons.security;
   static const active = Icons.lightbulb_outline;
   static const inactive = Icons.code_off_sharp;
@@ -206,6 +207,11 @@ class AIcons {
   static const shareByCopy = Icons.copy_all;
   static const shareByDateNow = Icons.update;
 
+  // t4y:scenario pages
+  static const scenario = Icons.token;
+  static const lockScenario = Icons.lock_open_sharp;
+  static const unlockScenario = Icons.lock_sharp;
+  static const settingScenario = Icons.settings_applications;
 
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking

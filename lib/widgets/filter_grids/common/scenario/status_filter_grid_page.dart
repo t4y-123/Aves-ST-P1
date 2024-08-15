@@ -33,8 +33,9 @@ import 'package:aves/widgets/common/thumbnail/image.dart';
 import 'package:aves/widgets/common/tile_extent_controller.dart';
 import 'package:aves/widgets/filter_grids/common/covered_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/draggable_thumb_label.dart';
-import 'package:aves/widgets/filter_grids/common/filter_tile.dart';
+import 'package:aves/widgets/filter_grids/common/filter_grid_page.dart';
 import 'package:aves/widgets/filter_grids/common/list_details_theme.dart';
+import 'package:aves/widgets/filter_grids/common/scenario/status_filter_tile.dart';
 import 'package:aves/widgets/filter_grids/common/section_keys.dart';
 import 'package:aves/widgets/filter_grids/common/section_layout.dart';
 import 'package:aves/widgets/navigation/drawer/app_drawer.dart';
@@ -46,10 +47,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
-typedef QueryTest<T extends CollectionFilter> = List<FilterGridItem<T>> Function(
-    BuildContext context, List<FilterGridItem<T>> filters, String query);
-
-class FilterGridPage<T extends CollectionFilter> extends StatelessWidget {
+class StatusFilterGridPage<T extends CollectionFilter> extends StatelessWidget {
   final String? settingsRouteKey;
   final Widget appBar;
   final ValueNotifier<double> appBarHeightNotifier;
@@ -63,7 +61,7 @@ class FilterGridPage<T extends CollectionFilter> extends StatelessWidget {
   final StreamController<DraggableScrollbarEvent> _draggableScrollBarEventStreamController =
       StreamController.broadcast();
 
-  FilterGridPage({
+  StatusFilterGridPage({
     super.key,
     this.settingsRouteKey,
     required this.appBar,
@@ -295,6 +293,7 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
         return ValueListenableBuilder<String>(
           valueListenable: context.select<Query, ValueNotifier<String>>((query) => query.queryNotifier),
           builder: (context, query, child) {
+            debugPrint('$runtimeType _FilterGridContentState widget.sections ${widget.sections}');
             Map<ChipSectionKey, List<FilterGridItem<T>>> visibleSections;
             if (queryEnabled && query.isNotEmpty) {
               visibleSections = {};
@@ -346,7 +345,7 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
                               tileHeight: tileHeight,
                               tileBuilder: (gridItem, tileSize) {
                                 final extent = tileSize.shortestSide;
-                                final tile = InteractiveFilterTile(
+                                final tile = StatusInteractiveStatusFilterTile(
                                   gridItem: gridItem,
                                   chipExtent: extent,
                                   thumbnailExtent: extent,
@@ -588,7 +587,7 @@ class _FilterScaler<T extends CollectionFilter> extends StatelessWidget {
       ),
       scaledItemBuilder: (item, tileSize) => FilterListDetailsTheme(
         extent: tileSize.height,
-        child: FilterTile(
+        child: StatusFilterTile(
           gridItem: item,
           chipExtent: tileLayout == TileLayout.grid ? tileSize.width : tileSize.height,
           thumbnailExtent: context.read<TileExtentController>().effectiveExtentMax,

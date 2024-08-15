@@ -148,53 +148,39 @@ object FgwServiceFlutterHandler {
     }
 
     private fun handleSyncFromDartToNative(context: Context, call: MethodCall, result: MethodChannel.Result) {
-        Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call")
-        Log.d(LOG_TAG, "handleSyncFromDartToNative:start call.arguments ${call.arguments}")
+        Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call \n"+
+                "handleSyncFromDartToNative:start call.arguments ${call.arguments}")
         defaultScope.launch {
             try {
                 // Current guard level
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal tmpCurGuardLevel\n")
-                val tmpCurGuardLevel = call.argument<String>(FgwConstant.CUR_LEVEL)
-
-                // Active levels
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal activeLevelsString\n")
-                val activeLevelsString = call.argument<ArrayList<String>>(FgwConstant.ACTIVE_LEVELS)
-                if (tmpCurGuardLevel != null && activeLevelsString != null) {
-                    Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpCurGuardLevel $tmpCurGuardLevel")
-                    Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsString $activeLevelsString")
-
+                call.argument<String>(FgwConstant.CUR_LEVEL)?.let { tmpCurGuardLevel ->
+                    //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal tmpCurGuardLevel\n")
                     curGuardLevel = tmpCurGuardLevel.replace("\"", "").toInt()
                     FgwSeviceNotificationHandler.guardLevel = curGuardLevel
+                }
+
+                // Active levels
+                call.argument<ArrayList<String>>(FgwConstant.ACTIVE_LEVELS)?.let { activeLevelsString ->
+                    //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal activeLevelsString\n")
                     activeLevelsList = parseActiveLevelsString(activeLevelsString)
-                } else {
-                    Log.e(LOG_TAG, "Guard level or active levels string is null")
                 }
 
                 // Current entry file name
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Current entry file name\n")
-                val tmpEntryFileName = call.argument<String>(FgwConstant.CUR_ENTRY_NAME)
-                if (tmpEntryFileName != null) {
-                    Log.d(LOG_TAG, "handleSyncFromDartToNative:tmpEntryFileName $tmpEntryFileName")
+                call.argument<String>(FgwConstant.CUR_ENTRY_NAME)?.let { tmpEntryFileName ->
+                    //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Current entry file name\n")
                     entryFilename = tmpEntryFileName
-                } else {
-                    Log.e(LOG_TAG, "Entry file name is null")
                 }
-
                 // Schedules
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
-                val schedulesString = call.argument<ArrayList<String>>(FgwConstant.SCHEDULES)
-                if (schedulesString != null) {
-                    Log.d(LOG_TAG, "handleSyncFromDartToNative:schedulesString $schedulesString")
+                call.argument<ArrayList<String>>(FgwConstant.SCHEDULES)?.let { schedulesString ->
+                    //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
                     scheduleList = parseSchedulesString(schedulesString)
                     WallpaperScheduleHelper.handleSchedules(context, scheduleList)
-                } else {
-                    Log.e(LOG_TAG, "Schedules string is null")
                 }
 
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel")
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:activeLevelsList $activeLevelsList")
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:entryFilename $entryFilename")
-                Log.d(LOG_TAG, "handleSyncFromDartToNative:scheduleList $scheduleList")
+                Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel \n"+
+                        "handleSyncFromDartToNative:activeLevelsList $activeLevelsList \n"+
+                        "handleSyncFromDartToNative:entryFilename $entryFilename \n" +
+                        "handleSyncFromDartToNative:scheduleList $scheduleList")
 
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
                 result.success(true)

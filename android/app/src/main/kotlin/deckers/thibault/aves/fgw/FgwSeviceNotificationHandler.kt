@@ -152,7 +152,7 @@ object FgwSeviceNotificationHandler {
     }
 
     fun createNotification(context: Context): Notification {
-        Log.d(LOG_TAG, "createNotification($context)")
+        //Log.d(LOG_TAG, "createNotification($context)")
         val builder =
             NotificationCompat.Builder(context, FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -184,7 +184,7 @@ object FgwSeviceNotificationHandler {
     }
 
     fun updateNotificationFromStoredValues(context: Context) {
-        Log.d(LOG_TAG, "updateNotificationFromStoredValues($context)")
+        //Log.d(LOG_TAG, "updateNotificationFromStoredValues($context)")
         val notification = createNotification(context)
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.notify(NOTIFICATION_ID, notification)
@@ -192,12 +192,9 @@ object FgwSeviceNotificationHandler {
 
 
     private fun updateGuardLevel(remoteViews: RemoteViews) {
-        Log.d(LOG_TAG, "updateGuardLevel($remoteViews) $guardLevel")
-        Log.d(LOG_TAG, "updateGuardLevel(${FgwServiceFlutterHandler.activeLevelsList})")
-
+        Log.d(LOG_TAG, "updateGuardLevel($remoteViews) $guardLevel \n updateGuardLevel(${FgwServiceFlutterHandler.activeLevelsList})")
         val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.level }?.level ?: 1
         val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.level }?.level ?: 1
-        Log.d(LOG_TAG, "updateGuardLeve minLevel ${minLevel} maxLevell: $maxLevel)")
 
         if(canChangeLevel){
             guardLevel = when {
@@ -216,25 +213,26 @@ object FgwSeviceNotificationHandler {
                 }
             }
         }
-        Log.d(LOG_TAG, "updateGuardLevel inactiveButtonResIds: ($inactiveButtonResIds)")
 
         val matchingLevel = FgwServiceFlutterHandler.activeLevelsList.find { it.level == guardLevel }
-        Log.d(LOG_TAG, "updateGuardLevel matchingLevel ($matchingLevel)")
+        Log.d(LOG_TAG, "updateGuardLeve minLevel ${minLevel} maxLevell: $maxLevel)" +
+                "updateGuardLevel inactiveButtonResIds: ($inactiveButtonResIds)" +
+                "updateGuardLevel matchingLevel ($matchingLevel)")
 
         matchingLevel?.let { level ->
-            Log.d(LOG_TAG, "updateGuardLevel level.level (${level.level})")
+           // Log.d(LOG_TAG, "updateGuardLevel level.level (${level.level})")
             remoteViews.setTextViewText(R.id.tv_status, level.level.toString())
             Log.d(LOG_TAG, "updateGuardLevel level.name (${level.name})")
             remoteViews.setTextViewText(R.id.tv_title, level.name)
-            Log.d(LOG_TAG, "updateGuardLevel level.color int: (${level.color})")
+            // Log.d(LOG_TAG, "updateGuardLevel level.color int: (${level.color})")
             remoteViews.setInt(R.id.tv_status, "setBackgroundColor", level.color)
-            Log.d(LOG_TAG, "updateGuardLevel remoteViews.setTextViewText(${R.id.tv_text}, (${FgwServiceFlutterHandler.entryFilename}))")
+            //Log.d(LOG_TAG, "updateGuardLevel remoteViews.setTextViewText(${R.id.tv_text}, (${FgwServiceFlutterHandler.entryFilename}))")
             remoteViews.setTextViewText(R.id.tv_text, FgwServiceFlutterHandler.entryFilename)
         }
     }
 
     private fun getContentView(context: Context, layoutType: LayoutType): RemoteViews {
-        Log.d(LOG_TAG, "getContentView($context)")
+        //Log.d(LOG_TAG, "getContentView($context)")
         val remoteViews = when (layoutType) {
             LayoutType.NORMAL_ENTRY, LayoutType.NORMAL_LEVEL, LayoutType.NORMAL_LEVEL_CHANGING ->
                 RemoteViews(context.packageName, R.layout.fgw_notification_normal)
@@ -242,7 +240,7 @@ object FgwSeviceNotificationHandler {
             LayoutType.BIG_ENTRY, LayoutType.BIG_LEVEL, LayoutType.BIG_LEVEL_CHANGING ->
                 RemoteViews(context.packageName, R.layout.fgw_notification_big)
         }
-        Log.d(LOG_TAG, "getContentView($context)")
+        //Log.d(LOG_TAG, "getContentView($context)")
 
         val buttonActions = when (layoutType) {
             LayoutType.NORMAL_ENTRY -> normalLytEntryBtns

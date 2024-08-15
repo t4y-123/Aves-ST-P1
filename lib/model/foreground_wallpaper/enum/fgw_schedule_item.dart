@@ -8,7 +8,7 @@ import '../wallpaper_schedule.dart';
 // export and import
 enum FgwExportItem { privacyGuardLevel, filtersSet, schedule }
 
-extension ExtraAppExportItem on FgwExportItem {
+extension ExtraFgwExportItem on FgwExportItem {
 
   dynamic export() {
     return switch (this) {

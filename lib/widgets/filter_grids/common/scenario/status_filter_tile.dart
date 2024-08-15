@@ -1,11 +1,11 @@
 import 'package:aves/app_mode.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
-import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/vaults/vaults.dart';
-import 'package:aves/widgets/collection/collection_page.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/action_mixins/vault_aware.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -18,14 +18,14 @@ import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class InteractiveFilterTile<T extends CollectionFilter> extends StatefulWidget {
+class StatusInteractiveStatusFilterTile<T extends CollectionFilter> extends StatefulWidget {
   final FilterGridItem<T> gridItem;
   final double chipExtent, thumbnailExtent;
   final TileLayout tileLayout;
   final String? banner;
   final HeroType heroType;
 
-  const InteractiveFilterTile({
+  const StatusInteractiveStatusFilterTile({
     super.key,
     required this.gridItem,
     required this.chipExtent,
@@ -36,11 +36,11 @@ class InteractiveFilterTile<T extends CollectionFilter> extends StatefulWidget {
   });
 
   @override
-  State<InteractiveFilterTile<T>> createState() => _InteractiveFilterTileState<T>();
+  State<StatusInteractiveStatusFilterTile<T>> createState() => _StatusInteractiveStatusFilterTileState<T>();
 }
 
-class _InteractiveFilterTileState<T extends CollectionFilter> extends State<InteractiveFilterTile<T>>
-    with FeedbackMixin, VaultAwareMixin {
+class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
+    extends State<StatusInteractiveStatusFilterTile<T>> with FeedbackMixin, VaultAwareMixin {
   HeroType? _heroTypeOverride;
 
   FilterGridItem<T> get gridItem => widget.gridItem;
@@ -64,7 +64,34 @@ class _InteractiveFilterTileState<T extends CollectionFilter> extends State<Inte
           if (selection != null && selection.isSelecting) {
             selection.toggleSelection(gridItem);
           } else {
-            _goToCollection(context, filter);
+            switch (filter) {
+              case ScenarioFilter filter:
+                {
+                  // first remove pinned exclude type of scenario filter.
+                  if (filter.scenario.loadType == ScenarioLoadType.excludeEach) {
+                    final removeFilters = settings.scenarioPinnedFilters
+                        .where((e) => e is ScenarioFilter && e.scenario.loadType == ScenarioLoadType.excludeEach)
+                        .toSet();
+                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..removeAll(removeFilters);
+                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
+                  } else if (settings.scenarioPinnedFilters.contains(filter)) {
+                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..remove(filter);
+                    // debugPrint(
+                    //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.remove(filter)'
+                    //     '${settings.scenarioPinnedFilters} [$filter]');
+                  } else {
+                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
+                    // debugPrint(
+                    //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.add(filter)'
+                    //     '${settings.scenarioPinnedFilters} [$filter]');
+                  }
+                  // debugPrint(
+                  //    '$runtimeType _StatusInteractiveStatusFilterTileState scenario change:${settings.scenarioPinnedFilters}');
+                }
+              default:
+              //do nothing.
+            }
+            // _goToCollection(context, filter);
           }
         case AppMode.pickFilterInternal:
           Navigator.maybeOf(context)?.pop<T>(filter);
@@ -75,7 +102,7 @@ class _InteractiveFilterTileState<T extends CollectionFilter> extends State<Inte
 
     return MetaData(
       metaData: ScalerMetadata(gridItem),
-      child: FilterTile(
+      child: StatusFilterTile(
         gridItem: gridItem,
         chipExtent: widget.chipExtent,
         thumbnailExtent: widget.thumbnailExtent,
@@ -88,28 +115,9 @@ class _InteractiveFilterTileState<T extends CollectionFilter> extends State<Inte
       ),
     );
   }
-
-  void _goToCollection(BuildContext context, CollectionFilter filter) {
-    if (effectiveHeroType == HeroType.onTap) {
-      // make sure the chip hero triggers, even when tapping on the list view details
-      setState(() => _heroTypeOverride = HeroType.always);
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      Navigator.maybeOf(context)?.push(
-        MaterialPageRoute(
-          settings: const RouteSettings(name: CollectionPage.routeName),
-          builder: (context) => CollectionPage(
-            source: context.read<CollectionSource>(),
-            filters: {filter},
-          ),
-        ),
-      );
-    });
-  }
 }
 
-class FilterTile<T extends CollectionFilter> extends StatelessWidget {
+class StatusFilterTile<T extends CollectionFilter> extends StatelessWidget {
   final FilterGridItem<T> gridItem;
   final double chipExtent, thumbnailExtent;
   final TileLayout tileLayout;
@@ -118,7 +126,7 @@ class FilterTile<T extends CollectionFilter> extends StatelessWidget {
   final VoidCallback? onTap;
   final HeroType heroType;
 
-  const FilterTile({
+  const StatusFilterTile({
     super.key,
     required this.gridItem,
     required this.chipExtent,

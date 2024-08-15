@@ -9,6 +9,7 @@ import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
@@ -22,6 +23,7 @@ import 'package:aves/model/source/location/country.dart';
 import 'package:aves/model/source/location/location.dart';
 import 'package:aves/model/source/location/place.dart';
 import 'package:aves/model/source/location/state.dart';
+import 'package:aves/model/source/scenario.dart';
 import 'package:aves/model/source/tag.dart';
 import 'package:aves/model/source/trash.dart';
 import 'package:aves/model/vaults/vaults.dart';
@@ -58,12 +60,23 @@ mixin SourceBase {
 
   ValueNotifier<ProgressEvent> progressNotifier = ValueNotifier(const ProgressEvent(done: 0, total: 0));
 
-  void setProgress({required int done, required int total}) => progressNotifier.value = ProgressEvent(done: done, total: total);
+  void setProgress({required int done, required int total}) =>
+      progressNotifier.value = ProgressEvent(done: done, total: total);
 
   void invalidateEntries();
 }
 
-abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, PlaceMixin, StateMixin, LocationMixin, TagMixin, TrashMixin {
+abstract class CollectionSource
+    with
+        SourceBase,
+        AlbumMixin,
+        CountryMixin,
+        PlaceMixin,
+        StateMixin,
+        LocationMixin,
+        TagMixin,
+        TrashMixin,
+        ScenarioMixin {
   CollectionSource() {
     if (kFlutterMemoryAllocationsEnabled) {
       FlutterMemoryAllocations.instance.dispatchObjectCreated(
@@ -72,7 +85,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         object: this,
       );
     }
-    settings.updateStream.where((event) => event.key == SettingKeys.localeKey).listen((_) => invalidateAlbumDisplayNames());
+    settings.updateStream
+        .where((event) => event.key == SettingKeys.localeKey)
+        .listen((_) => invalidateAlbumDisplayNames());
     settings.updateStream.where((event) => event.key == SettingKeys.hiddenFiltersKey).listen((event) {
       final oldValue = event.oldValue;
       if (oldValue is List<String>?) {
@@ -82,7 +97,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     });
     vaults.addListener(() {
-      final newlyVisibleFilters = vaults.vaultDirectories.whereNot(vaults.isLocked).map((v) => AlbumFilter(v, null)).toSet();
+      final newlyVisibleFilters =
+          vaults.vaultDirectories.whereNot(vaults.isLocked).map((v) => AlbumFilter(v, null)).toSet();
       _onFilterVisibilityChanged(newlyVisibleFilters);
     });
   }
@@ -156,7 +172,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
   Iterable<AvesEntry> _applyTrashFilter(Iterable<AvesEntry> entries) {
     final hiddenFilters = _getAppHiddenFilters();
-    return entries.where(TrashFilter.instance.test).where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+    return entries
+        .where(TrashFilter.instance.test)
+        .where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
   }
 
   void _invalidate({Set<AvesEntry>? entries, bool notify = true}) {
@@ -292,7 +310,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     }
   }
 
-  Future<void> renameAlbum(String sourceAlbum, String destinationAlbum, Set<AvesEntry> entries, Set<MoveOpEvent> movedOps) async {
+  Future<void> renameAlbum(
+      String sourceAlbum, String destinationAlbum, Set<AvesEntry> entries, Set<MoveOpEvent> movedOps) async {
     final oldFilter = AlbumFilter(sourceAlbum, null);
     final newFilter = AlbumFilter(destinationAlbum, null);
 
@@ -351,9 +370,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
     final fromAlbums = <String?>{};
     final movedEntries = <AvesEntry>{};
-    final copy = moveType == MoveType.copy ;
+    final copy = moveType == MoveType.copy;
     final shareByCopy = moveType == MoveType.shareByCopy;
-    if (copy ||  shareByCopy) {
+    if (copy || shareByCopy) {
       movedOps.forEach((movedOp) {
         final sourceUri = movedOp.uri;
         final newFields = movedOp.newFields;
@@ -411,7 +430,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
           }
         }
       });
-      if(moveType == MoveType.toBin){
+      if (moveType == MoveType.toBin) {
         debugPrint('$runtimeType  await shareCopiedEntries.removeEntries(movedEntries) in  updateAfterMove tobin'
             ' :\n$movedEntries');
         await shareCopiedEntries.removeEntries(movedEntries);
@@ -493,7 +512,10 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
 
     if (dataTypes.contains(EntryDataType.address)) {
       await Future.forEach(entries, (entry) async {
-        await entry.locate(background: background, force: dataTypes.contains(EntryDataType.address), geocoderLocale: settings.appliedLocale);
+        await entry.locate(
+            background: background,
+            force: dataTypes.contains(EntryDataType.address),
+            geocoderLocale: settings.appliedLocale);
         await metadataDb.updateAddress(entry.id, entry.addressDetails);
       });
       onAddressMetadataChanged();
@@ -521,7 +543,9 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         // ignore locating countries
         // locating places
         if (!startAnalysisService && await availability.canLocatePlaces) {
-          final opCount = (force ? todoEntries.where((entry) => entry.hasGps) : todoEntries.where(LocationMixin.locatePlacesTest)).length;
+          final opCount =
+              (force ? todoEntries.where((entry) => entry.hasGps) : todoEntries.where(LocationMixin.locatePlacesTest))
+                  .length;
           if (opCount > LocationMixin.commitCountThreshold) {
             startAnalysisService = true;
           }
@@ -573,6 +597,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagEntryCount(filter);
+    if (filter is ScenarioFilter) return scenarioEntryCount(filter);
     return 0;
   }
 
@@ -589,6 +614,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagSize(filter);
+    if (filter is ScenarioFilter) return scenarioSize(filter);
     return 0;
   }
 
@@ -605,6 +631,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagRecentEntry(filter);
+    if (filter is ScenarioFilter) return scenarioRecentEntry(filter);
     return null;
   }
 

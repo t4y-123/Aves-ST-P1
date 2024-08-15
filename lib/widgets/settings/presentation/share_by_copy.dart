@@ -6,7 +6,7 @@ import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:flutter/material.dart';
 
 import '../../../model/filters/album.dart';
-import '../../../model/settings/enums/presentaion.dart';
+import '../../../model/settings/enums/presentation.dart';
 import '../../../utils/android_file_utils.dart';
 import '../../common/action_mixins/feedback.dart';
 

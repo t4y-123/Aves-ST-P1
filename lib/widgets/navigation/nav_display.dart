@@ -2,6 +2,7 @@ import 'package:aves/model/filters/favourite.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/type.dart';
+import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/about/about_page.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -14,6 +15,8 @@ import 'package:aves/widgets/filter_grids/places_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/settings/settings_page.dart';
 import 'package:flutter/material.dart';
+
+import '../filter_grids/scenario_page.dart';
 
 class NavigationDisplay {
   static String getFilterTitle(BuildContext context, CollectionFilter? filter) {
@@ -33,6 +36,8 @@ class NavigationDisplay {
   static String getPageTitle(BuildContext context, route) {
     final l10n = context.l10n;
     switch (route) {
+      case ScenarioListPage.routeName:
+        return l10n.drawerScenarioPage;
       case AlbumListPage.routeName:
         return l10n.drawerAlbumPage;
       case CountryListPage.routeName:
@@ -58,6 +63,8 @@ class NavigationDisplay {
 
   static IconData? getPageIcon(String route) {
     switch (route) {
+      case ScenarioListPage.routeName:
+        return AIcons.scenario;
       case AlbumListPage.routeName:
         return AIcons.album;
       case CountryListPage.routeName:

@@ -31,6 +31,7 @@ class PrivacyGuardLevel with ChangeNotifier {
     _rows.clear();
     _bridgeRows.clear();
     _rows = await metadataDb.loadAllPrivacyGuardLevels();
+    _bridgeRows = await metadataDb.loadAllPrivacyGuardLevels();
   }
 
   int get count => _rows.length;
@@ -291,11 +292,11 @@ class PrivacyGuardLevelRow extends Equatable  implements Comparable<PrivacyGuard
   });
 
   factory PrivacyGuardLevelRow.fromMap(Map<String, dynamic> map) {
-    debugPrint('$PrivacyGuardLevelRow map $map');
+    //debugPrint('$PrivacyGuardLevelRow map $map');
     final colorValue = map['color'] as String?;
-    debugPrint('$PrivacyGuardLevelRow colorValue $colorValue ${colorValue!.toColor}');
-    final color = colorValue.toColor;
-    debugPrint('$PrivacyGuardLevelRow  color $color');
+    //debugPrint('$PrivacyGuardLevelRow colorValue $colorValue ${colorValue!.toColor}');
+    final color = colorValue?.toColor;
+    //debugPrint('$PrivacyGuardLevelRow  color $color');
 
     return PrivacyGuardLevelRow(
       privacyGuardLevelID: map['id'] as int,

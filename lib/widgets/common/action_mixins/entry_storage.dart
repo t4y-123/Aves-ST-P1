@@ -10,7 +10,7 @@ import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/highlight.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/multipage.dart';
-import 'package:aves/model/settings/enums/presentaion.dart';
+import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';

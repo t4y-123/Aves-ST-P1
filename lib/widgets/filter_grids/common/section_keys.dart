@@ -25,17 +25,23 @@ class AlbumImportanceSectionKey extends ChipSectionKey {
 
   AlbumImportanceSectionKey._private(BuildContext context, this.importance) : super(title: importance.getText(context));
 
-  factory AlbumImportanceSectionKey.newAlbum(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.newAlbum);
+  factory AlbumImportanceSectionKey.newAlbum(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.newAlbum);
 
-  factory AlbumImportanceSectionKey.pinned(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.pinned);
+  factory AlbumImportanceSectionKey.pinned(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.pinned);
 
-  factory AlbumImportanceSectionKey.special(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.special);
+  factory AlbumImportanceSectionKey.special(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.special);
 
-  factory AlbumImportanceSectionKey.apps(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.apps);
+  factory AlbumImportanceSectionKey.apps(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.apps);
 
-  factory AlbumImportanceSectionKey.vault(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.vaults);
+  factory AlbumImportanceSectionKey.vault(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.vaults);
 
-  factory AlbumImportanceSectionKey.regular(BuildContext context) => AlbumImportanceSectionKey._private(context, AlbumImportance.regular);
+  factory AlbumImportanceSectionKey.regular(BuildContext context) =>
+      AlbumImportanceSectionKey._private(context, AlbumImportance.regular);
 
   @override
   Widget get leading => Icon(importance.getIcon());
@@ -59,7 +65,8 @@ class MimeTypeSectionKey extends ChipSectionKey {
 class StorageVolumeSectionKey extends ChipSectionKey {
   final StorageVolume? volume;
 
-  StorageVolumeSectionKey(BuildContext context, this.volume) : super(title: volume?.getDescription(context) ?? context.l10n.sectionUnknown);
+  StorageVolumeSectionKey(BuildContext context, this.volume)
+      : super(title: volume?.getDescription(context) ?? context.l10n.sectionUnknown);
 
   @override
   Widget? get leading => (volume?.isRemovable ?? false) ? const Icon(AIcons.storageCard) : null;

@@ -140,7 +140,7 @@ class WallpaperSchedules with ChangeNotifier {
   Future<void> removeNumbers(Set<int> rowNums, {ScheduleRowType type = ScheduleRowType.all}) async {
     final targetSet = _getTarget(type);
 
-    final removedRows = targetSet.where((row) => rowNums.contains(row.orderNum)).toSet();
+    final removedRows = targetSet.where((row) => rowNums.contains(row.id)).toSet();
     if (type == ScheduleRowType.all) await metadataDb.removeWallpaperSchedules(removedRows);
     removedRows.forEach(targetSet.remove);
     notifyListeners();

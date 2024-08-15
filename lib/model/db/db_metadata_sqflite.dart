@@ -21,6 +21,8 @@ import 'package:sqflite/sqflite.dart';
 import '../foreground_wallpaper/fgw_used_entry_record.dart';
 import '../foreground_wallpaper/privacy_guard_level.dart';
 import '../foreground_wallpaper/share_copied_entry.dart';
+import '../scenario/scenario.dart';
+import '../scenario/scenario_step.dart';
 
 
 class SqfliteMetadataDb implements MetadataDb {
@@ -49,6 +51,11 @@ class SqfliteMetadataDb implements MetadataDb {
   //t4y share by copy:
   static const shareCopiedEntryTable = 'shareCopiedEntry';
 
+  // t4y: presentation: scenario presentation
+  static const scenarioTable = 'scenarioPresent';
+  static const scenarioStepTable = 'scenarioStep';
+  static const assignFilterTable = 'assignFilter';
+  static const assignEntryTable = 'assignEntry';
   //End
 
   static int _lastId = 0;
@@ -171,6 +178,27 @@ class SqfliteMetadataDb implements MetadataDb {
         await db.execute('CREATE TABLE $shareCopiedEntryTable('
             'id INTEGER PRIMARY KEY'
             ', dateMillis INTEGER'
+            ')');
+        //T4y: Scenario Presentation
+        await db.execute('CREATE TABLE $scenarioTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', loadType TEXT'
+            ', color INTEGER'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $scenarioStepTable('
+            'id INTEGER PRIMARY KEY'
+            ', scenarioId INTEGER'
+            ', stepNum INTEGER'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', loadType TEXT'
+            ', filters TEXT'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
             ')');
       },
       onUpgrade: MetadataDbUpgrader.upgradeDb,
@@ -921,6 +949,105 @@ class SqfliteMetadataDb implements MetadataDb {
     debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
     batch.insert(
       shareCopiedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Scenario
+  @override
+  Future<void> clearScenarios() async {
+    final count = await _db.delete(scenarioTable, where: '1');
+    debugPrint('clearScenarios deleted $count rows');
+  }
+
+  @override
+  Future<Set<ScenarioRow>> loadAllScenarios() async {
+    final rows = await _db.query(scenarioTable);
+    return rows.map(ScenarioRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addScenarios(Set<ScenarioRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertScenarios(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateScenarioById(int id, ScenarioRow row) async {
+    final batch = _db.batch();
+    batch.delete(scenarioTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertScenarios(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeScenarios(Set<ScenarioRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(scenarioTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertScenarios(Batch batch, ScenarioRow row) {
+    batch.insert(
+      scenarioTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+
+  // Scenario step
+  @override
+  Future<void> clearScenarioSteps() async {
+    final count = await _db.delete(scenarioStepTable, where: '1');
+    debugPrint('clearScenarioSteps deleted $count rows');
+  }
+
+  @override
+  Future<Set<ScenarioStepRow>> loadAllScenarioSteps() async {
+    final rows = await _db.query(scenarioStepTable);
+    return rows.map(ScenarioStepRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addScenarioSteps(Set<ScenarioStepRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertScenarioSteps(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateScenarioStepById(int id, ScenarioStepRow row) async {
+    final batch = _db.batch();
+    batch.delete(scenarioStepTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertScenarioSteps(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeScenarioSteps(Set<ScenarioStepRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(scenarioStepTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertScenarioSteps(Batch batch, ScenarioStepRow row) {
+    batch.insert(
+      scenarioStepTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

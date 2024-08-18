@@ -1112,11 +1112,10 @@
 
 
   "settingsPresentationSectionTitle": "Presentation",
-  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper schedules config",
-  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Schedules Config",
-
-  "settingsPresentationWallpaperAddDefaultScheduleTile": "Group manage wallpaper schedules",
-  "settingsWallpaperSchedulesManagerTitle": "Manage Wallpaper Schedules",
+  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper  config",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Foreground wallpaper operation",
+  "settingsWallpaperSchedulesManagerTitle": "Foreground wallpaper operation",
 
 
   "fgwScheduleGroupSetType346": "3/4/6,for home and lock screen",
@@ -1158,7 +1157,7 @@
   "settingsGuardLevelColor": "Color:",
   "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
   "settingsCollectionScheduleUpdateTypeMultiSelectionNone": "None",
-  "settingsGuardLevelIsActiveTitle": "Active:",
+  "settingsActiveTitle": "Active:",
 
 
   "settingsFilterSetTabTypes": "Filter Set",
@@ -1217,6 +1216,7 @@
   "scenarioGroupIntersectBeforeUnion": "Intersect Before Union",
   "scenarioGroupNone": "Do not group",
 
+  "scenarioTierFuncPinned": "Func Pinned",
   "scenarioTierActivePinned": "Active Pinned",
   "scenarioTierExcludeUnique": "Exclude (Unique)",
   "scenarioTierIntersectAnd": "Intersect (And)",
@@ -1226,17 +1226,40 @@
   "chipActionUnlockScenario": "Unlock scenario",
   "chipActionSettingScenario": "Setting scenario",
 
-  "initScenarioName01": "Exposure Exclude",
-  "initScenarioName02": "Moderate Exclude",
-  "initScenarioName03": "Safe Exclude",
+  "initScenarioName01": "All Exclude",
+  "initScenarioName02": "Image Exclude",
+  "initScenarioName03": "Share Copied Exclude",
 
-  "initScenarioName04": "Exposure Interject",
-  "initScenarioName05": "Moderate Interject",
-  "initScenarioName06": "Safe Interject",
+  "initScenarioName04": "Portrait Interject",
+  "initScenarioName05": "Landscape Interject",
+  "initScenarioName06": "Recent Interject",
 
-  "initScenarioName07": "Exposure Union",
-  "initScenarioName08": "Moderate Union",
-  "initScenarioName09": "Safe Union",
+  "initScenarioName07": "Video Union",
+  "initScenarioName08": "Picture  Union",
+  "initScenarioName09": "Download Union",
+
+  "settingsScenarioStepsTabTypes": "Scenario Steps",
+  "settingsScenarioStepsNamePrefix": "Scenario steps: ",
+  "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
+
+  "settingsScenariosConfigPageTile": "Scenarios config",
+  "settingsScenariosConfigPageTitle": "Scenarios Config",
+  "scenarioFilterSettingTitle": "Setting Scenario",
+  "scenarioFilterAddNewTitle": "Add new scenario",
+
+  "settingsScenariosOperationTile": "Scenarios operation",
+  "settingsScenariosOperationTitle": "Scenarios Operation",
+  "settingsScenarioResetDefaultText": "Reset scenarios to default",
+  "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
+
+  "scenarioTitle": "Scenario",
+  "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",
+  "settingsScenarioColor": "Color:",
+  "settingsScenarioDateMills":"Date:",
+  "settingsScenarioLoadTypeMultiSelectionTitle": "Load type: (used in sequence.)",
+  "settingsScenarioLoadTypeSelectionTile": "Load type",
+
+  "searchQueryHelperSectionTitle": "Query Helper",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

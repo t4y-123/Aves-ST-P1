@@ -29,6 +29,7 @@ import 'package:aves/widgets/common/identity/aves_filter_chip.dart';
 import 'package:aves/widgets/common/search/delegate.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip.dart';
+import 'package:aves/widgets/search/query_helper_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -64,6 +65,16 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
   ];
 
   static final _monthFilters = List.generate(12, (i) => DateFilter(DateLevel.m, DateTime(1, i + 1)));
+  static final _helperQueryFilters = [
+    QueryFilter(QueryFilter.keyContentTime2Now),
+    QueryFilter(QueryFilter.keyContentSize),
+    QueryFilter(QueryFilter.keyContentWidth),
+    QueryFilter(QueryFilter.keyContentHeight),
+    QueryFilter(QueryFilter.keyContentDay),
+    QueryFilter(QueryFilter.keyContentMonth),
+    QueryFilter(QueryFilter.keyContentYear),
+    QueryFilter(QueryFilter.keyContentId),
+  ];
 
   CollectionSearchDelegate({
     required super.searchFieldLabel,
@@ -135,6 +146,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
                         title: context.l10n.searchRecentSectionTitle,
                         filters: history,
                       ),
+                    _buildHelperQueryFilters(context, containQuery),
                     _buildDateFilters(context, containQuery),
                     _buildAlbumFilters(containQuery),
                     _buildCountryFilters(containQuery),
@@ -179,6 +191,69 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
           );
   }
 
+  Widget _buildQueryHelpDialogFilterRow({
+    required BuildContext context,
+    String? title,
+    required List<CollectionFilter> filters,
+    HeroType Function(CollectionFilter filter)? heroTypeBuilder,
+  }) {
+    void onTap(filter) => _makeRealQuery(context, filter.query);
+    return title != null
+        ? TitledExpandableFilterRow(
+            title: title,
+            filters: filters,
+            expandedNotifier: _expandedSectionNotifier,
+            heroTypeBuilder: heroTypeBuilder,
+            onTap: onTap,
+            onLongPress: null,
+          )
+        : ExpandableFilterRow(
+            filters: filters,
+            isExpanded: false,
+            heroTypeBuilder: heroTypeBuilder,
+            onTap: onTap,
+            onLongPress: null,
+          );
+  }
+
+  Future<void> _makeRealQuery(BuildContext context, String? queryKey) async {
+    if (queryKey == null) {
+      goBack(context);
+      return;
+    }
+    String operator = '<';
+    if (queryKey == QueryFilter.keyContentSize ||
+        queryKey == QueryFilter.keyContentHeight ||
+        queryKey == QueryFilter.keyContentWidth) {
+      operator = '>';
+    }
+    final finalQuery = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return QueryFilterDialog(
+          queryKey: queryKey,
+          operator: operator,
+        );
+      },
+    );
+
+    if (finalQuery == null) return;
+
+    final realQueryFilter = QueryFilter(finalQuery);
+    await _select(context, realQueryFilter);
+  }
+
+  Widget _buildHelperQueryFilters(BuildContext context, _ContainQuery containQuery) {
+    final filters = [
+      ..._helperQueryFilters,
+    ].where((f) => containQuery(f.getLabel(context))).toList();
+    return _buildQueryHelpDialogFilterRow(
+      context: context,
+      title: context.l10n.searchQueryHelperSectionTitle,
+      filters: filters,
+    );
+  }
+
   Widget _buildDateFilters(BuildContext context, _ContainQuery containQuery) {
     final filters = [
       DateFilter.onThisDay,
@@ -220,7 +295,8 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
         return _buildFilterRow(
           context: context,
           title: context.l10n.searchCountriesSectionTitle,
-          filters: source.sortedCountries.where(containQuery).map((s) => LocationFilter(LocationLevel.country, s)).toList(),
+          filters:
+              source.sortedCountries.where(containQuery).map((s) => LocationFilter(LocationLevel.country, s)).toList(),
         );
       },
     );

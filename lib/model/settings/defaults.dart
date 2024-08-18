@@ -33,9 +33,9 @@ class SettingsDefaults {
 
   // navigation
   static const mustBackTwiceToExit = true;
-  static const keepScreenOn = KeepScreenOn.always;// t4y temp for test
+  static const keepScreenOn = KeepScreenOn.always; // t4y temp for test
   //static const keepScreenOn = KeepScreenOn.viewerOnly;
-  static const homePage = HomePageSetting.albums;// t4y prefer albums
+  static const homePage = HomePageSetting.albums; // t4y prefer albums
   //static const homePage = HomePageSetting.collection;
   static const enableBottomNavigationBar = true;
   static const confirm = true;
@@ -106,7 +106,7 @@ class SettingsDefaults {
   static const showOverlayDescription = false;
   static const showOverlayRatingTags = false;
   static const showOverlayShootingDetails = false;
-  static const showOverlayThumbnailPreview = true;// t4y : I prefer ThumbnailPreview
+  static const showOverlayThumbnailPreview = true; // t4y : I prefer ThumbnailPreview
   //static const showOverlayThumbnailPreview = false;
   static const viewerGestureSideTapNext = false;
   static const viewerUseCutout = true;
@@ -174,7 +174,7 @@ class SettingsDefaults {
   static const fgwScheduleSet = FgwScheduleSetType.type346;
   //
   static const int maxFgwUsedEntryRecord = 10;
-  static const int resetPrivacyGuardLevelDuration = 15 ; // seconds
+  static const int resetPrivacyGuardLevelDuration = 15; // seconds
   // diff type share.
   static const confirmSetDateToNow = true;
   static const confirmShareByCopy = true;
@@ -185,15 +185,15 @@ class SettingsDefaults {
   static const shareByCopyCollectionPageAutoRemove = true;
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
-  static const shareByCopyRemoveInterval = 10 ; // seconds
+  static const shareByCopyRemoveInterval = 10; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
   // so,always force to copy a new item before edit, then edit the copied item.
   static const confirmEditAsCopiedFirst = true;
 
+  static const scenarioLock = false;
   // filter grids
-  static const scenarioGroupFactor = ScenarioChipGroupFactor.importance;
+  static const scenarioGroupFactor = ScenarioChipGroupFactor.intersectBeforeUnion;
   static const scenarioChipListSortFactor = ChipSortFactor.name;
-
 }

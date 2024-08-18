@@ -209,6 +209,9 @@ class AIcons {
 
   // t4y:scenario pages
   static const scenario = Icons.token;
+  static const scenarioExcludeUnique = Icons.remove_done;
+  static const scenarioInjectAnd = Icons.rule;
+  static const scenarioUnionOr = Icons.add_task;
   static const lockScenario = Icons.lock_open_sharp;
   static const unlockScenario = Icons.lock_sharp;
   static const settingScenario = Icons.settings_applications;

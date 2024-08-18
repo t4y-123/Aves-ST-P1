@@ -60,17 +60,17 @@ mixin ScenarioMixin on SourceBase {
   }
 
   int scenarioEntryCount(ScenarioFilter filter) {
-    return _filterEntryCountMap.putIfAbsent(filter.scenario.labelName, () => visibleEntries.where(filter.test).length);
+    return _filterEntryCountMap.putIfAbsent(filter.displayName, () => visibleEntries.where(filter.test).length);
   }
 
   int scenarioSize(ScenarioFilter filter) {
     return _filterSizeMap.putIfAbsent(
-        filter.scenario.labelName, () => visibleEntries.where(filter.test).map((v) => v.sizeBytes).sum);
+        filter.displayName, () => visibleEntries.where(filter.test).map((v) => v.sizeBytes).sum);
   }
 
   AvesEntry? scenarioRecentEntry(ScenarioFilter filter) {
     return _filterRecentEntryMap.putIfAbsent(
-        filter.scenario.labelName, () => sortedEntriesByDate.firstWhereOrNull(filter.test));
+        filter.displayName, () => sortedEntriesByDate.firstWhereOrNull(filter.test));
   }
 }
 

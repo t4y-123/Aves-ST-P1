@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:collection/collection.dart';
@@ -154,14 +155,13 @@ class Scenario with ChangeNotifier {
     return '$prefix $orderNum';
   }
 
-  Future<ScenarioRow> newRow(int existOrderNumOffset,{
-        String? labelName,
-        ScenarioLoadType? loadType,
-        Color? color,
-        int? dateMillis,
-        bool isActive = true,
-        ScenarioRowsType type = ScenarioRowsType.all}) async {
-
+  Future<ScenarioRow> newRow(int existOrderNumOffset,
+      {String? labelName,
+      ScenarioLoadType? loadType,
+      Color? color,
+      int? dateMillis,
+      bool isActive = true,
+      ScenarioRowsType type = ScenarioRowsType.all}) async {
     final targetSet = _getTarget(type);
 
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
@@ -187,8 +187,8 @@ class Scenario with ChangeNotifier {
     final setBridge = type == ScenarioRowsType.bridgeAll;
     final targetSet = setBridge ? _bridgeRows : _rows;
 
-    debugPrint('$runtimeType setExistRows scenarios: ${scenarios.all.map((e)=>e.toMap())}\n'
-        'row.targetSet:[${targetSet.map((e)=>e.toMap())}]  \n'
+    debugPrint('$runtimeType setExistRows scenarios: ${scenarios.all.map((e) => e.toMap())}\n'
+        'row.targetSet:[${targetSet.map((e) => e.toMap())}]  \n'
         'newValues ${newValues.toString()}\n');
     for (var row in rows) {
       final oldRow = targetSet.firstWhereOrNull((r) => r.id == row.id);
@@ -204,8 +204,8 @@ class Scenario with ChangeNotifier {
           orderNum: newValues[ScenarioRow.propOrderNum] ?? row.orderNum,
           labelName: newValues[ScenarioRow.propLabelName] ?? row.labelName,
           color: newValues[ScenarioRow.propColor] ?? row.color,
-          loadType: newValues[ScenarioRow.propLoadType]  ?? row.loadType,
-          dateMillis: newValues[ScenarioRow.propDateMills]  ?? DateTime.now().millisecondsSinceEpoch,
+          loadType: newValues[ScenarioRow.propLoadType] ?? row.loadType,
+          dateMillis: newValues[ScenarioRow.propDateMills] ?? DateTime.now().millisecondsSinceEpoch,
           isActive: newValues[ScenarioRow.propIsActive] ?? row.isActive,
         );
 
@@ -321,7 +321,8 @@ class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
   });
 
   static ScenarioRow fromMap(Map map) {
-    final defaultDisplayType = ScenarioLoadType.values.safeByName(map['loadType'] as String, ScenarioLoadType.excludeEach);
+    final defaultDisplayType =
+        ScenarioLoadType.values.safeByName(map['loadType'] as String, ScenarioLoadType.excludeEach);
     //debugPrint('ScenarioRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
     final colorValue = map['color'] as String?;
     //debugPrint('$ScenarioRow colorValue $colorValue ${colorValue!.toColor}');

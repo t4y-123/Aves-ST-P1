@@ -6,25 +6,25 @@ import 'package:flutter/cupertino.dart';
 import '../../../theme/icons.dart';
 import '../scenario.dart';
 
-enum ScenarioChipGroupFactor { none, importance, unionBeforeIntersect, intersectBeforeUnion }
+enum ScenarioChipGroupFactor { unionBeforeIntersect, intersectBeforeUnion }
 
 extension ExtraScenarioChipGroupFactorView on ScenarioChipGroupFactor {
   String getName(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
-      ScenarioChipGroupFactor.importance => l10n.scenarioGroupImportance,
+      // ScenarioChipGroupFactor.importance => l10n.scenarioGroupImportance,
       ScenarioChipGroupFactor.unionBeforeIntersect => l10n.scenarioGroupUnionBeforeIntersect,
       ScenarioChipGroupFactor.intersectBeforeUnion => l10n.scenarioGroupIntersectBeforeUnion,
-      ScenarioChipGroupFactor.none => l10n.scenarioGroupNone,
+      // ScenarioChipGroupFactor.none => l10n.scenarioGroupNone,
     };
   }
 
   IconData get icon {
     return switch (this) {
-      ScenarioChipGroupFactor.importance => AIcons.important,
+      // ScenarioChipGroupFactor.importance => AIcons.important,
       ScenarioChipGroupFactor.unionBeforeIntersect => AIcons.mimeType,
       ScenarioChipGroupFactor.intersectBeforeUnion => AIcons.storageCard,
-      ScenarioChipGroupFactor.none => AIcons.clear,
+      // ScenarioChipGroupFactor.none => AIcons.clear,
     };
   }
 }
@@ -35,7 +35,7 @@ enum ScenarioChipSortFactor { date, name, count, size }
 enum ScenarioLoadType { excludeEach, unionOr, intersectAnd }
 
 extension ExtraScenarioLoadTypeView on ScenarioLoadType {
-  String? getName(BuildContext context) {
+  String getName(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
       ScenarioLoadType.excludeEach => l10n.scenarioLoadTypeExclude,
@@ -47,12 +47,13 @@ extension ExtraScenarioLoadTypeView on ScenarioLoadType {
 
 enum ScenarioStepLoadType { unionOr, intersectAnd }
 
-enum ScenarioImportance { activePinned, excludeUnique, intersectAnd, unionOr }
+enum ScenarioImportance { funcPinned, activePinned, excludeUnique, intersectAnd, unionOr }
 
 extension ExtraScenarioImportance on ScenarioImportance {
   String getText(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
+      ScenarioImportance.funcPinned => l10n.scenarioTierFuncPinned,
       ScenarioImportance.activePinned => l10n.scenarioTierActivePinned,
       ScenarioImportance.excludeUnique => l10n.scenarioTierExcludeUnique,
       ScenarioImportance.intersectAnd => l10n.scenarioTierIntersectAnd,
@@ -62,10 +63,11 @@ extension ExtraScenarioImportance on ScenarioImportance {
 
   IconData getIcon() {
     return switch (this) {
-      ScenarioImportance.activePinned => AIcons.pin,
-      ScenarioImportance.excludeUnique => AIcons.important,
-      ScenarioImportance.intersectAnd => AIcons.app,
-      ScenarioImportance.unionOr => AIcons.album,
+      ScenarioImportance.funcPinned => AIcons.settings,
+      ScenarioImportance.activePinned => AIcons.active,
+      ScenarioImportance.excludeUnique => AIcons.scenarioExcludeUnique,
+      ScenarioImportance.intersectAnd => AIcons.scenarioInjectAnd,
+      ScenarioImportance.unionOr => AIcons.scenarioUnionOr,
     };
   }
 }
@@ -75,6 +77,9 @@ class ScenarioImportanceSectionKey extends ChipSectionKey {
 
   ScenarioImportanceSectionKey._private(BuildContext context, this.importance)
       : super(title: importance.getText(context));
+
+  factory ScenarioImportanceSectionKey.funcPinned(BuildContext context) =>
+      ScenarioImportanceSectionKey._private(context, ScenarioImportance.funcPinned);
 
   factory ScenarioImportanceSectionKey.activePinned(BuildContext context) =>
       ScenarioImportanceSectionKey._private(context, ScenarioImportance.activePinned);

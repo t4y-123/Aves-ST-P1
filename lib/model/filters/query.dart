@@ -21,6 +21,7 @@ class QueryFilter extends CollectionFilter {
 
   static final _fieldPattern = RegExp(r'(.+)([=<>])(.+)');
   static final _fileSizePattern = RegExp(r'(\d+)([KMG])?');
+  static final _timePattern = RegExp(r'(\d+)(Y|M|D|HH|MM|SS)');
   static const keyContentId = 'ID';
   static const keyContentYear = 'YEAR';
   static const keyContentMonth = 'MONTH';
@@ -28,6 +29,8 @@ class QueryFilter extends CollectionFilter {
   static const keyContentWidth = 'WIDTH';
   static const keyContentHeight = 'HEIGHT';
   static const keyContentSize = 'SIZE';
+  static const keyContentTime2Now = 'TIME2NOW';
+
   static const opEqual = '=';
   static const opLower = '<';
   static const opGreater = '>';
@@ -82,7 +85,8 @@ class QueryFilter extends CollectionFilter {
   String get universalLabel => query;
 
   @override
-  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) => Icon(AIcons.text, size: size);
+  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) =>
+      Icon(AIcons.text, size: size);
 
   @override
   Future<Color> color(BuildContext context) {
@@ -194,6 +198,51 @@ class QueryFilter extends CollectionFilter {
             return (entry) => (entry.sizeBytes ?? 0) < bytes;
           case opGreater:
             return (entry) => (entry.sizeBytes ?? 0) > bytes;
+        }
+      case keyContentTime2Now:
+        final now = DateTime.now();
+        final timeComponents = _timePattern.allMatches(valueString);
+        var targetTime = now;
+
+        for (var component in timeComponents) {
+          final amount = int.tryParse(component.group(1)!) ?? 0;
+          final unit = component.group(2);
+
+          switch (unit) {
+            case 'Y':
+              targetTime = DateTime(targetTime.year - amount, targetTime.month, targetTime.day, targetTime.hour,
+                  targetTime.minute, targetTime.second);
+              break;
+            case 'M':
+              targetTime = DateTime(targetTime.year, targetTime.month - amount, targetTime.day, targetTime.hour,
+                  targetTime.minute, targetTime.second);
+              break;
+            case 'D':
+              targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day - amount, targetTime.hour,
+                  targetTime.minute, targetTime.second);
+              break;
+            case 'HH':
+              targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour - amount,
+                  targetTime.minute, targetTime.second);
+              break;
+            case 'MM':
+              targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour,
+                  targetTime.minute - amount, targetTime.second);
+              break;
+            case 'SS':
+              targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour,
+                  targetTime.minute, targetTime.second - amount);
+              break;
+          }
+        }
+
+        switch (op) {
+          case opEqual:
+            return (entry) => entry.bestDate?.compareTo(targetTime) == 0;
+          case opLower:
+            return (entry) => entry.bestDate?.isAfter(targetTime) == true;
+          case opGreater:
+            return (entry) => entry.bestDate?.isBefore(targetTime) == true;
         }
     }
 

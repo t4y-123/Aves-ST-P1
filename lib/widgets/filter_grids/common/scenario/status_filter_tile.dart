@@ -14,6 +14,7 @@ import 'package:aves/widgets/common/identity/aves_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/covered_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/filter_chip_grid_decorator.dart';
 import 'package:aves/widgets/filter_grids/common/list_details.dart';
+import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -67,26 +68,35 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
             switch (filter) {
               case ScenarioFilter filter:
                 {
-                  // first remove pinned exclude type of scenario filter.
-                  if (filter.scenario.loadType == ScenarioLoadType.excludeEach) {
-                    final removeFilters = settings.scenarioPinnedFilters
-                        .where((e) => e is ScenarioFilter && e.scenario.loadType == ScenarioLoadType.excludeEach)
-                        .toSet();
-                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..removeAll(removeFilters);
-                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
-                  } else if (settings.scenarioPinnedFilters.contains(filter)) {
-                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..remove(filter);
+                  if (filter.scenarioId >= 0) {
+                    // first remove pinned exclude type of scenario filter.
+                    if (filter.scenario?.loadType == ScenarioLoadType.excludeEach) {
+                      final removeFilters = settings.scenarioPinnedFilters
+                          .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeEach)
+                          .toSet();
+                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..removeAll(removeFilters);
+                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
+                    } else if (settings.scenarioPinnedFilters.contains(filter)) {
+                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..remove(filter);
+                      // debugPrint(
+                      //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.remove(filter)'
+                      //     '${settings.scenarioPinnedFilters} [$filter]');
+                    } else {
+                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
+                      // debugPrint(
+                      //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.add(filter)'
+                      //     '${settings.scenarioPinnedFilters} [$filter]');
+                    }
                     // debugPrint(
-                    //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.remove(filter)'
-                    //     '${settings.scenarioPinnedFilters} [$filter]');
-                  } else {
-                    settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
-                    // debugPrint(
-                    //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.add(filter)'
-                    //     '${settings.scenarioPinnedFilters} [$filter]');
-                  }
-                  // debugPrint(
-                  //    '$runtimeType _StatusInteractiveStatusFilterTileState scenario change:${settings.scenarioPinnedFilters}');
+                    //    '$runtimeType _StatusInteractiveStatusFilterTileState scenario change:${settings.scenarioPinnedFilters}');
+                  } else if (filter.scenarioId == ScenarioFilter.scenarioSettingId) {
+                    await Navigator.maybeOf(context)?.push(
+                      MaterialPageRoute(
+                        settings: const RouteSettings(name: ScenarioConfigPage.routeName),
+                        builder: (context) => const ScenarioConfigPage(),
+                      ),
+                    );
+                  } else if (filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {}
                 }
               default:
               //do nothing.

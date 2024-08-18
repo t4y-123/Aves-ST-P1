@@ -50,7 +50,7 @@ class ScenarioListPage extends StatelessWidget {
                 source: source,
                 title: context.l10n.scenarioPageTitle,
                 sortFactor: settings.scenarioSortFactor,
-                showHeaders: settings.scenarioGroupFactor != ScenarioChipGroupFactor.none,
+                showHeaders: true,
                 actionDelegate: ScenarioChipSetActionDelegate(gridItems),
                 filterSections: groupToSections(context, source, gridItems),
                 newFilters: source.getNewScenarioFilters(context),
@@ -71,13 +71,16 @@ class ScenarioListPage extends StatelessWidget {
 
   static List<FilterGridItem<ScenarioFilter>> applyQuery(
       BuildContext context, List<FilterGridItem<ScenarioFilter>> filters, String query) {
-    return filters
-        .where((item) => (item.filter.displayName ?? item.filter.scenario.labelName).toUpperCase().contains(query))
-        .toList();
+    return filters.where((item) => (item.filter.displayName).toUpperCase().contains(query)).toList();
   }
 
   static List<FilterGridItem<ScenarioFilter>> getScenarioGridItems(BuildContext context, CollectionSource source) {
-    final filters = scenarios.all.map((scenario) => ScenarioFilter(scenario.id, scenario.labelName)).toSet();
+    final filters = scenarios.all
+        .where((e) => e.isActive)
+        .map((scenario) => ScenarioFilter(scenario.id, scenario.labelName))
+        .toSet();
+    filters.add(ScenarioFilter(ScenarioFilter.scenarioSettingId, context.l10n.scenarioFilterSettingTitle));
+    filters.add(ScenarioFilter(ScenarioFilter.scenarioAddNewItemId, context.l10n.scenarioFilterAddNewTitle));
     debugPrint('getScenarioGridItems filters $filters');
     return FilterNavigationPage.sort(settings.scenarioSortFactor, settings.scenarioSortReverse, source, filters);
   }
@@ -86,27 +89,37 @@ class ScenarioListPage extends StatelessWidget {
       BuildContext context, CollectionSource source, Iterable<FilterGridItem<ScenarioFilter>> sortedMapEntries) {
     final newFilters = source.getNewScenarioFilters(context);
     final pinned = settings.scenarioPinnedFilters.whereType<ScenarioFilter>();
-
-    final List<FilterGridItem<ScenarioFilter>> newMapEntries = [], pinnedMapEntries = [], unpinnedMapEntries = [];
+    debugPrint('getScenarioGridItems pinned $pinned');
+    final List<FilterGridItem<ScenarioFilter>> newMapEntries = [],
+        funcMapEntries = [],
+        pinnedMapEntries = [],
+        unpinnedMapEntries = [];
     for (final item in sortedMapEntries) {
       final filter = item.filter;
       if (newFilters.contains(filter)) {
         newMapEntries.add(item);
-      } else if (pinned.contains(filter)) {
+      }
+      if (pinned.contains(filter)) {
         pinnedMapEntries.add(item);
       }
+      if (filter.scenarioId == ScenarioFilter.scenarioSettingId ||
+          filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {
+        funcMapEntries.add(item);
+      } else {
+        unpinnedMapEntries.add(item);
+      }
       //t4y: in scenario, use pinned to well-marked that what scenarios is active.
-      unpinnedMapEntries.add(item);
-      debugPrint('getScenarioGridItems unpinnedMapEntries $unpinnedMapEntries');
     }
-
+    debugPrint('getScenarioGridItems unpinnedMapEntries $unpinnedMapEntries');
+    debugPrint('getScenarioGridItems pinnedMapEntries $pinnedMapEntries');
     var sections = <ChipSectionKey, List<FilterGridItem<ScenarioFilter>>>{};
+    final funcPinnedKey = ScenarioImportanceSectionKey.funcPinned(context);
     final activePinnedKey = ScenarioImportanceSectionKey.activePinned(context);
     final excludeUniqueKey = ScenarioImportanceSectionKey.excludeUnique(context);
     final intersectAndKey = ScenarioImportanceSectionKey.intersectAnd(context);
     final unionOrKey = ScenarioImportanceSectionKey.unionOr(context);
     sections = groupBy<FilterGridItem<ScenarioFilter>, ChipSectionKey>(unpinnedMapEntries, (kv) {
-      switch ((kv.filter.scenario.loadType)) {
+      switch ((kv.filter.scenario?.loadType)) {
         case ScenarioLoadType.excludeEach:
           return excludeUniqueKey;
         case ScenarioLoadType.intersectAnd:
@@ -119,17 +132,18 @@ class ScenarioListPage extends StatelessWidget {
     });
 
     switch (settings.scenarioGroupFactor) {
-      case ScenarioChipGroupFactor.importance:
-        sections = {
-          // group ordering
-          if (sections.containsKey(activePinnedKey)) activePinnedKey: sections[activePinnedKey]!,
-          if (sections.containsKey(excludeUniqueKey)) excludeUniqueKey: sections[excludeUniqueKey]!,
-          if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
-          if (sections.containsKey(unionOrKey)) unionOrKey: sections[unionOrKey]!,
-        };
+      // case ScenarioChipGroupFactor.importance:
+      //   sections = {
+      //     // group ordering
+      //     if (sections.containsKey(activePinnedKey)) activePinnedKey: sections[activePinnedKey]!,
+      //     if (sections.containsKey(excludeUniqueKey)) excludeUniqueKey: sections[excludeUniqueKey]!,
+      //     if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
+      //     if (sections.containsKey(unionOrKey)) unionOrKey: sections[unionOrKey]!,
+      //   };
       case ScenarioChipGroupFactor.intersectBeforeUnion:
         sections = {
           // group ordering
+          if (sections.containsKey(funcPinnedKey)) activePinnedKey: sections[funcPinnedKey]!,
           if (sections.containsKey(activePinnedKey)) activePinnedKey: sections[activePinnedKey]!,
           if (sections.containsKey(excludeUniqueKey)) excludeUniqueKey: sections[excludeUniqueKey]!,
           if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
@@ -138,28 +152,38 @@ class ScenarioListPage extends StatelessWidget {
       case ScenarioChipGroupFactor.unionBeforeIntersect:
         sections = {
           // group ordering
+          if (sections.containsKey(funcPinnedKey)) activePinnedKey: sections[funcPinnedKey]!,
           if (sections.containsKey(activePinnedKey)) activePinnedKey: sections[activePinnedKey]!,
           if (sections.containsKey(excludeUniqueKey)) excludeUniqueKey: sections[excludeUniqueKey]!,
           if (sections.containsKey(unionOrKey)) unionOrKey: sections[unionOrKey]!,
           if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
         };
-      case ScenarioChipGroupFactor.none:
-        return {
-          if (sortedMapEntries.isNotEmpty)
-            const ChipSectionKey(): [
-              ...newMapEntries,
-              ...pinnedMapEntries,
-              ...unpinnedMapEntries,
-            ],
-        };
+      // case ScenarioChipGroupFactor.none:
+      //   return {
+      //     if (sortedMapEntries.isNotEmpty)
+      //       const ChipSectionKey(): [
+      //         ...newMapEntries,
+      //         ...pinnedMapEntries,
+      //         ...unpinnedMapEntries,
+      //       ],
+      //   };
     }
-    debugPrint('getScenarioGridItems sections $sections');
+
     if (pinnedMapEntries.isNotEmpty) {
       sections = Map.fromEntries([
+        ...sections.entries,
         MapEntry(ScenarioImportanceSectionKey.activePinned(context), pinnedMapEntries),
+      ]);
+    }
+
+    if (funcMapEntries.isNotEmpty) {
+      sections = Map.fromEntries([
+        MapEntry(ScenarioImportanceSectionKey.funcPinned(context), funcMapEntries),
         ...sections.entries,
       ]);
     }
+
+    debugPrint('getScenarioGridItems sections $sections');
     return sections;
   }
 }

@@ -5,14 +5,14 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
-import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
+import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
@@ -23,7 +23,6 @@ import '../foreground_wallpaper/privacy_guard_level.dart';
 import '../foreground_wallpaper/share_copied_entry.dart';
 import '../scenario/scenario.dart';
 import '../scenario/scenario_step.dart';
-
 
 class SqfliteMetadataDb implements MetadataDb {
   late Database _db;
@@ -161,17 +160,17 @@ class SqfliteMetadataDb implements MetadataDb {
             ', labelName TEXT'
             ', privacyGuardLevelId INTEGER'
             ', filtersSetId INTEGER'
-            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
-            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
             ', displayType TEXT' // Values can be 'random'  or 'most recent not used'
-            ', interval INTEGER DEFAULT 0'  // 0 will be update when the phone is locked
+            ', interval INTEGER DEFAULT 0' // 0 will be update when the phone is locked
             ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $fgwUsedEntryTable('
             'id INTEGER PRIMARY KEY'
             ', privacyGuardLevelId INTEGER'
-            ', updateType TEXT'  // Values can be 'home', 'lock', or 'widget'
-            ', widgetId INTEGER DEFAULT 0'  // Default to 0 for 'home' or 'lock'
+            ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
             ', entryId INTEGER'
             ', dateMillis INTEGER'
             ')');
@@ -308,7 +307,8 @@ class SqfliteMetadataDb implements MetadataDb {
     final batch = _db.batch();
     entries.forEach((entry) => _batchInsertEntry(batch, entry));
     await batch.commit(noResult: true);
-    debugPrint('$runtimeType saveEntries complete in ${stopwatch.elapsed.inMilliseconds}ms for ${entries.length} entries');
+    debugPrint(
+        '$runtimeType saveEntries complete in ${stopwatch.elapsed.inMilliseconds}ms for ${entries.length} entries');
   }
 
   @override
@@ -368,7 +368,8 @@ class SqfliteMetadataDb implements MetadataDb {
   }
 
   @override
-  Future<Set<CatalogMetadata>> loadCatalogMetadataById(Set<int> ids) => _getByIds(ids, metadataTable, CatalogMetadata.fromMap);
+  Future<Set<CatalogMetadata>> loadCatalogMetadataById(Set<int> ids) =>
+      _getByIds(ids, metadataTable, CatalogMetadata.fromMap);
 
   @override
   Future<void> saveCatalogMetadata(Set<CatalogMetadata> metadataEntries) async {
@@ -378,7 +379,8 @@ class SqfliteMetadataDb implements MetadataDb {
       final batch = _db.batch();
       metadataEntries.forEach((metadata) => _batchInsertMetadata(batch, metadata));
       await batch.commit(noResult: true);
-      debugPrint('$runtimeType saveMetadata complete in ${stopwatch.elapsed.inMilliseconds}ms for ${metadataEntries.length} entries');
+      debugPrint(
+          '$runtimeType saveMetadata complete in ${stopwatch.elapsed.inMilliseconds}ms for ${metadataEntries.length} entries');
     } catch (error, stack) {
       debugPrint('$runtimeType failed to save metadata with error=$error\n$stack');
     }
@@ -436,7 +438,8 @@ class SqfliteMetadataDb implements MetadataDb {
     final batch = _db.batch();
     addresses.forEach((address) => _batchInsertAddress(batch, address));
     await batch.commit(noResult: true);
-    debugPrint('$runtimeType saveAddresses complete in ${stopwatch.elapsed.inMilliseconds}ms for ${addresses.length} entries');
+    debugPrint(
+        '$runtimeType saveAddresses complete in ${stopwatch.elapsed.inMilliseconds}ms for ${addresses.length} entries');
   }
 
   @override
@@ -1002,7 +1005,6 @@ class SqfliteMetadataDb implements MetadataDb {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-
 
   // Scenario step
   @override

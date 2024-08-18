@@ -10,69 +10,78 @@ import 'package:flutter/widgets.dart';
 
 class ScenarioFilter extends CoveredCollectionFilter {
   static const type = 'scenario';
-
+  static const scenarioSettingId = -3;
+  static const scenarioAddNewItemId = -2;
   final int scenarioId;
-  final String? displayName;
+  final String displayName;
   late final EntryFilter _test;
-  late final ScenarioRow scenario;
+  late final ScenarioRow? scenario;
 
   @override
   List<Object?> get props => [scenarioId, displayName, reversed];
 
   ScenarioFilter(this.scenarioId, this.displayName, {super.reversed = false}) {
-    scenario = scenarios.all.firstWhere((e) => e.id == scenarioId);
-    List<ScenarioStepRow> steps = scenarioSteps.all.where((e) => e.scenarioId == scenarioId && e.isActive).toList();
-    steps.sort();
+    if (scenarioId >= 0) {
+      scenario = scenarios.all.firstWhere((e) => e.id == scenarioId);
+      List<ScenarioStepRow> steps = scenarioSteps.all.where((e) => e.scenarioId == scenarioId && e.isActive).toList();
+      steps.sort();
 
-    _test = (entry) {
-      if (steps.isEmpty) return true;
+      _test = (entry) {
+        if (steps.isEmpty) return true;
 
-      bool result = true;
-      bool isUnionOrTrue = false;
-      bool isIntersectAndFalse = false;
-      // t4y:
-      // I want to make it more effective to skip test in step may not need.
-      // if a entry is test true in a pre unionOr step, it should not need to test after unionOr step for it is already in.
-      // unless it is make false by a intersectAnd step, it may be added by a after unionOr step.
-      //
-      // if a entry is test false in a pre intersectAnd step ,
-      // it should not need test in after intersectAnd step for it is already get rid,
-      // unless it is made true added by a unionOr step.
-      for (var step in steps) {
-        bool needStepTest = false;
-        bool stepResult = false;
-
-        switch (step.loadType) {
-          case ScenarioStepLoadType.unionOr:
-            if (!isUnionOrTrue) {
-              needStepTest = true;
-            }
-            break;
-          case ScenarioStepLoadType.intersectAnd:
-            if (!isIntersectAndFalse) {
-              needStepTest = true;
-            }
-            break;
-        }
-
-        if (needStepTest) {
-          stepResult = step.filters?.isEmpty ?? true ? true : step.filters!.every((filter) => filter.test(entry));
+        bool result = true;
+        bool isUnionOrTrue = false;
+        bool isIntersectAndFalse = false;
+        // t4y:
+        // I want to make it more effective to skip test in step may not need.
+        // if a entry is test true in a pre unionOr step, it should not need to test after unionOr step for it is already in.
+        // unless it is make false by a intersectAnd step, it may be added by a after unionOr step.
+        //
+        // if a entry is test false in a pre intersectAnd step ,
+        // it should not need test in after intersectAnd step for it is already get rid,
+        // unless it is made true added by a unionOr step.
+        for (var step in steps) {
+          bool needStepTest = false;
+          bool stepResult = false;
 
           switch (step.loadType) {
             case ScenarioStepLoadType.unionOr:
-              if (stepResult) isUnionOrTrue = true;
-              result = stepResult || result;
+              if (!isUnionOrTrue) {
+                needStepTest = true;
+              }
               break;
             case ScenarioStepLoadType.intersectAnd:
-              if (!stepResult) isIntersectAndFalse = true;
-              result = result && stepResult;
+              if (!isIntersectAndFalse) {
+                needStepTest = true;
+              }
               break;
           }
-        }
-      }
 
-      return result;
-    };
+          if (needStepTest) {
+            stepResult = step.filters?.isEmpty ?? true ? true : step.filters!.every((filter) => filter.test(entry));
+
+            switch (step.loadType) {
+              case ScenarioStepLoadType.unionOr:
+                if (stepResult) isUnionOrTrue = true;
+                result = stepResult || result;
+                break;
+              case ScenarioStepLoadType.intersectAnd:
+                if (!stepResult) isIntersectAndFalse = true;
+                result = result && stepResult;
+                break;
+            }
+          }
+        }
+
+        return result;
+      };
+    } else if (scenarioId == scenarioSettingId) {
+      scenario = null;
+      _test = (entry) => true;
+    } else if (scenarioId == scenarioAddNewItemId) {
+      scenario = null;
+      _test = (entry) => false;
+    }
   }
 
   factory ScenarioFilter.fromMap(Map<String, dynamic> json) {
@@ -105,6 +114,11 @@ class ScenarioFilter extends CoveredCollectionFilter {
 
   @override
   Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) {
+    if (scenarioId == scenarioSettingId) {
+      return Icon(AIcons.settings, size: size);
+    } else if (scenarioId == scenarioAddNewItemId) {
+      return Icon(AIcons.add, size: size);
+    }
     return switch (settings.scenarioPinnedFilters.contains(this)) {
       true => Icon(AIcons.show, size: size),
       false => Icon(AIcons.zoomOut, size: size),

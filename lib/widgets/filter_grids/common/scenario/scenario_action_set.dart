@@ -44,8 +44,8 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
   set tileLayout(TileLayout tileLayout) => settings.setTileLayout(ScenarioListPage.routeName, tileLayout);
 
   static const _groupOptions = [
-    ScenarioChipGroupFactor.none,
-    ScenarioChipGroupFactor.importance,
+    // ScenarioChipGroupFactor.none,
+    // ScenarioChipGroupFactor.importance,
     ScenarioChipGroupFactor.unionBeforeIntersect,
     ScenarioChipGroupFactor.intersectBeforeUnion,
   ];

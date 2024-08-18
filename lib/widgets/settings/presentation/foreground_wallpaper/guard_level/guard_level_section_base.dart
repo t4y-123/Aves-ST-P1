@@ -5,7 +5,6 @@ import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
-
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -288,7 +287,7 @@ class ScheduleSubPageTile extends SettingsTile {
 
 class GuardLevelActiveListTile extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsGuardLevelIsActiveTitle;
+  String title(BuildContext context) => context.l10n.settingsActiveTitle;
 
   final PrivacyGuardLevelRow item;
 

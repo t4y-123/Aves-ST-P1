@@ -202,11 +202,12 @@ class ScenarioSteps with ChangeNotifier {
 
     final targetSet = _getTarget(type);
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
+    final relevantSteps =
+        isActive ? relevantItems.where((item) => item.scenarioId == scenarioId).toList() : targetSet.toList();
     final maxOrderNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-
     final maxStepNum =
-        relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.stepNum).reduce((a, b) => a > b ? a : b);
+        relevantSteps.isEmpty ? 0 : relevantSteps.map((item) => item.stepNum).reduce((a, b) => a > b ? a : b);
     final finalStepNum = maxStepNum + existMaxStepNumOffset;
     return ScenarioStepRow(
       id: metadataDb.nextId,
@@ -233,7 +234,7 @@ class ScenarioSteps with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setExistRows(Set<ScenarioStepRow> rows, Map<String, dynamic> newValues,
+  Future<void> setRowsWithProp(Set<ScenarioStepRow> rows, Map<String, dynamic> newValues,
       {ScenarioStepRowsType type = ScenarioStepRowsType.all}) async {
     final targetSet = _getTarget(type);
 
@@ -242,20 +243,22 @@ class ScenarioSteps with ChangeNotifier {
 
     for (var row in rows) {
       final oldRow = targetSetCopy.firstWhereOrNull((r) => r.id == row.id);
+      final updatedRow = ScenarioStepRow(
+        id: row.id,
+        scenarioId: newValues[ScenarioStepRow.propScenarioId] ?? row.scenarioId,
+        stepNum: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
+        orderNum: newValues[ScenarioStepRow.propOrderNum] ?? row.orderNum,
+        labelName: newValues[ScenarioStepRow.propLabelName] ?? row.labelName,
+        loadType: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
+        filters: newValues[ScenarioStepRow.propFilters] ?? row.filters,
+        dateMillis: newValues[ScenarioStepRow.propDateMills] ?? row.dateMillis,
+        isActive: newValues[ScenarioStepRow.propIsActive] ?? row.isActive,
+      );
       if (oldRow != null) {
         await removeEntries({oldRow}, type: type);
-        final updatedRow = ScenarioStepRow(
-          id: row.id,
-          scenarioId: newValues[ScenarioStepRow.propScenarioId] ?? row.scenarioId,
-          stepNum: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
-          orderNum: newValues[ScenarioStepRow.propOrderNum] ?? row.orderNum,
-          labelName: newValues[ScenarioStepRow.propLabelName] ?? row.labelName,
-          loadType: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
-          filters: newValues[ScenarioStepRow.propFilters] ?? row.filters,
-          dateMillis: newValues[ScenarioStepRow.propDateMills] ?? row.dateMillis,
-          isActive: newValues[ScenarioStepRow.propIsActive] ?? row.isActive,
-        );
         await setRows({updatedRow}, type: type);
+      } else {
+        await add({updatedRow}, type: type);
       }
     }
     await _removeDuplicates();

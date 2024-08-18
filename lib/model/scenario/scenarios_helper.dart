@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:aves/model/filters/path.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/utils/android_file_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -26,6 +29,8 @@ class ScenariosHelper {
     await scenarioSteps.init();
     if (scenarioSteps.all.isEmpty || scenarios.all.isEmpty) {
       await addDefaultScenarios();
+      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters
+        ..add(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
     }
   }
 
@@ -64,17 +69,51 @@ class ScenariosHelper {
     final sIds = scenarios.all.map((e) => e.id).toList();
     //TODO: only make a group useless scenario and steps for go through the func.
     List<ScenarioStepRow> groupScenarioSteps = [
-      newScenarioStep(1, sIds[0], 1, {MimeFilter.image}),
+      //steps for /exclude unique
+      //1/2/3
+      newScenarioStep(1, sIds[0], 1, {}),
       // newScenarioStep(2, sIds[0], 2, {AspectRatioFilter.portrait}),
       // newScenarioStep(3, sIds[0], 3, {RecentlyAddedFilter.instance}),
       //
       newScenarioStep(4, sIds[1], 1, {MimeFilter.image}),
-      newScenarioStep(5, sIds[1], 2, {AspectRatioFilter.portrait}),
+      //newScenarioStep(5, sIds[1], 2, {AspectRatioFilter.portrait}),
       // newScenarioStep(6, sIds[1], 3, {RecentlyAddedFilter.instance}),
       //
-      newScenarioStep(7, sIds[2], 1, {MimeFilter.image}),
-      newScenarioStep(8, sIds[2], 2, {AspectRatioFilter.portrait}),
-      newScenarioStep(9, sIds[2], 3, {RecentlyAddedFilter.instance}),
+      newScenarioStep(7, sIds[2], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      //newScenarioStep(8, sIds[2], 2, {AspectRatioFilter.portrait}),
+      //newScenarioStep(9, sIds[2], 3, {RecentlyAddedFilter.instance}),
+      ////////////////////////////////////
+      //steps for interject and.
+      ///////////////////////////////////
+      //4
+      //newScenarioStep(10, sIds[3], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
+      newScenarioStep(11, sIds[3], 2, {AspectRatioFilter.portrait}),
+      //newScenarioStep(12, sIds[3], 3, {RecentlyAddedFilter.instance}),
+      //5
+      //newScenarioStep(13, sIds[4], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
+      newScenarioStep(14, sIds[4], 2, {AspectRatioFilter.landscape}),
+      //newScenarioStep(15, sIds[4], 3, {RecentlyAddedFilter.instance}),
+      //6
+      //newScenarioStep(16, sIds[5], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
+      //newScenarioStep(17, sIds[5], 2, {AspectRatioFilter.landscape}),
+      newScenarioStep(18, sIds[5], 3, {RecentlyAddedFilter.instance}),
+      /////////////////////////////////////
+      //steps for union or
+      ///////////////////////////////////
+      ///7
+      newScenarioStep(19, sIds[6], 1, {MimeFilter.video}),
+      // newScenarioStep(20, sIds[6], 2, {AspectRatioFilter.portrait}),
+      // newScenarioStep(21, sIds[6], 3, {RecentlyAddedFilter.instance}),
+
+      ///8
+      newScenarioStep(22, sIds[7], 1, {PathFilter(androidFileUtils.picturesPath)}),
+      // newScenarioStep(23, sIds[7], 2, {AspectRatioFilter.portrait}),
+      // newScenarioStep(24, sIds[7], 3, {RecentlyAddedFilter.instance}),
+
+      ///9/
+      newScenarioStep(25, sIds[8], 1, {PathFilter(androidFileUtils.downloadPath)}),
+      //newScenarioStep(26, sIds[8], 2, {AspectRatioFilter.portrait}),
+      newScenarioStep(27, sIds[8], 3, {RecentlyAddedFilter.instance}),
     ];
     await scenarioSteps.add(groupScenarioSteps.toSet());
   }
@@ -91,6 +130,24 @@ class ScenariosHelper {
     );
   }
 
+  Future<List<ScenarioStepRow>> newScenarioStepsGroup(ScenarioRow baseRow,
+      {ScenarioStepRowsType rowsType = ScenarioStepRowsType.all}) async {
+    debugPrint('$runtimeType newScenarioStepsGroup start:\n$baseRow \n $rowsType ');
+    List<ScenarioStepRow> newScenarioSteps = [
+      newScenarioStep(1, baseRow.id, 1, {RecentlyAddedFilter.instance}),
+    ];
+    debugPrint('newSchedulesGroup =\n $newScenarioSteps');
+    return newScenarioSteps;
+  }
+
+  Future<Set<ScenarioStepRow>> getStepsOfScenario(
+      {required ScenarioRow curScenario, ScenarioStepRowsType rowsType = ScenarioStepRowsType.all}) async {
+    final targetSet = scenarioSteps.getAll(rowsType);
+    final curSteps = targetSet.where((e) => e.scenarioId == curScenario.id).toSet();
+    debugPrint('$runtimeType getStepsOfScenario \n curScenario $curScenario \n curSchedules :$curScenario');
+    return curSteps;
+  }
+
   // import/export
   Map<String, List<String>>? export() {
     final resultMap = Map.fromEntries(ScenarioExportItem.values.map((v) {
@@ -101,13 +158,13 @@ class ScenariosHelper {
   }
 
   Future<void> import(dynamic jsonMap) async {
-    debugPrint('foregroundWallpaperHelper import json Map $jsonMap');
+    debugPrint('scenario import json Map $jsonMap');
     if (jsonMap is! Map) {
-      debugPrint('failed to import privacy guard levels for jsonMap=$jsonMap');
+      debugPrint('failed to import scenario for jsonMap=$jsonMap');
       return;
     }
     await Future.forEach<ScenarioExportItem>(ScenarioExportItem.values, (item) async {
-      debugPrint('\nFgwExportItem item $item ${jsonMap[item.name]}');
+      debugPrint('\n ScenarioExportItem item $item ${jsonMap[item.name]}');
       return item.import(jsonDecode(jsonMap[item.name].toList().first));
     });
   }

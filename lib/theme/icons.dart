@@ -208,14 +208,16 @@ class AIcons {
   static const shareByDateNow = Icons.update;
 
   // t4y:scenario pages
-  static const scenario = Icons.token;
+  static const scenario = Icons.security;
   static const scenarioExcludeUnique = Icons.remove_done;
   static const scenarioInjectAnd = Icons.rule;
   static const scenarioUnionOr = Icons.add_task;
   static const lockScenario = Icons.lock_open_sharp;
   static const unlockScenario = Icons.lock_sharp;
-  static const settingScenario = Icons.settings_applications;
-  static const opScenario = Icons.settings_applications;
+  static const settingScenario = Icons.edit;
+  static const opScenario = Icons.settings;
+  static const scenarioActive = Icons.visibility_outlined;
+  static const scenarioInactive = Icons.block;
 
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking

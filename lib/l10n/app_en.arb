@@ -1228,7 +1228,7 @@
 
   "excludeName01": "All Exclude",
   "excludeName02": "Image Exclude",
-  "excludeName03": "DCIM",
+  "excludeName03": "Img Not Share Exclude",
   "excludeName04": "<3hour DCIM ",
   "excludeName05": "Share Copied Exclude",
 
@@ -1252,18 +1252,22 @@
   "settingsScenarioStepsNamePrefix": "Scenario steps: ",
   "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
 
-  "settingsScenariosConfigPageTile": "Scenarios config",
-  "settingsScenariosConfigPageTitle": "Scenarios Config",
-  "scenarioFilterSettingTitle": "Setting Scenario",
+  "settingsScenariosConfigPageTile": "Edit Scenarios",
+  "settingsScenariosConfigPageTitle": "Edit Scenarios",
+  "scenarioFilterSettingTitle": "Edit Scenario",
   "scenarioFilterAddNewTitle": "Add new scenario",
-  "scenarioFilterOpTitle": "Operate scenario",
-  "scenarioFilterLockTitle": "Lock scenario",
-  "scenarioFilterUnlockTitle": "Unlock scenario",
+  "scenarioFilterOpTitle": "Setting scenario",
+  "scenarioFilterLockTitle": ".Lock scenario",
+  "scenarioFilterUnlockTitle": ".Unlock scenario",
+  "configureScenarioLockTitle": "Configure Scenario Lock",
+  "pinDialogEnterDefault1234": "Enter PIN (default:1234)",
 
   "settingsScenariosOperationTile": "Scenarios operation",
   "settingsScenariosOperationTitle": "Scenarios Operation",
   "settingsScenarioResetDefaultText": "Reset scenarios to default",
   "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
+  "settingsScenarioSetScenarioPassDefaultText": "Set scenario unlock password (default 1234)",
+  "settingsScenarioSetScenarioPassDefaultAlert": "The default value 1234",
 
   "scenarioTitle": "Scenario",
   "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",
@@ -1271,6 +1275,7 @@
   "settingsScenarioDateMills":"Date:",
   "settingsScenarioLoadTypeMultiSelectionTitle": "Load type: (used in sequence.)",
   "settingsScenarioLoadTypeSelectionTile": "Load type",
+
 
   "searchQueryHelperSectionTitle": "Query Helper",
 

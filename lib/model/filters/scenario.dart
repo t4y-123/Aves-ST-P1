@@ -13,8 +13,7 @@ class ScenarioFilter extends CoveredCollectionFilter {
   static const scenarioOpId = -1;
   static const scenarioAddNewItemId = -2;
   static const scenarioSettingId = -3;
-  static const scenarioLockId = -4;
-  static const scenarioUnlockId = -5;
+  static const scenarioLockUnlockId = -4;
   final int scenarioId;
   final String displayName;
   late final EntryFilter _test;
@@ -118,21 +117,19 @@ class ScenarioFilter extends CoveredCollectionFilter {
   @override
   Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) {
     if (scenarioId == scenarioSettingId) {
-      return Icon(AIcons.settings, size: size);
+      return Icon(AIcons.settingScenario, size: size);
     } else if (scenarioId == scenarioAddNewItemId) {
       return Icon(AIcons.add, size: size);
     } else if (scenarioId == scenarioOpId) {
       return Icon(AIcons.opScenario, size: size);
-    } else if (scenarioId == scenarioLockId) {
-      return Icon(AIcons.lockScenario, size: size);
-    } else if (scenarioId == scenarioUnlockId) {
-      return Icon(AIcons.unlockScenario, size: size);
+    } else if (scenarioId == scenarioLockUnlockId) {
+      return settings.scenarioLock ? Icon(AIcons.unlockScenario, size: size) : Icon(AIcons.lockScenario, size: size);
     }
     return switch (settings.scenarioPinnedExcludeFilters.contains(this) ||
         settings.scenarioPinnedIntersectFilters.contains(this) ||
         settings.scenarioPinnedUnionFilters.contains(this)) {
-      true => Icon(AIcons.show, size: size),
-      false => Icon(AIcons.zoomOut, size: size),
+      true => Icon(AIcons.scenarioActive, size: size),
+      false => Icon(AIcons.scenarioInactive, size: size),
     };
   }
 

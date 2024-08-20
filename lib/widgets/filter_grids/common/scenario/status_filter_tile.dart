@@ -7,6 +7,7 @@ import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/vaults/vaults.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/scenario_aware.dart';
 import 'package:aves/widgets/common/action_mixins/vault_aware.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/grid/scaling.dart';
@@ -42,7 +43,7 @@ class StatusInteractiveStatusFilterTile<T extends CollectionFilter> extends Stat
 }
 
 class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
-    extends State<StatusInteractiveStatusFilterTile<T>> with FeedbackMixin, VaultAwareMixin {
+    extends State<StatusInteractiveStatusFilterTile<T>> with FeedbackMixin, VaultAwareMixin, ScenarioAwareMixin {
   HeroType? _heroTypeOverride;
 
   FilterGridItem<T> get gridItem => widget.gridItem;
@@ -70,6 +71,9 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
               case ScenarioFilter filter:
                 {
                   if (filter.scenarioId >= 0) {
+                    if (settings.scenarioLock) {
+                      if (!await unlockScenarios(context)) return;
+                    }
                     switch (filter.scenario!.loadType) {
                       case ScenarioLoadType.excludeUnique:
                         final removeFilters = settings.scenarioPinnedExcludeFilters
@@ -110,6 +114,13 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                         builder: (context) => const ScenariosOperationPage(),
                       ),
                     );
+                  } else if (filter.scenarioId == ScenarioFilter.scenarioLockUnlockId) {
+                    if (settings.scenarioLock) {
+                      if (!await unlockScenarios(context)) return;
+                    } else {
+                      settings.scenarioLock = true;
+                    }
+                    ;
                   } else if (filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {}
                 }
               default:

@@ -4,9 +4,6 @@ enum ChipSetAction {
   select,
   selectAll,
   selectNone,
-  lockScenario,
-  unlockScenario,
-  settingScenario,
   // browsing
   search,
   toggleTitleSearch,
@@ -45,10 +42,6 @@ class ChipSetActions {
   static const browsing = [
     ChipSetAction.search,
     ChipSetAction.toggleTitleSearch,
-    null,
-    ChipSetAction.lockScenario,
-    ChipSetAction.unlockScenario,
-    ChipSetAction.settingScenario,
     null,
     ChipSetAction.map,
     ChipSetAction.slideshow,

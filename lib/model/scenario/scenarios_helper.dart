@@ -30,6 +30,8 @@ class ScenariosHelper {
     await scenarioSteps.init();
     if (scenarioSteps.all.isEmpty || scenarios.all.isEmpty) {
       await addDefaultScenarios();
+    }
+    if (settings.scenarioPinnedExcludeFilters.isEmpty) {
       settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
         ..add(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
     }
@@ -48,13 +50,13 @@ class ScenariosHelper {
     const injNum = 4;
     const unUum = 12;
     return {
-      //exclude unique 1-4
+      //exclude unique
       await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
       await scenarios.newRow(exNum + 2, labelName: _l10n.excludeName02),
       await scenarios.newRow(exNum + 3, labelName: _l10n.excludeName03),
       await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName04),
       await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName05),
-      //interject and 5-12
+      //interject
       await scenarios.newRow(injNum + 1, labelName: _l10n.interjectName01, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 2, labelName: _l10n.interjectName02, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 3, labelName: _l10n.interjectName03, loadType: ScenarioLoadType.intersectAnd),
@@ -65,7 +67,7 @@ class ScenariosHelper {
       await scenarios.newRow(injNum + 8, labelName: _l10n.interjectName08, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 9, labelName: _l10n.interjectName09, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 10, labelName: _l10n.interjectName10, loadType: ScenarioLoadType.intersectAnd),
-      //union or 13-14
+      //union or
       await scenarios.newRow(unUum + 1, labelName: _l10n.unionName01, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 2, labelName: _l10n.unionName02, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 3, labelName: _l10n.unionName03, loadType: ScenarioLoadType.unionOr),
@@ -81,48 +83,55 @@ class ScenariosHelper {
 
     final sIds = scenarios.all.map((e) => e.id).toList();
     //TODO: only make a group useless scenario and steps for go through the func.
-    int stepNum = 1;
+    int orderNum = 1;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
       //1/2/3/4 5
-      newScenarioStep(stepNum++, sIds[0], 1, {}),
-      newScenarioStep(stepNum++, sIds[1], 1, {MimeFilter.image}),
-      newScenarioStep(stepNum++, sIds[2], 1, {PathFilter(androidFileUtils.dcimPath)}),
+      // the 1 is for all entries.
+      newScenarioStep(orderNum++, sIds[0], 1, {}),
+      // the 2  is for all images without video.
+      newScenarioStep(orderNum++, sIds[1], 1, {MimeFilter.image}),
+      // the 3 is for all image  without share copied
+      newScenarioStep(orderNum++, sIds[2], 1, {MimeFilter.image}),
+      newScenarioStep(orderNum++, sIds[2], 2, {PathFilter(androidFileUtils.avesShareByCopyPath, reversed: true)}),
+      //recent 3hours DCIM pic
+      newScenarioStep(orderNum++, sIds[3], 1, {PathFilter(androidFileUtils.dcimPath)}),
+      newScenarioStep(orderNum++, sIds[3], 2, {QueryFilter('TIME2NOW < 3h')}),
       //
-      newScenarioStep(stepNum++, sIds[3], 1, {PathFilter(androidFileUtils.dcimPath)}),
-      newScenarioStep(stepNum++, sIds[3], 2, {QueryFilter('TIME2NOW < 30MM')}),
-      //
-      newScenarioStep(stepNum++, sIds[4], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(orderNum++, sIds[4], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
       ////////////////////////////////////
       //steps for time interject and. 5-12 = 6-13,
       ///////////////////////////////////
-      newScenarioStep(stepNum++, sIds[5], 1, {AspectRatioFilter.portrait}),
-      newScenarioStep(stepNum++, sIds[6], 1, {AspectRatioFilter.landscape}),
-      newScenarioStep(stepNum++, sIds[7], 1, {QueryFilter('TIME2NOW < 30MM')}),
-      newScenarioStep(stepNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 1HH')}),
-      newScenarioStep(stepNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 3HH')}),
-      newScenarioStep(stepNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 6HH')}),
-      newScenarioStep(stepNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 9HH')}),
-      newScenarioStep(stepNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 12HH')}),
-      newScenarioStep(stepNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 1D')}),
-      newScenarioStep(stepNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 3D')}),
+      newScenarioStep(orderNum++, sIds[5], 1, {AspectRatioFilter.portrait}),
+      newScenarioStep(orderNum++, sIds[6], 1, {AspectRatioFilter.landscape}),
+      newScenarioStep(orderNum++, sIds[7], 1, {QueryFilter('TIME2NOW < 30mi')}),
+      newScenarioStep(orderNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 1h')}),
+      newScenarioStep(orderNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 3h')}),
+      newScenarioStep(orderNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 6h')}),
+      newScenarioStep(orderNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 9h')}),
+      newScenarioStep(orderNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 12h')}),
+      newScenarioStep(orderNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 1d')}),
+      newScenarioStep(orderNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 3d')}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////
-      newScenarioStep(stepNum++, sIds[15], 1, {MimeFilter.video}),
-      newScenarioStep(stepNum++, sIds[16], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
-      newScenarioStep(stepNum++, sIds[17], 1, {PathFilter(androidFileUtils.picturesPath)}),
+      newScenarioStep(orderNum++, sIds[15], 1, {MimeFilter.video}),
+      newScenarioStep(orderNum++, sIds[16], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(orderNum++, sIds[17], 1, {PathFilter(androidFileUtils.picturesPath)}),
     ];
     await scenarioSteps.add(groupScenarioSteps.toSet());
   }
 
   ScenarioStepRow newScenarioStep(int orderOffset, int scenarioId, int stepOffset, Set<CollectionFilter>? filters,
-      [int? interval, bool isActive = true, ScenarioStepRowsType type = ScenarioStepRowsType.all]) {
+      [ScenarioStepLoadType loadType = ScenarioStepLoadType.intersectAnd,
+      bool isActive = true,
+      ScenarioStepRowsType type = ScenarioStepRowsType.all]) {
     return scenarioSteps.newRow(
       existMaxOrderNumOffset: orderOffset,
       scenarioId: scenarioId,
       existMaxStepNumOffset: stepOffset,
       filters: filters,
+      loadType: loadType,
       isActive: true,
       type: type,
     );

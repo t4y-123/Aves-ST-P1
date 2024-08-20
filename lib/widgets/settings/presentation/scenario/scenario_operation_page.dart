@@ -1,10 +1,15 @@
 import 'package:aves/model/scenario/scenarios_helper.dart';
+import 'package:aves/model/settings/settings.dart';
+import 'package:aves/theme/durations.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/scenario_aware.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/filter_grids/common/scenario/scenario_lock_setting_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
-class ScenariosOperationPage extends StatelessWidget with FeedbackMixin {
+class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, ScenarioAwareMixin {
   static const routeName = '/settings/presentation/scenarios_operation_page';
 
   const ScenariosOperationPage({super.key});
@@ -29,6 +34,25 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin {
                   _resetAllToDefault(context);
                 },
               ),
+              child: Text(l10n.applyButtonLabel),
+            ),
+          ),
+          ListTile(
+            title: Text(l10n.settingsScenarioSetScenarioPassDefaultText),
+            trailing: ElevatedButton(
+              onPressed: () async {
+                if (settings.scenarioLock) {
+                  if (!await unlockScenarios(context)) return;
+                }
+                final details = await showDialog<EditScenarioLockDialog>(
+                  context: context,
+                  builder: (context) => const EditScenarioLockDialog(),
+                  routeSettings: const RouteSettings(name: EditScenarioLockDialog.routeName),
+                );
+                if (details == null) return;
+                // wait for the dialog to hide as applying the change may block the UI
+                await Future.delayed(ADurations.dialogTransitionAnimation * timeDilation);
+              },
               child: Text(l10n.applyButtonLabel),
             ),
           ),

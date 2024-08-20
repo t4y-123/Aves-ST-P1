@@ -35,7 +35,8 @@ class ScenarioListPage extends StatelessWidget {
           bool,
           Set<CollectionFilter>,
           Set<CollectionFilter>,
-          Set<CollectionFilter>
+          Set<CollectionFilter>,
+          bool,
         )>(
       selector: (context, s) => (
         s.scenarioGroupFactor,
@@ -43,7 +44,8 @@ class ScenarioListPage extends StatelessWidget {
         s.scenarioSortReverse,
         s.scenarioPinnedExcludeFilters,
         s.scenarioPinnedIntersectFilters,
-        s.scenarioPinnedUnionFilters
+        s.scenarioPinnedUnionFilters,
+        s.scenarioLock,
       ),
       shouldRebuild: (t1, t2) {
         // `Selector` by default uses `DeepCollectionEquality`, which does not go deep in collections within records
@@ -53,7 +55,8 @@ class ScenarioListPage extends StatelessWidget {
             eq.equals(t1.$3, t2.$3) &&
             eq.equals(t1.$4, t2.$4) &&
             eq.equals(t1.$5, t2.$5) &&
-            eq.equals(t1.$6, t2.$6));
+            eq.equals(t1.$6, t2.$6) &&
+            eq.equals(t1.$7, t2.$7));
       },
       builder: (context, s, child) {
         return StreamBuilder(
@@ -99,6 +102,8 @@ class ScenarioListPage extends StatelessWidget {
     filters.add(ScenarioFilter(ScenarioFilter.scenarioSettingId, context.l10n.scenarioFilterSettingTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioAddNewItemId, context.l10n.scenarioFilterAddNewTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioOpId, context.l10n.scenarioFilterOpTitle));
+    filters.add(ScenarioFilter(ScenarioFilter.scenarioLockUnlockId,
+        settings.scenarioLock ? context.l10n.scenarioFilterUnlockTitle : context.l10n.scenarioFilterLockTitle));
     debugPrint('getScenarioGridItems filters $filters');
     return FilterNavigationPage.sort(settings.scenarioSortFactor, settings.scenarioSortReverse, source, filters);
   }

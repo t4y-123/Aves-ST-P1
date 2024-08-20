@@ -45,4 +45,17 @@ mixin ScenarioSettings on SettingsAccess {
 
   set scenarioPinnedUnionFilters(Set<CollectionFilter> newValue) =>
       set(scenarioPinnedUnionFiltersKey, newValue.map((filter) => filter.toJson()).toList());
+
+  static const scenarioLockKey = 'scenario_lock';
+  bool get scenarioLock => getBool(scenarioLockKey) ?? SettingsDefaults.scenarioLock;
+  set scenarioLock(bool newValue) => set(scenarioLockKey, newValue);
+
+  static const scenarioLockTypeKey = 'scenario_lock_type';
+
+  ScenarioLockType get scenarioLockType =>
+      getEnumOrDefault(scenarioLockTypeKey, SettingsDefaults.scenarioLockType, ScenarioLockType.values);
+
+  set scenarioLockType(ScenarioLockType newValue) => set(scenarioLockTypeKey, newValue.toString());
+
+  static const scenarioLockPassKey = 'scenario_lock_password';
 }

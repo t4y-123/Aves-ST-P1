@@ -100,10 +100,6 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter>
       case ChipSetAction.map:
       case ChipSetAction.slideshow:
       case ChipSetAction.stats:
-      // t4y: scenario only show and modify in main mode.
-      case ChipSetAction.lockScenario:
-      case ChipSetAction.unlockScenario:
-      case ChipSetAction.settingScenario:
         return isMain;
       // selecting (single/multiple filters)
       case ChipSetAction.hide:
@@ -147,10 +143,6 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter>
       case ChipSetAction.search:
       case ChipSetAction.toggleTitleSearch:
       // t4y
-      // t4y: scenario only show and modify in main mode.
-      case ChipSetAction.lockScenario:
-      case ChipSetAction.unlockScenario:
-      case ChipSetAction.settingScenario:
       case ChipSetAction.foregroundWallpaperService:
       //
       case ChipSetAction.createAlbum:
@@ -197,10 +189,6 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter>
         context.read<Query>().toggle();
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
-      // t4y:TODO: scenario action .
-      case ChipSetAction.lockScenario:
-      case ChipSetAction.unlockScenario:
-      case ChipSetAction.settingScenario:
         break;
       // browsing or selecting
       case ChipSetAction.map:

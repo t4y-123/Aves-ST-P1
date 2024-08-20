@@ -116,3 +116,17 @@ extension ExtraScenarioExportItem on ScenarioExportItem {
     }
   }
 }
+
+enum ScenarioLockType { system, pattern, pin, password }
+
+extension ExtraScenarioLockTypew on ScenarioLockType {
+  String getText(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      ScenarioLockType.system => l10n.settingsSystemDefault,
+      ScenarioLockType.pattern => l10n.vaultLockTypePattern,
+      ScenarioLockType.pin => l10n.vaultLockTypePin,
+      ScenarioLockType.password => l10n.vaultLockTypePassword,
+    };
+  }
+}

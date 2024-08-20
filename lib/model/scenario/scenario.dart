@@ -173,7 +173,7 @@ class Scenario with ChangeNotifier {
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum),
       color: color ?? getRandomColor(),
-      loadType: loadType ?? ScenarioLoadType.excludeEach,
+      loadType: loadType ?? ScenarioLoadType.excludeUnique,
       dateMillis: dateMillis ?? DateTime.now().millisecondsSinceEpoch,
       isActive: isActive,
     );
@@ -322,7 +322,7 @@ class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
 
   static ScenarioRow fromMap(Map map) {
     final defaultDisplayType =
-        ScenarioLoadType.values.safeByName(map['loadType'] as String, ScenarioLoadType.excludeEach);
+        ScenarioLoadType.values.safeByName(map['loadType'] as String, ScenarioLoadType.excludeUnique);
     //debugPrint('ScenarioRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
     final colorValue = map['color'] as String?;
     //debugPrint('$ScenarioRow colorValue $colorValue ${colorValue!.toColor}');

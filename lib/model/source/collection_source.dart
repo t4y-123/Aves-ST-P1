@@ -15,6 +15,8 @@ import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
 import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/metadata/trash.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/settings/modules/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/analysis_controller.dart';
@@ -96,6 +98,18 @@ abstract class CollectionSource
         _onFilterVisibilityChanged(newlyVisibleFilters);
       }
     });
+    // t4y: add for listen the scenario change.
+    settings.updateStream
+        .where((event) =>
+            event.key == ScenarioSettings.scenarioPinnedExcludeFiltersKey ||
+            event.key == ScenarioSettings.scenarioPinnedIntersectFiltersKey ||
+            event.key == ScenarioSettings.scenarioPinnedUnionFiltersKey)
+        .listen((event) {
+      final oldValue = event.oldValue;
+      if (oldValue is List<String>?) {
+        _onScenarioChanged();
+      }
+    });
     vaults.addListener(() {
       final newlyVisibleFilters =
           vaults.vaultDirectories.whereNot(vaults.isLocked).map((v) => AlbumFilter(v, null)).toSet();
@@ -167,7 +181,69 @@ abstract class CollectionSource
       TrashFilter.instance,
       ..._getAppHiddenFilters(),
     };
-    return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+
+    if (settings.scenarioPinnedExcludeFilters.isEmpty) {
+      return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+    }
+    // Separate the filters by type once
+    return applyScenarioFilters(entries);
+  }
+
+  Iterable<AvesEntry> applyScenarioFilters(Iterable<AvesEntry> entries) {
+    final hiddenFilters = {
+      TrashFilter.instance,
+      ..._getAppHiddenFilters(),
+    };
+
+    final excludeUniqueFilters = settings.scenarioPinnedExcludeFilters;
+    final intersectAndFilters = settings.scenarioPinnedIntersectFilters;
+    final unionOrFilters = settings.scenarioPinnedUnionFilters;
+
+    debugPrint('applyScenarioFilters excludeUniqueFilters $excludeUniqueFilters \n'
+        'intersectAndFilters $intersectAndFilters \n'
+        'unionOrFilters $unionOrFilters ');
+
+    final hasUnionOr = unionOrFilters.isNotEmpty;
+    final hasIntersectAnd = intersectAndFilters.isNotEmpty;
+
+    return entries.where((entry) {
+      if (hiddenFilters.any((filter) => filter.test(entry))) return false;
+
+      final uniqueFilterResult = excludeUniqueFilters.any((filter) => filter.test(entry));
+
+      var intersectFilterResult = false;
+      var unionFilterResult = false;
+
+      switch (settings.scenarioGroupFactor) {
+        case ScenarioChipGroupFactor.intersectBeforeUnion:
+          if (hasUnionOr) {
+            //skip intersect if entry in in union post.
+            if (unionOrFilters.any((filter) => filter.test(entry))) return true;
+          }
+          //if a entry is not in union post, check if exist entry fit limit intersect.
+          if (uniqueFilterResult && hasIntersectAnd) {
+            return intersectAndFilters.every((filter) => filter.test(entry));
+          }
+          // if a entry is get in by union, it is always in ,
+          // if a entry is not in by union, its value is base the exclude value and intersect value,
+          // when have none intersect, it the same as unique.
+          return uniqueFilterResult;
+
+        case ScenarioChipGroupFactor.unionBeforeIntersect:
+          //skip union if entry is get rid in interject post.
+          if (hasIntersectAnd) {
+            if (!intersectAndFilters.every((filter) => filter.test(entry))) return false;
+          }
+          // try get union entry if not in exclude fit limit intersect.
+          if (!uniqueFilterResult && hasUnionOr) {
+            return unionOrFilters.any((filter) => filter.test(entry));
+          }
+          // if a entry is not get rid by intersect when exist,
+          // or not get in by union when not exist,
+          // the value is the same as exclude.
+          return uniqueFilterResult;
+      }
+    });
   }
 
   Iterable<AvesEntry> _applyTrashFilter(Iterable<AvesEntry> entries) {
@@ -184,6 +260,7 @@ abstract class CollectionSource
     invalidatePlaceFilterSummary(entries: entries, notify: notify);
     invalidateStateFilterSummary(entries: entries, notify: notify);
     invalidateTagFilterSummary(entries: entries, notify: notify);
+    invalidateScenarioFilterSummary(entries: entries, notify: notify);
   }
 
   @override
@@ -652,6 +729,15 @@ abstract class CollectionSource
       final candidateEntries = visibleEntries.where((entry) => newlyVisibleFilters.any((f) => f.test(entry))).toSet();
       analyze(null, entries: candidateEntries);
     }
+  }
+
+  void _onScenarioChanged() {
+    updateDerivedFilters();
+    eventBus.fire(const FilterVisibilityChangedEvent());
+    _visibleEntries = Set.unmodifiable(_applyHiddenFilters(_rawEntries));
+    final candidateEntries = visibleEntries;
+    analyze(null, entries: candidateEntries);
+    notifyScenariosChanged();
   }
 }
 

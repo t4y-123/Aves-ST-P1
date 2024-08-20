@@ -1,8 +1,8 @@
+import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 
-import '../../filters/filters.dart';
 import '../../scenario/enum/scenario_item.dart';
 
 mixin ScenarioSettings on SettingsAccess {
@@ -23,9 +23,26 @@ mixin ScenarioSettings on SettingsAccess {
   set scenarioSortReverse(bool newValue) => set(scenarioSortReverseKey, newValue);
 
   // use the pinned filters as the active scenario.
-  static const scenarioPinnedFiltersKey = 'scenario_pinned_filters';
-  Set<CollectionFilter> get scenarioPinnedFilters =>
-      (getStringList(scenarioPinnedFiltersKey) ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
-  set scenarioPinnedFilters(Set<CollectionFilter> newValue) =>
-      set(scenarioPinnedFiltersKey, newValue.map((filter) => filter.toJson()).toList());
+
+  static const scenarioPinnedExcludeFiltersKey = 'scenario_pinned_exclude_filters';
+  static const scenarioPinnedIntersectFiltersKey = 'scenario_pinned_intersect_filters';
+  static const scenarioPinnedUnionFiltersKey = 'scenario_pinned_union_filters';
+
+  Set<CollectionFilter> get scenarioPinnedExcludeFilters =>
+      (getStringList(scenarioPinnedExcludeFiltersKey) ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
+
+  set scenarioPinnedExcludeFilters(Set<CollectionFilter> newValue) =>
+      set(scenarioPinnedExcludeFiltersKey, newValue.map((filter) => filter.toJson()).toList());
+
+  Set<CollectionFilter> get scenarioPinnedIntersectFilters =>
+      (getStringList(scenarioPinnedIntersectFiltersKey) ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
+
+  set scenarioPinnedIntersectFilters(Set<CollectionFilter> newValue) =>
+      set(scenarioPinnedIntersectFiltersKey, newValue.map((filter) => filter.toJson()).toList());
+
+  Set<CollectionFilter> get scenarioPinnedUnionFilters =>
+      (getStringList(scenarioPinnedUnionFiltersKey) ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
+
+  set scenarioPinnedUnionFilters(Set<CollectionFilter> newValue) =>
+      set(scenarioPinnedUnionFiltersKey, newValue.map((filter) => filter.toJson()).toList());
 }

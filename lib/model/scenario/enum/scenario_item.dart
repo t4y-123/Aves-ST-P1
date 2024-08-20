@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import '../../../theme/icons.dart';
 import '../scenario.dart';
 
-enum ScenarioChipGroupFactor { unionBeforeIntersect, intersectBeforeUnion }
+enum ScenarioChipGroupFactor { intersectBeforeUnion, unionBeforeIntersect }
 
 extension ExtraScenarioChipGroupFactorView on ScenarioChipGroupFactor {
   String getName(BuildContext context) {
@@ -32,13 +32,13 @@ extension ExtraScenarioChipGroupFactorView on ScenarioChipGroupFactor {
 enum ScenarioChipSortFactor { date, name, count, size }
 
 //
-enum ScenarioLoadType { excludeEach, unionOr, intersectAnd }
+enum ScenarioLoadType { excludeUnique, unionOr, intersectAnd }
 
 extension ExtraScenarioLoadTypeView on ScenarioLoadType {
   String getName(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
-      ScenarioLoadType.excludeEach => l10n.scenarioLoadTypeExclude,
+      ScenarioLoadType.excludeUnique => l10n.scenarioLoadTypeExclude,
       ScenarioLoadType.unionOr => l10n.scenarioLoadTypeUnion,
       ScenarioLoadType.intersectAnd => l10n.scenarioLoadTypeIntersect,
     };

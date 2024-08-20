@@ -27,16 +27,33 @@ class ScenarioListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final source = context.read<CollectionSource>();
-    return Selector<Settings, (ScenarioChipGroupFactor, ChipSortFactor, bool, Set<CollectionFilter>)>(
-      selector: (context, s) =>
-          (s.scenarioGroupFactor, s.scenarioSortFactor, s.scenarioSortReverse, s.scenarioPinnedFilters),
+    return Selector<
+        Settings,
+        (
+          ScenarioChipGroupFactor,
+          ChipSortFactor,
+          bool,
+          Set<CollectionFilter>,
+          Set<CollectionFilter>,
+          Set<CollectionFilter>
+        )>(
+      selector: (context, s) => (
+        s.scenarioGroupFactor,
+        s.scenarioSortFactor,
+        s.scenarioSortReverse,
+        s.scenarioPinnedExcludeFilters,
+        s.scenarioPinnedIntersectFilters,
+        s.scenarioPinnedUnionFilters
+      ),
       shouldRebuild: (t1, t2) {
         // `Selector` by default uses `DeepCollectionEquality`, which does not go deep in collections within records
         const eq = DeepCollectionEquality();
         return !(eq.equals(t1.$1, t2.$1) &&
             eq.equals(t1.$2, t2.$2) &&
             eq.equals(t1.$3, t2.$3) &&
-            eq.equals(t1.$4, t2.$4));
+            eq.equals(t1.$4, t2.$4) &&
+            eq.equals(t1.$5, t2.$5) &&
+            eq.equals(t1.$6, t2.$6));
       },
       builder: (context, s, child) {
         return StreamBuilder(
@@ -81,6 +98,7 @@ class ScenarioListPage extends StatelessWidget {
         .toSet();
     filters.add(ScenarioFilter(ScenarioFilter.scenarioSettingId, context.l10n.scenarioFilterSettingTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioAddNewItemId, context.l10n.scenarioFilterAddNewTitle));
+    filters.add(ScenarioFilter(ScenarioFilter.scenarioOpId, context.l10n.scenarioFilterOpTitle));
     debugPrint('getScenarioGridItems filters $filters');
     return FilterNavigationPage.sort(settings.scenarioSortFactor, settings.scenarioSortReverse, source, filters);
   }
@@ -88,7 +106,11 @@ class ScenarioListPage extends StatelessWidget {
   static Map<ChipSectionKey, List<FilterGridItem<ScenarioFilter>>> groupToSections(
       BuildContext context, CollectionSource source, Iterable<FilterGridItem<ScenarioFilter>> sortedMapEntries) {
     final newFilters = source.getNewScenarioFilters(context);
-    final pinned = settings.scenarioPinnedFilters.whereType<ScenarioFilter>();
+    final pinned = [
+      ...settings.scenarioPinnedExcludeFilters.whereType<ScenarioFilter>(),
+      ...settings.scenarioPinnedIntersectFilters.whereType<ScenarioFilter>(),
+      ...settings.scenarioPinnedUnionFilters.whereType<ScenarioFilter>(),
+    ];
     debugPrint('getScenarioGridItems pinned $pinned');
     final List<FilterGridItem<ScenarioFilter>> newMapEntries = [],
         funcMapEntries = [],
@@ -102,8 +124,7 @@ class ScenarioListPage extends StatelessWidget {
       if (pinned.contains(filter)) {
         pinnedMapEntries.add(item);
       }
-      if (filter.scenarioId == ScenarioFilter.scenarioSettingId ||
-          filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {
+      if (filter.scenarioId < 0) {
         funcMapEntries.add(item);
       } else {
         unpinnedMapEntries.add(item);
@@ -120,7 +141,7 @@ class ScenarioListPage extends StatelessWidget {
     final unionOrKey = ScenarioImportanceSectionKey.unionOr(context);
     sections = groupBy<FilterGridItem<ScenarioFilter>, ChipSectionKey>(unpinnedMapEntries, (kv) {
       switch ((kv.filter.scenario?.loadType)) {
-        case ScenarioLoadType.excludeEach:
+        case ScenarioLoadType.excludeUnique:
           return excludeUniqueKey;
         case ScenarioLoadType.intersectAnd:
           return intersectAndKey;
@@ -132,14 +153,6 @@ class ScenarioListPage extends StatelessWidget {
     });
 
     switch (settings.scenarioGroupFactor) {
-      // case ScenarioChipGroupFactor.importance:
-      //   sections = {
-      //     // group ordering
-      //     if (sections.containsKey(activePinnedKey)) activePinnedKey: sections[activePinnedKey]!,
-      //     if (sections.containsKey(excludeUniqueKey)) excludeUniqueKey: sections[excludeUniqueKey]!,
-      //     if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
-      //     if (sections.containsKey(unionOrKey)) unionOrKey: sections[unionOrKey]!,
-      //   };
       case ScenarioChipGroupFactor.intersectBeforeUnion:
         sections = {
           // group ordering
@@ -158,15 +171,6 @@ class ScenarioListPage extends StatelessWidget {
           if (sections.containsKey(unionOrKey)) unionOrKey: sections[unionOrKey]!,
           if (sections.containsKey(intersectAndKey)) intersectAndKey: sections[intersectAndKey]!,
         };
-      // case ScenarioChipGroupFactor.none:
-      //   return {
-      //     if (sortedMapEntries.isNotEmpty)
-      //       const ChipSectionKey(): [
-      //         ...newMapEntries,
-      //         ...pinnedMapEntries,
-      //         ...unpinnedMapEntries,
-      //       ],
-      //   };
     }
 
     if (pinnedMapEntries.isNotEmpty) {

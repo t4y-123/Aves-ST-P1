@@ -10,8 +10,11 @@ import 'package:flutter/widgets.dart';
 
 class ScenarioFilter extends CoveredCollectionFilter {
   static const type = 'scenario';
-  static const scenarioSettingId = -3;
+  static const scenarioOpId = -1;
   static const scenarioAddNewItemId = -2;
+  static const scenarioSettingId = -3;
+  static const scenarioLockId = -4;
+  static const scenarioUnlockId = -5;
   final int scenarioId;
   final String displayName;
   late final EntryFilter _test;
@@ -75,12 +78,12 @@ class ScenarioFilter extends CoveredCollectionFilter {
 
         return result;
       };
-    } else if (scenarioId == scenarioSettingId) {
-      scenario = null;
-      _test = (entry) => true;
     } else if (scenarioId == scenarioAddNewItemId) {
       scenario = null;
       _test = (entry) => false;
+    } else {
+      scenario = null;
+      _test = (entry) => true;
     }
   }
 
@@ -107,10 +110,10 @@ class ScenarioFilter extends CoveredCollectionFilter {
   bool get exclusiveProp => false;
 
   @override
-  String get universalLabel => displayName ?? 'empty';
+  String get universalLabel => displayName;
 
   @override
-  String getTooltip(BuildContext context) => displayName ?? 'empty';
+  String getTooltip(BuildContext context) => displayName;
 
   @override
   Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) {
@@ -118,8 +121,16 @@ class ScenarioFilter extends CoveredCollectionFilter {
       return Icon(AIcons.settings, size: size);
     } else if (scenarioId == scenarioAddNewItemId) {
       return Icon(AIcons.add, size: size);
+    } else if (scenarioId == scenarioOpId) {
+      return Icon(AIcons.opScenario, size: size);
+    } else if (scenarioId == scenarioLockId) {
+      return Icon(AIcons.lockScenario, size: size);
+    } else if (scenarioId == scenarioUnlockId) {
+      return Icon(AIcons.unlockScenario, size: size);
     }
-    return switch (settings.scenarioPinnedFilters.contains(this)) {
+    return switch (settings.scenarioPinnedExcludeFilters.contains(this) ||
+        settings.scenarioPinnedIntersectFilters.contains(this) ||
+        settings.scenarioPinnedUnionFilters.contains(this)) {
       true => Icon(AIcons.show, size: size),
       false => Icon(AIcons.zoomOut, size: size),
     };
@@ -140,5 +151,5 @@ class ScenarioFilter extends CoveredCollectionFilter {
 
   // key `scenario-{path}` is expected by test driver
   @override
-  String get key => '$type-$reversed-$scenario';
+  String get key => '$type-$reversed-$scenarioId';
 }

@@ -15,6 +15,7 @@ import 'package:aves/widgets/filter_grids/common/covered_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/filter_chip_grid_decorator.dart';
 import 'package:aves/widgets/filter_grids/common/list_details.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -69,31 +70,44 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
               case ScenarioFilter filter:
                 {
                   if (filter.scenarioId >= 0) {
-                    // first remove pinned exclude type of scenario filter.
-                    if (filter.scenario?.loadType == ScenarioLoadType.excludeEach) {
-                      final removeFilters = settings.scenarioPinnedFilters
-                          .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeEach)
-                          .toSet();
-                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..removeAll(removeFilters);
-                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
-                    } else if (settings.scenarioPinnedFilters.contains(filter)) {
-                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..remove(filter);
-                      // debugPrint(
-                      //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.remove(filter)'
-                      //     '${settings.scenarioPinnedFilters} [$filter]');
-                    } else {
-                      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters..add(filter);
-                      // debugPrint(
-                      //     '$runtimeType _StatusInteractiveStatusFilterTileState  settings.scenarioPinnedFilters.add(filter)'
-                      //     '${settings.scenarioPinnedFilters} [$filter]');
+                    switch (filter.scenario!.loadType) {
+                      case ScenarioLoadType.excludeUnique:
+                        final removeFilters = settings.scenarioPinnedExcludeFilters
+                            .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeUnique)
+                            .toSet();
+                        settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
+                          ..removeAll(removeFilters)
+                          ..add(filter);
+                        break;
+                      case ScenarioLoadType.unionOr:
+                        if (settings.scenarioPinnedUnionFilters.contains(filter)) {
+                          settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..remove(filter);
+                        } else {
+                          settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..add(filter);
+                        }
+                        break;
+                      case ScenarioLoadType.intersectAnd:
+                        if (settings.scenarioPinnedIntersectFilters.contains(filter)) {
+                          settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters
+                            ..remove(filter);
+                        } else {
+                          settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters
+                            ..add(filter);
+                        }
+                        break;
                     }
-                    // debugPrint(
-                    //    '$runtimeType _StatusInteractiveStatusFilterTileState scenario change:${settings.scenarioPinnedFilters}');
                   } else if (filter.scenarioId == ScenarioFilter.scenarioSettingId) {
                     await Navigator.maybeOf(context)?.push(
                       MaterialPageRoute(
                         settings: const RouteSettings(name: ScenarioConfigPage.routeName),
                         builder: (context) => const ScenarioConfigPage(),
+                      ),
+                    );
+                  } else if (filter.scenarioId == ScenarioFilter.scenarioOpId) {
+                    await Navigator.maybeOf(context)?.push(
+                      MaterialPageRoute(
+                        settings: const RouteSettings(name: ScenariosOperationPage.routeName),
+                        builder: (context) => const ScenariosOperationPage(),
                       ),
                     );
                   } else if (filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {}

@@ -193,6 +193,7 @@ class SettingsDefaults {
   static const confirmEditAsCopiedFirst = true;
 
   static const scenarioLock = false;
+  static const useScenarioFeature = true;
   // filter grids
   static const scenarioGroupFactor = ScenarioChipGroupFactor.intersectBeforeUnion;
   static const scenarioChipListSortFactor = ChipSortFactor.name;

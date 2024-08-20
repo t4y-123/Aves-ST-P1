@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:aves/model/filters/aspect_ratio.dart';
 import 'package:aves/model/filters/path.dart';
+import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
@@ -10,7 +12,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../l10n/l10n.dart';
-import '../filters/aspect_ratio.dart';
 import '../filters/filters.dart';
 import '../filters/mime.dart';
 import '../filters/recent.dart';
@@ -29,7 +30,7 @@ class ScenariosHelper {
     await scenarioSteps.init();
     if (scenarioSteps.all.isEmpty || scenarios.all.isEmpty) {
       await addDefaultScenarios();
-      settings.scenarioPinnedFilters = settings.scenarioPinnedFilters
+      settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
         ..add(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
     }
   }
@@ -37,25 +38,37 @@ class ScenariosHelper {
   Future<void> clearScenarios() async {
     await scenarios.clear();
     await scenarioSteps.clear();
+    settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters..clear();
+    settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters..clear();
+    settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..clear();
   }
 
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
+    const exNum = 0;
+    const injNum = 4;
+    const unUum = 12;
     return {
-      //exclude unique
-      await scenarios.newRow(1,
-          labelName: _l10n.initScenarioName01, color: scenarios.all.isEmpty ? const Color(0xFF808080) : null),
-      await scenarios.newRow(2,
-          labelName: _l10n.initScenarioName02, color: scenarios.all.isEmpty ? const Color(0xFF8D4FF8) : null),
-      await scenarios.newRow(3,
-          labelName: _l10n.initScenarioName03, color: scenarios.all.isEmpty ? const Color(0xFF2986cc) : null),
-      //interject and
-      await scenarios.newRow(4, labelName: _l10n.initScenarioName04, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(5, labelName: _l10n.initScenarioName05, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(6, labelName: _l10n.initScenarioName06, loadType: ScenarioLoadType.intersectAnd),
-      //union or
-      await scenarios.newRow(7, labelName: _l10n.initScenarioName07, loadType: ScenarioLoadType.unionOr),
-      await scenarios.newRow(8, labelName: _l10n.initScenarioName08, loadType: ScenarioLoadType.unionOr),
-      await scenarios.newRow(9, labelName: _l10n.initScenarioName09, loadType: ScenarioLoadType.unionOr),
+      //exclude unique 1-4
+      await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
+      await scenarios.newRow(exNum + 2, labelName: _l10n.excludeName02),
+      await scenarios.newRow(exNum + 3, labelName: _l10n.excludeName03),
+      await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName04),
+      await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName05),
+      //interject and 5-12
+      await scenarios.newRow(injNum + 1, labelName: _l10n.interjectName01, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 2, labelName: _l10n.interjectName02, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 3, labelName: _l10n.interjectName03, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 4, labelName: _l10n.interjectName04, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName05, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 6, labelName: _l10n.interjectName06, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 7, labelName: _l10n.interjectName07, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 8, labelName: _l10n.interjectName08, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 9, labelName: _l10n.interjectName09, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 10, labelName: _l10n.interjectName10, loadType: ScenarioLoadType.intersectAnd),
+      //union or 13-14
+      await scenarios.newRow(unUum + 1, labelName: _l10n.unionName01, loadType: ScenarioLoadType.unionOr),
+      await scenarios.newRow(unUum + 2, labelName: _l10n.unionName02, loadType: ScenarioLoadType.unionOr),
+      await scenarios.newRow(unUum + 3, labelName: _l10n.unionName03, loadType: ScenarioLoadType.unionOr),
     };
   }
 
@@ -68,52 +81,37 @@ class ScenariosHelper {
 
     final sIds = scenarios.all.map((e) => e.id).toList();
     //TODO: only make a group useless scenario and steps for go through the func.
+    int stepNum = 1;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
-      //1/2/3
-      newScenarioStep(1, sIds[0], 1, {}),
-      // newScenarioStep(2, sIds[0], 2, {AspectRatioFilter.portrait}),
-      // newScenarioStep(3, sIds[0], 3, {RecentlyAddedFilter.instance}),
+      //1/2/3/4 5
+      newScenarioStep(stepNum++, sIds[0], 1, {}),
+      newScenarioStep(stepNum++, sIds[1], 1, {MimeFilter.image}),
+      newScenarioStep(stepNum++, sIds[2], 1, {PathFilter(androidFileUtils.dcimPath)}),
       //
-      newScenarioStep(4, sIds[1], 1, {MimeFilter.image}),
-      //newScenarioStep(5, sIds[1], 2, {AspectRatioFilter.portrait}),
-      // newScenarioStep(6, sIds[1], 3, {RecentlyAddedFilter.instance}),
+      newScenarioStep(stepNum++, sIds[3], 1, {PathFilter(androidFileUtils.dcimPath)}),
+      newScenarioStep(stepNum++, sIds[3], 2, {QueryFilter('TIME2NOW < 30MM')}),
       //
-      newScenarioStep(7, sIds[2], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
-      //newScenarioStep(8, sIds[2], 2, {AspectRatioFilter.portrait}),
-      //newScenarioStep(9, sIds[2], 3, {RecentlyAddedFilter.instance}),
+      newScenarioStep(stepNum++, sIds[4], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
       ////////////////////////////////////
-      //steps for interject and.
+      //steps for time interject and. 5-12 = 6-13,
       ///////////////////////////////////
-      //4
-      //newScenarioStep(10, sIds[3], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
-      newScenarioStep(11, sIds[3], 2, {AspectRatioFilter.portrait}),
-      //newScenarioStep(12, sIds[3], 3, {RecentlyAddedFilter.instance}),
-      //5
-      //newScenarioStep(13, sIds[4], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
-      newScenarioStep(14, sIds[4], 2, {AspectRatioFilter.landscape}),
-      //newScenarioStep(15, sIds[4], 3, {RecentlyAddedFilter.instance}),
-      //6
-      //newScenarioStep(16, sIds[5], 1, {AlbumFilter(androidFileUtils.dcimPath, null)}),
-      //newScenarioStep(17, sIds[5], 2, {AspectRatioFilter.landscape}),
-      newScenarioStep(18, sIds[5], 3, {RecentlyAddedFilter.instance}),
-      /////////////////////////////////////
-      //steps for union or
+      newScenarioStep(stepNum++, sIds[5], 1, {AspectRatioFilter.portrait}),
+      newScenarioStep(stepNum++, sIds[6], 1, {AspectRatioFilter.landscape}),
+      newScenarioStep(stepNum++, sIds[7], 1, {QueryFilter('TIME2NOW < 30MM')}),
+      newScenarioStep(stepNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 1HH')}),
+      newScenarioStep(stepNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 3HH')}),
+      newScenarioStep(stepNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 6HH')}),
+      newScenarioStep(stepNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 9HH')}),
+      newScenarioStep(stepNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 12HH')}),
+      newScenarioStep(stepNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 1D')}),
+      newScenarioStep(stepNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 3D')}),
       ///////////////////////////////////
-      ///7
-      newScenarioStep(19, sIds[6], 1, {MimeFilter.video}),
-      // newScenarioStep(20, sIds[6], 2, {AspectRatioFilter.portrait}),
-      // newScenarioStep(21, sIds[6], 3, {RecentlyAddedFilter.instance}),
-
-      ///8
-      newScenarioStep(22, sIds[7], 1, {PathFilter(androidFileUtils.picturesPath)}),
-      // newScenarioStep(23, sIds[7], 2, {AspectRatioFilter.portrait}),
-      // newScenarioStep(24, sIds[7], 3, {RecentlyAddedFilter.instance}),
-
-      ///9/
-      newScenarioStep(25, sIds[8], 1, {PathFilter(androidFileUtils.downloadPath)}),
-      //newScenarioStep(26, sIds[8], 2, {AspectRatioFilter.portrait}),
-      newScenarioStep(27, sIds[8], 3, {RecentlyAddedFilter.instance}),
+      //steps for some added dir or path,
+      ///////////////////////////////////
+      newScenarioStep(stepNum++, sIds[15], 1, {MimeFilter.video}),
+      newScenarioStep(stepNum++, sIds[16], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(stepNum++, sIds[17], 1, {PathFilter(androidFileUtils.picturesPath)}),
     ];
     await scenarioSteps.add(groupScenarioSteps.toSet());
   }

@@ -215,6 +215,7 @@ class AIcons {
   static const lockScenario = Icons.lock_open_sharp;
   static const unlockScenario = Icons.lock_sharp;
   static const settingScenario = Icons.settings_applications;
+  static const opScenario = Icons.settings_applications;
 
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking

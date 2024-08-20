@@ -108,7 +108,7 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
                 return StreamBuilder<ScenarioSummaryInvalidatedEvent>(
                   stream: source.eventBus
                       .on<ScenarioSummaryInvalidatedEvent>()
-                      .where((event) => event.scenarioId == null || event.scenarioId!.contains(scenarioId)),
+                      .where((event) => event.scenarioIds == null || event.scenarioIds!.contains(scenarioId)),
                   builder: (context, snapshot) => _buildChip(context, source),
                 );
               }

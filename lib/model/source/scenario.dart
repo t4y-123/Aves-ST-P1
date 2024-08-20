@@ -33,30 +33,16 @@ mixin ScenarioMixin on SourceBase {
 
   void invalidateScenarioFilterSummary({
     Set<AvesEntry>? entries,
-    Set<String?>? directories,
     bool notify = true,
   }) {
-    //t4y:Todo: fire invalid scenario filters later.the
-    // if (_filterEntryCountMap.isEmpty && _filterSizeMap.isEmpty && _filterRecentEntryMap.isEmpty) return;
-    //
-    // if (entries == null && directories == null) {
-    //   _filterEntryCountMap.clear();
-    //   _filterSizeMap.clear();
-    //   _filterRecentEntryMap.clear();
-    // } else {
-    //   directories ??= {};
-    //   if (entries != null) {
-    //     directories.addAll(entries.map((entry) => entry.directory).whereNotNull());
-    //   }
-    //   directories.forEach((directory) {
-    //     _filterEntryCountMap.remove(directory);
-    //     _filterSizeMap.remove(directory);
-    //     _filterRecentEntryMap.remove(directory);
-    //   });
-    // }
-    // if (notify) {
-    //   eventBus.fire(ScenarioSummaryInvalidatedEvent(scenarios.all));
-    // }
+    //t4y:always rebuild all scenario if change.
+    _filterEntryCountMap.clear();
+    _filterSizeMap.clear();
+    _filterRecentEntryMap.clear();
+    if (notify) {
+      debugPrint(' eventBus.fire(ScenarioSummaryInvalidatedEvent');
+      eventBus.fire(const ScenarioSummaryInvalidatedEvent(null));
+    }
   }
 
   int scenarioEntryCount(ScenarioFilter filter) {
@@ -77,7 +63,7 @@ mixin ScenarioMixin on SourceBase {
 class ScenariosChangedEvent {}
 
 class ScenarioSummaryInvalidatedEvent {
-  final Set<int?>? scenarioId;
+  final Set<int?>? scenarioIds;
 
-  const ScenarioSummaryInvalidatedEvent(this.scenarioId);
+  const ScenarioSummaryInvalidatedEvent(this.scenarioIds);
 }

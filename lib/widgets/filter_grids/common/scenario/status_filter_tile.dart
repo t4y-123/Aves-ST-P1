@@ -3,6 +3,7 @@ import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/vaults/vaults.dart';
@@ -76,12 +77,13 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                     }
                     switch (filter.scenario!.loadType) {
                       case ScenarioLoadType.excludeUnique:
-                        final removeFilters = settings.scenarioPinnedExcludeFilters
-                            .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeUnique)
-                            .toSet();
-                        settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
-                          ..removeAll(removeFilters)
-                          ..add(filter);
+                        // final removeFilters = settings.scenarioPinnedExcludeFilters
+                        //     .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeUnique)
+                        //     .toSet();
+                        // settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
+                        //   ..removeAll(removeFilters)
+                        //   ..add(filter);
+                        scenariosHelper.setExcludeScenarioFilterSetting(filter);
                         break;
                       case ScenarioLoadType.unionOr:
                         if (settings.scenarioPinnedUnionFilters.contains(filter)) {

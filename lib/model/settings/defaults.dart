@@ -192,10 +192,13 @@ class SettingsDefaults {
   // so,always force to copy a new item before edit, then edit the copied item.
   static const confirmEditAsCopiedFirst = true;
 
+  static const useScenarios = true;
   static const scenarioLockType = ScenarioLockType.pin;
   static const scenarioLock = false;
   static const scenarioLockDefaultPass = '1234';
   static const useScenarioFeature = true;
+  // t4y: to make the scenario change not affect the fore ground wallpaper.
+  static const canScenarioAffectFgw = false;
   // filter grids
   static const scenarioGroupFactor = ScenarioChipGroupFactor.intersectBeforeUnion;
   static const scenarioChipListSortFactor = ChipSortFactor.name;

@@ -58,4 +58,12 @@ mixin ScenarioSettings on SettingsAccess {
   set scenarioLockType(ScenarioLockType newValue) => set(scenarioLockTypeKey, newValue.toString());
 
   static const scenarioLockPassKey = 'scenario_lock_password';
+
+  static const canScenarioAffectFgwKey = 'can_scenario_affect_foreground_wallpaper';
+  bool get canScenarioAffectFgw => getBool(canScenarioAffectFgwKey) ?? SettingsDefaults.canScenarioAffectFgw;
+  set canScenarioAffectFgw(bool newValue) => set(canScenarioAffectFgwKey, newValue);
+
+  static const useScenariosKey = 'use_scenarios';
+  bool get useScenarios => getBool(useScenariosKey) ?? SettingsDefaults.useScenarios;
+  set useScenarios(bool newValue) => set(useScenariosKey, newValue);
 }

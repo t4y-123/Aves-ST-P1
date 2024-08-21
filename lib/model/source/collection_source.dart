@@ -146,8 +146,12 @@ abstract class CollectionSource
 
   @override
   Set<AvesEntry> get visibleEntries {
-    _visibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries));
+    _visibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: settings.useScenarios));
     return _visibleEntries!;
+  }
+
+  Set<AvesEntry> get noneScenarioVisibleEntries {
+    return Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: false))!;
   }
 
   @override
@@ -176,13 +180,13 @@ abstract class CollectionSource
         ...vaults.vaultDirectories.where(vaults.isLocked).map((v) => AlbumFilter(v, null)),
       };
 
-  Iterable<AvesEntry> _applyHiddenFilters(Iterable<AvesEntry> entries) {
+  Iterable<AvesEntry> _applyHiddenFilters(Iterable<AvesEntry> entries, {bool useScenario = true}) {
     final hiddenFilters = {
       TrashFilter.instance,
       ..._getAppHiddenFilters(),
     };
 
-    if (settings.scenarioPinnedExcludeFilters.isEmpty) {
+    if (!useScenario || settings.scenarioPinnedExcludeFilters.isEmpty) {
       return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
     }
     // Separate the filters by type once
@@ -210,9 +214,6 @@ abstract class CollectionSource
       if (hiddenFilters.any((filter) => filter.test(entry))) return false;
 
       final uniqueFilterResult = excludeUniqueFilters.any((filter) => filter.test(entry));
-
-      var intersectFilterResult = false;
-      var unionFilterResult = false;
 
       switch (settings.scenarioGroupFactor) {
         case ScenarioChipGroupFactor.intersectBeforeUnion:

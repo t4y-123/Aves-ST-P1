@@ -69,13 +69,13 @@ class _AppBottomNavBarState extends State<AppBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final showVideo = context.select<Settings, bool>((s) => !s.hiddenFilters.contains(MimeFilter.video));
-
+    final showScenario = context.select<Settings, bool>((s) => s.useScenarios);
     final items = [
       const AvesBottomNavItem(route: CollectionPage.routeName),
-      if (showVideo) AvesBottomNavItem(route: CollectionPage.routeName, filter: MimeFilter.video),
+      if (!showScenario && showVideo) AvesBottomNavItem(route: CollectionPage.routeName, filter: MimeFilter.video),
       const AvesBottomNavItem(route: CollectionPage.routeName, filter: FavouriteFilter.instance),
       const AvesBottomNavItem(route: AlbumListPage.routeName),
-      const AvesBottomNavItem(route: ScenarioListPage.routeName),
+      if (showScenario) const AvesBottomNavItem(route: ScenarioListPage.routeName),
     ];
 
     Widget child = FloatingNavBar(

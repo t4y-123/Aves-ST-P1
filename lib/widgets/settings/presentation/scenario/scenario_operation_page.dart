@@ -6,6 +6,7 @@ import 'package:aves/widgets/common/action_mixins/scenario_aware.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/filter_grids/common/scenario/scenario_lock_setting_dialog.dart';
+import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -23,6 +24,11 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, Scenari
       ),
       body: SafeArea(
         child: ListView(children: [
+          SettingsSwitchListTile(
+            selector: (context, s) => s.useScenarios,
+            onChanged: (v) => settings.useScenarios = v,
+            title: context.l10n.settingsUseScenariosTileText,
+          ),
           ListTile(
             title: Text(l10n.settingsScenarioResetDefaultText),
             trailing: ElevatedButton(
@@ -55,6 +61,11 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, Scenari
               },
               child: Text(l10n.applyButtonLabel),
             ),
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.canScenarioAffectFgw,
+            onChanged: (v) => settings.canScenarioAffectFgw = v,
+            title: context.l10n.settingsCanScenarioAffectFgwTileText,
           ),
         ]),
       ),

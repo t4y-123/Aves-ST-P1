@@ -104,7 +104,8 @@ class FgwScheduleHelper {
     curPrivacyGuardLevel ??= await getCurGuardLevel();
     final filters =
         await getScheduleFilters(updateType, widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel);
-    final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+    final entries =
+        CollectionLens(source: source, filters: filters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
     final int itemsToPrint = min(entries.length, 10);
     debugPrint('$runtimeType getScheduleEntries ${entries.length} :'
         '${entries.length}\n${entries.getRange(0, itemsToPrint).map((e) => e.toMap())}');

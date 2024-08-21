@@ -32,8 +32,7 @@ class ScenariosHelper {
       await addDefaultScenarios();
     }
     if (settings.scenarioPinnedExcludeFilters.isEmpty) {
-      settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
-        ..add(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
+      setExcludeScenarioFilterSetting(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
     }
   }
 
@@ -55,7 +54,8 @@ class ScenariosHelper {
       await scenarios.newRow(exNum + 2, labelName: _l10n.excludeName02),
       await scenarios.newRow(exNum + 3, labelName: _l10n.excludeName03),
       await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName04),
-      await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName05),
+      await scenarios.newRow(exNum + 5, labelName: _l10n.excludeName05),
+      await scenarios.newRow(exNum + 6, labelName: _l10n.excludeName06),
       //interject
       await scenarios.newRow(injNum + 1, labelName: _l10n.interjectName01, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 2, labelName: _l10n.interjectName02, loadType: ScenarioLoadType.intersectAnd),
@@ -97,27 +97,29 @@ class ScenariosHelper {
       //recent 3hours DCIM pic
       newScenarioStep(orderNum++, sIds[3], 1, {PathFilter(androidFileUtils.dcimPath)}),
       newScenarioStep(orderNum++, sIds[3], 2, {QueryFilter('TIME2NOW < 3h')}),
-      //
+      // for share by copy exclude
       newScenarioStep(orderNum++, sIds[4], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      // for video only exclude
+      newScenarioStep(orderNum++, sIds[5], 1, {MimeFilter.video}),
       ////////////////////////////////////
       //steps for time interject and. 5-12 = 6-13,
       ///////////////////////////////////
-      newScenarioStep(orderNum++, sIds[5], 1, {AspectRatioFilter.portrait}),
-      newScenarioStep(orderNum++, sIds[6], 1, {AspectRatioFilter.landscape}),
-      newScenarioStep(orderNum++, sIds[7], 1, {QueryFilter('TIME2NOW < 30mi')}),
-      newScenarioStep(orderNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 1h')}),
-      newScenarioStep(orderNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 3h')}),
-      newScenarioStep(orderNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 6h')}),
-      newScenarioStep(orderNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 9h')}),
-      newScenarioStep(orderNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 12h')}),
-      newScenarioStep(orderNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 1d')}),
-      newScenarioStep(orderNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 3d')}),
+      newScenarioStep(orderNum++, sIds[6], 1, {AspectRatioFilter.portrait}),
+      newScenarioStep(orderNum++, sIds[7], 1, {AspectRatioFilter.landscape}),
+      newScenarioStep(orderNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 30mi')}),
+      newScenarioStep(orderNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 1h')}),
+      newScenarioStep(orderNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 3h')}),
+      newScenarioStep(orderNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 6h')}),
+      newScenarioStep(orderNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 9h')}),
+      newScenarioStep(orderNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 12h')}),
+      newScenarioStep(orderNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 1d')}),
+      newScenarioStep(orderNum++, sIds[15], 1, {QueryFilter('TIME2NOW < 3d')}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////
-      newScenarioStep(orderNum++, sIds[15], 1, {MimeFilter.video}),
-      newScenarioStep(orderNum++, sIds[16], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
-      newScenarioStep(orderNum++, sIds[17], 1, {PathFilter(androidFileUtils.picturesPath)}),
+      newScenarioStep(orderNum++, sIds[16], 1, {MimeFilter.video}),
+      newScenarioStep(orderNum++, sIds[17], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(orderNum++, sIds[18], 1, {PathFilter(androidFileUtils.picturesPath)}),
     ];
     await scenarioSteps.add(groupScenarioSteps.toSet());
   }
@@ -135,6 +137,15 @@ class ScenariosHelper {
       isActive: true,
       type: type,
     );
+  }
+
+  void setExcludeScenarioFilterSetting(ScenarioFilter filter) {
+    final removeFilters = settings.scenarioPinnedExcludeFilters
+        .where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeUnique)
+        .toSet();
+    settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters
+      ..removeAll(removeFilters)
+      ..add(filter);
   }
 
   Future<List<ScenarioStepRow>> newScenarioStepsGroup(ScenarioRow baseRow,

@@ -1112,8 +1112,8 @@
 
 
   "settingsPresentationSectionTitle": "Presentation",
-  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper  config",
-  "settingsPresentationForegroundWallpaperPageTitle": "Foreground Wallpaper Config",
+  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper edit",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground wallpaper edit",
   "settingsPresentationWallpaperAddDefaultScheduleTile": "Foreground wallpaper operation",
   "settingsWallpaperSchedulesManagerTitle": "Foreground wallpaper operation",
 
@@ -1231,6 +1231,8 @@
   "excludeName03": "Img Not Share Exclude",
   "excludeName04": "<3hour DCIM ",
   "excludeName05": "Share Copied Exclude",
+  "excludeName06": "Video Exclude",
+
 
   "interjectName01": "Portrait Interject",
   "interjectName02": "Landscape Interject",
@@ -1252,8 +1254,8 @@
   "settingsScenarioStepsNamePrefix": "Scenario steps: ",
   "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
 
-  "settingsScenariosConfigPageTile": "Edit Scenarios",
-  "settingsScenariosConfigPageTitle": "Edit Scenarios",
+  "settingsScenariosConfigPageTile": "Scenarios Edit",
+  "settingsScenariosConfigPageTitle": "Scenarios Edit",
   "scenarioFilterSettingTitle": "Edit Scenario",
   "scenarioFilterAddNewTitle": "Add new scenario",
   "scenarioFilterOpTitle": "Setting scenario",
@@ -1262,12 +1264,15 @@
   "configureScenarioLockTitle": "Configure Scenario Lock",
   "pinDialogEnterDefault1234": "Enter PIN (default:1234)",
 
-  "settingsScenariosOperationTile": "Scenarios operation",
-  "settingsScenariosOperationTitle": "Scenarios Operation",
+  "settingsUseScenariosTileText": "Use scenarios",
+  "settingsScenariosOperationTile": "Scenarios operate",
+  "settingsScenariosOperationTitle": "Scenarios Operate",
   "settingsScenarioResetDefaultText": "Reset scenarios to default",
   "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
   "settingsScenarioSetScenarioPassDefaultText": "Set scenario unlock password (default 1234)",
   "settingsScenarioSetScenarioPassDefaultAlert": "The default value 1234",
+  "settingsCanScenarioAffectFgwTileText": "Can scenario affect foreground wallpaper",
+
 
   "scenarioTitle": "Scenario",
   "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",

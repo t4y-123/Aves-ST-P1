@@ -140,3 +140,32 @@ extension ExtraScenarioLockTypew on ScenarioLockType {
     };
   }
 }
+
+enum QueryHelperType {
+  path,
+  keyContentTime2Now,
+  keyContentSize,
+  keyContentWidth,
+  keyContentHeight,
+  keyContentDay,
+  keyContentMonth,
+  keyContentYear,
+  keyContentId,
+}
+
+extension ExtraQueryHelperType on QueryHelperType {
+  String getName(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      QueryHelperType.path => l10n.queryHelperTypePath,
+      QueryHelperType.keyContentTime2Now => l10n.queryHelperTypeTime2Now,
+      QueryHelperType.keyContentSize => l10n.queryHelperTypeSize,
+      QueryHelperType.keyContentWidth => l10n.queryHelperTypeWidth,
+      QueryHelperType.keyContentHeight => l10n.queryHelperTypeHeight,
+      QueryHelperType.keyContentDay => l10n.queryHelperTypeDay,
+      QueryHelperType.keyContentMonth => l10n.queryHelperTypeMonth,
+      QueryHelperType.keyContentYear => l10n.queryHelperTypeYear,
+      QueryHelperType.keyContentId => l10n.queryHelperTypeId,
+    };
+  }
+}

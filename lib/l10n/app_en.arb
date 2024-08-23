@@ -1300,6 +1300,25 @@
 
 
   "searchQueryHelperSectionTitle": "Query Helper",
+  "queryHelperTypePath": "path",
+  "queryHelperTypeTime2Now": "Time to now",
+  "queryHelperTypeSize": "Size",
+  "queryHelperTypeWidth": "Width",
+  "queryHelperTypeHeight": "Height",
+  "queryHelperTypeDay": "Day",
+  "queryHelperTypeMonth": "Month",
+  "queryHelperTypeYear": "Year",
+  "queryHelperTypeId": "Id",
+
+  "queryHelperDialogTitle":"Query helper dialog",
+  "queryHelperDialogOperator":"Operator: ",
+  "queryHelperDialogYear":"Year",
+  "queryHelperDialogMonths":"Months",
+  "queryHelperDialogDays":"Days",
+  "queryHelperDialogHours":"Hours",
+  "queryHelperDialogMinutes":"Minutes",
+  "queryHelperDialogSeconds":"Seconds",
+  "queryHelperDialogValueHintText":"Value",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

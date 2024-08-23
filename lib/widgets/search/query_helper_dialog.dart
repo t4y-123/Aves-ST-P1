@@ -44,22 +44,54 @@ class _QueryFilterDialogState extends State<QueryFilterDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     String keyContent = widget.queryKey;
     return AlertDialog(
-      title: const Text('Customize Query'),
-    content: SingleChildScrollView(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.5, // Limit the height
-        ),
-        child: keyContent == QueryFilter.keyContentTime2Now
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      title: Text(l10n.queryHelperDialogTitle),
+      content: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.5, // Limit the height
+          ),
+          child: keyContent == QueryFilter.keyContentTime2Now
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Operator: '),
+                    Row(
+                      children: [
+                        Text(l10n.queryHelperDialogOperator),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              operator = operator == '='
+                                  ? '<'
+                                  : operator == '<'
+                                      ? '>'
+                                      : '=';
+                            });
+                          },
+                          child: Text(operator),
+                        ),
+                      ],
+                    ),
+                    _buildTimeInputRow(l10n.queryHelperDialogYear, (value) => setState(() => _years = value)),
+                    _buildTimeInputRow(l10n.queryHelperDialogMonths, (value) => setState(() => _months = value)),
+                    _buildTimeInputRow(l10n.queryHelperDialogDays, (value) => setState(() => _days = value)),
+                    _buildTimeInputRow(l10n.queryHelperDialogHours, (value) => setState(() => _hours = value)),
+                    _buildTimeInputRow(l10n.queryHelperDialogMinutes, (value) => setState(() => _minutes = value)),
+                    _buildTimeInputRow(l10n.queryHelperDialogSeconds, (value) => setState(() => _seconds = value)),
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '$keyContent',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8.0),
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -72,72 +104,41 @@ class _QueryFilterDialogState extends State<QueryFilterDialog> {
                       },
                       child: Text(operator),
                     ),
+                    const SizedBox(width: 8.0),
+                    SizedBox(
+                      width: 60,
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        onChanged: (newValue) {
+                          value = int.tryParse(newValue);
+                        },
+                        decoration: InputDecoration(
+                          hintText: l10n.queryHelperDialogValueHintText,
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
+                    if (keyContent == QueryFilter.keyContentSize)
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            unit = unit == null
+                                ? 'K'
+                                : unit == 'K'
+                                    ? 'M'
+                                    : unit == 'M'
+                                        ? 'G'
+                                        : 'K';
+                          });
+                        },
+                        child: Text('${unit}B'),
+                      ),
                   ],
                 ),
-                _buildTimeInputRow('Year', (value) => setState(() => _years = value)),
-                _buildTimeInputRow('Months', (value) => setState(() => _months = value)),
-                _buildTimeInputRow('Days', (value) => setState(() => _days = value)),
-                _buildTimeInputRow('Hours', (value) => setState(() => _hours = value)),
-                _buildTimeInputRow('Minutes', (value) => setState(() => _minutes = value)),
-                _buildTimeInputRow('Seconds', (value) => setState(() => _seconds = value)),
-              ],
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '$keyContent',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 8.0),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      operator = operator == '='
-                          ? '<'
-                          : operator == '<'
-                              ? '>'
-                              : '=';
-                    });
-                  },
-                  child: Text(operator),
-                ),
-                const SizedBox(width: 8.0),
-                SizedBox(
-                  width: 60,
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    onChanged: (newValue) {
-                      value = int.tryParse(newValue);
-                    },
-                    decoration: const InputDecoration(
-                      hintText: 'Value',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                if (keyContent == QueryFilter.keyContentSize)
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        unit = unit == null
-                            ? 'K'
-                            : unit == 'K'
-                                ? 'M'
-                                : unit == 'M'
-                                    ? 'G'
-                                    : 'K';
-                      });
-                    },
-                    child: Text('${unit}B'),
-                  ),
-              ],
-            ),
+        ),
       ),
-    ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, null),

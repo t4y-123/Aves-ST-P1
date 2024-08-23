@@ -6,11 +6,13 @@ import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/missing.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/rating.dart';
 import 'package:aves/model/filters/recent.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/type.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -30,6 +32,7 @@ import 'package:aves/widgets/common/search/delegate.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip.dart';
 import 'package:aves/widgets/search/query_helper_dialog.dart';
+import 'package:aves/widgets/settings/privacy/file_picker/file_picker_page.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -65,16 +68,6 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
   ];
 
   static final _monthFilters = List.generate(12, (i) => DateFilter(DateLevel.m, DateTime(1, i + 1)));
-  static final _helperQueryFilters = [
-    QueryFilter(QueryFilter.keyContentTime2Now),
-    QueryFilter(QueryFilter.keyContentSize),
-    QueryFilter(QueryFilter.keyContentWidth),
-    QueryFilter(QueryFilter.keyContentHeight),
-    QueryFilter(QueryFilter.keyContentDay),
-    QueryFilter(QueryFilter.keyContentMonth),
-    QueryFilter(QueryFilter.keyContentYear),
-    QueryFilter(QueryFilter.keyContentId),
-  ];
 
   CollectionSearchDelegate({
     required super.searchFieldLabel,
@@ -221,17 +214,58 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
       goBack(context);
       return;
     }
+    //display the FilePickerPage as a modal bottom sheet.
+    // To keeps the search page alive in the background
+    // and allows the user to interact with the subpage as if it were a dialog.
+    if (queryKey == QueryHelperType.path.getName(context)) {
+      final path = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) => const FilePickerPage(), // Your FilePickerPage as a bottom sheet
+        isScrollControlled: true, // If you need the sheet to be scrollable
+      );
+
+      if (path != null && path.isNotEmpty) {
+        await _select(context, PathFilter(path));
+        return;
+      } else {
+        goBack(context);
+        return;
+      }
+    }
+    // else, build a real query filter.
+    String keyContent;
+
+    if (queryKey == QueryHelperType.keyContentTime2Now.getName(context)) {
+      keyContent = QueryFilter.keyContentTime2Now;
+    } else if (queryKey == QueryHelperType.keyContentSize.getName(context)) {
+      keyContent = QueryFilter.keyContentSize;
+    } else if (queryKey == QueryHelperType.keyContentWidth.getName(context)) {
+      keyContent = QueryFilter.keyContentWidth;
+    } else if (queryKey == QueryHelperType.keyContentHeight.getName(context)) {
+      keyContent = QueryFilter.keyContentHeight;
+    } else if (queryKey == QueryHelperType.keyContentDay.getName(context)) {
+      keyContent = QueryFilter.keyContentDay;
+    } else if (queryKey == QueryHelperType.keyContentMonth.getName(context)) {
+      keyContent = QueryFilter.keyContentMonth;
+    } else if (queryKey == QueryHelperType.keyContentYear.getName(context)) {
+      keyContent = QueryFilter.keyContentYear;
+    } else if (queryKey == QueryHelperType.keyContentId.getName(context)) {
+      keyContent = QueryFilter.keyContentId;
+    } else {
+      keyContent = ''; // Handle the case where no match is found
+    }
+
     String operator = '<';
-    if (queryKey == QueryFilter.keyContentSize ||
-        queryKey == QueryFilter.keyContentHeight ||
-        queryKey == QueryFilter.keyContentWidth) {
+    if (keyContent == QueryFilter.keyContentSize ||
+        keyContent == QueryFilter.keyContentHeight ||
+        keyContent == QueryFilter.keyContentWidth) {
       operator = '>';
     }
     final finalQuery = await showDialog<String>(
       context: context,
       builder: (context) {
         return QueryFilterDialog(
-          queryKey: queryKey,
+          queryKey: keyContent,
           operator: operator,
         );
       },
@@ -244,6 +278,17 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
   }
 
   Widget _buildHelperQueryFilters(BuildContext context, _ContainQuery containQuery) {
+    final _helperQueryFilters = [
+      QueryFilter(QueryHelperType.path.getName(context)),
+      QueryFilter(QueryHelperType.keyContentTime2Now.getName(context)),
+      QueryFilter(QueryHelperType.keyContentSize.getName(context)),
+      QueryFilter(QueryHelperType.keyContentWidth.getName(context)),
+      QueryFilter(QueryHelperType.keyContentHeight.getName(context)),
+      QueryFilter(QueryHelperType.keyContentDay.getName(context)),
+      QueryFilter(QueryHelperType.keyContentMonth.getName(context)),
+      QueryFilter(QueryHelperType.keyContentYear.getName(context)),
+      QueryFilter(QueryHelperType.keyContentId.getName(context)),
+    ];
     final filters = [
       ..._helperQueryFilters,
     ].where((f) => containQuery(f.getLabel(context))).toList();

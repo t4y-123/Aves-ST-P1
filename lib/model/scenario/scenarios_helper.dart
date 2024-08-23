@@ -14,7 +14,6 @@ import 'package:flutter/cupertino.dart';
 import '../../l10n/l10n.dart';
 import '../filters/filters.dart';
 import '../filters/mime.dart';
-import '../filters/recent.dart';
 import '../settings/settings.dart';
 import 'enum/scenario_item.dart';
 
@@ -46,8 +45,8 @@ class ScenariosHelper {
 
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
-    const injNum = 4;
-    const unUum = 12;
+    const injNum = exNum + 6;
+    const unUum = injNum + 10;
     return {
       //exclude unique
       await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
@@ -125,9 +124,9 @@ class ScenariosHelper {
   }
 
   ScenarioStepRow newScenarioStep(int orderOffset, int scenarioId, int stepOffset, Set<CollectionFilter>? filters,
-      [ScenarioStepLoadType loadType = ScenarioStepLoadType.intersectAnd,
+      {ScenarioStepLoadType loadType = ScenarioStepLoadType.intersectAnd,
       bool isActive = true,
-      ScenarioStepRowsType type = ScenarioStepRowsType.all]) {
+      ScenarioStepRowsType type = ScenarioStepRowsType.all}) {
     return scenarioSteps.newRow(
       existMaxOrderNumOffset: orderOffset,
       scenarioId: scenarioId,
@@ -152,7 +151,7 @@ class ScenariosHelper {
       {ScenarioStepRowsType rowsType = ScenarioStepRowsType.all}) async {
     debugPrint('$runtimeType newScenarioStepsGroup start:\n$baseRow \n $rowsType ');
     List<ScenarioStepRow> newScenarioSteps = [
-      newScenarioStep(1, baseRow.id, 1, {RecentlyAddedFilter.instance}),
+      newScenarioStep(1, baseRow.id, 1, {MimeFilter.image}, type: rowsType),
     ];
     debugPrint('newSchedulesGroup =\n $newScenarioSteps');
     return newScenarioSteps;

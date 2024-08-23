@@ -1,29 +1,24 @@
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/tab_fixed.dart';
-import 'package:aves/widgets/settings/presentation/scenario/action/scenario_base_config_actions.dart';
 import 'package:aves/widgets/settings/presentation/scenario/action/scenario_steps_actions.dart';
 import 'package:flutter/material.dart';
 
-import '../../../common/action_mixins/feedback.dart';
+class ScenarioStepsPage extends StatefulWidget {
+  static const routeName = '/settings/presentation/scenario/scenario_steps_config';
 
-class ScenarioConfigPage extends StatefulWidget {
-  static const routeName = '/settings/presentation/scenario/scenario_config';
-
-  const ScenarioConfigPage({super.key});
+  final ScenarioRow scenario;
+  const ScenarioStepsPage({super.key, required this.scenario});
 
   @override
-  State<ScenarioConfigPage> createState() => _ScenarioConfigPageState();
+  State<ScenarioStepsPage> createState() => _ScenarioStepsPageState();
 }
 
-class _ScenarioConfigPageState extends State<ScenarioConfigPage> with FeedbackMixin {
-  final List<ScenarioRow?> _scenarios = [];
-  final Set<ScenarioRow?> _activeScenarios = {};
-  late ScenarioBaseConfigActions _scenarioActions;
-
+class _ScenarioStepsPageState extends State<ScenarioStepsPage> with FeedbackMixin {
   final List<ScenarioStepRow?> _scenarioSteps = [];
   final Set<ScenarioStepRow?> _activeScenarioSteps = {};
   late ScenarioStepsConfigActions _scenarioStepActions;
@@ -33,17 +28,9 @@ class _ScenarioConfigPageState extends State<ScenarioConfigPage> with FeedbackMi
     super.initState();
     // first sync the rows data to the bridge data.
     // then all data shall modify in the bridgeAll data.
-    scenarios.syncRowsToBridge();
-    _scenarios.addAll(scenarios.bridgeAll);
-    _scenarios.sort(); // to sort make it show active item first.
-    _activeScenarios.addAll(_scenarios.where((v) => v?.isActive ?? false));
-    _scenarioActions = ScenarioBaseConfigActions(
-      context: context,
-      setState: setState,
-    );
-
-    scenarioSteps.syncRowsToBridge();
-    _scenarioSteps.addAll(scenarioSteps.bridgeAll);
+    // as already sync in scenario page, not need to sync now.
+    //scenarioSteps.syncRowsToBridge();
+    _scenarioSteps.addAll(scenarioSteps.bridgeAll.where((e) => e.scenarioId == widget.scenario.id));
     _scenarioSteps.sort();
     _activeScenarioSteps.addAll(_scenarioSteps.where((v) => v?.isActive ?? false));
     _scenarioStepActions = ScenarioStepsConfigActions(
@@ -57,30 +44,15 @@ class _ScenarioConfigPageState extends State<ScenarioConfigPage> with FeedbackMi
     final l10n = context.l10n;
     final tabs = <(Tab, Widget)>[
       (
-        Tab(text: l10n.settingsScenarioTabTypes),
-        ForegroundWallpaperFixedListTab<ScenarioRow?>(
-          items: _scenarios,
-          activeItems: _activeScenarios,
-          title: (item) => Text(item?.labelName ?? 'Empty'),
-          editAction: _scenarioActions.editScenarioBase,
-          applyChangesAction: _scenarioActions.applyScenarioBaseReorder,
-          addItemAction: _scenarioActions.addScenarioBase,
-          avatarColor: _scenarioActions.privacyItemColor,
-          bannerString: l10n.settingsScenarioEditBanner,
-          useSyncScheduleButton: false,
-        ),
-      ),
-      (
         Tab(text: l10n.settingsScenarioStepsTabTypes),
         ForegroundWallpaperFixedListTab<ScenarioStepRow?>(
           items: _scenarioSteps,
           activeItems: _activeScenarioSteps,
           title: (item) => Text(item?.labelName ?? 'Empty'),
           editAction: _scenarioStepActions.editScenarioSteps,
-          applyChangesAction: _scenarioStepActions.applyAllScenarioStepsReorder,
-          bannerString: l10n.settingsScenarioStepsAllBanner,
-          canRemove: false,
-          useActiveButton: false,
+          addItemAction: _scenarioStepActions.addScenarioSteps,
+          applyChangesAction: _scenarioStepActions.applyOneScenarioStepsReorder,
+          bannerString: l10n.settingsScenarioEditBanner,
           useSyncScheduleButton: false,
         ),
       ),

@@ -10,8 +10,8 @@ import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/extensions/media_query.dart';
 import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_section.dart';
+import 'package:aves/widgets/settings/presentation/scenario/sub_page/steps_config_page.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -49,7 +49,7 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
   Widget build(BuildContext context) {
     List<ScenarioStepRow> thisScenarioSteps =
         scenarioSteps.bridgeAll.where((e) => e.scenarioId == widget.item.id).toList();
-
+    debugPrint('$runtimeType _ScenarioBaseSettingPageState $thisScenarioSteps');
     final List<SettingsTile> preTiles = [
       ScenarioPreInfoTitleTile(item: _item),
       ScenarioLabelNameModifiedTile(item: _item),
@@ -60,12 +60,25 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
     ];
     final List<SettingsTile> stepTiles =
         thisScenarioSteps.map((e) => ScenarioStepSubPageTile(item: widget.item, subItem: e)).toList();
-
+    debugPrint('$runtimeType _ScenarioBaseSettingPageState  stepTiles $stepTiles');
     final List<Widget> postWidgets = [
-      const Divider(height: 40),
+      const Divider(height: 10),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          AvesOutlinedButton(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ScenarioStepsPage(
+                    scenario: _item,
+                  ),
+                ),
+              );
+            },
+            label: context.l10n.settingsScenarioEditSteps,
+          ),
           AvesOutlinedButton(
             onPressed: () {
               _applyChanges(context, widget.item);
@@ -86,15 +99,14 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
         child: SafeArea(
           bottom: false,
           child: AnimationLimiter(
-            child: _buildSettingsList(context, preTiles, stepTiles, postWidgets),
+            child: _buildSettingsList(context, preTiles, postWidgets),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSettingsList(
-      BuildContext context, List<SettingsTile> preTiles, List<SettingsTile> stepTiles, List<Widget> postWidgets) {
+  Widget _buildSettingsList(BuildContext context, List<SettingsTile> preTiles, List<Widget> postWidgets) {
     final theme = Theme.of(context);
     return MultiProvider(
       providers: [
@@ -107,25 +119,34 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
             bodyMedium: const TextStyle(fontSize: 12),
           ),
         ),
-        child: Selector<MediaQueryData, double>(
-          selector: (context, mq) => max(mq.effectiveBottomPadding, mq.systemGestureInsets.bottom),
-          builder: (context, mqPaddingBottom, child) {
+        child: Selector<ScenarioSteps, List<ScenarioStepRow>>(
+          selector: (context, steps) => steps.bridgeAll.where((e) => e.scenarioId == widget.item.id).toList(),
+          builder: (context, thisScenarioSteps, _) {
+            final stepTiles =
+                thisScenarioSteps.map((e) => ScenarioStepSubPageTile(item: widget.item, subItem: e)).toList();
+
             final durations = context.watch<DurationsData>();
-            return ListView(
-              padding: const EdgeInsets.all(8) + EdgeInsets.only(bottom: mqPaddingBottom),
-              children: AnimationConfiguration.toStaggeredList(
-                duration: durations.staggeredAnimation,
-                delay: durations.staggeredAnimationDelay * timeDilation,
-                childAnimationBuilder: (child) => SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(child: child),
-                ),
-                children: [
-                  ...preTiles.map((v) => v.build(context)),
-                  ...stepTiles.map((v) => v.build(context)),
-                  ...postWidgets,
-                ],
-              ),
+            debugPrint('$runtimeType _buildSettingsList stepTiles $stepTiles');
+            return Selector<MediaQueryData, double>(
+              selector: (context, mq) => max(mq.effectiveBottomPadding, mq.systemGestureInsets.bottom),
+              builder: (context, mqPaddingBottom, __) {
+                return ListView(
+                  padding: const EdgeInsets.all(8) + EdgeInsets.only(bottom: mqPaddingBottom),
+                  children: AnimationConfiguration.toStaggeredList(
+                    duration: durations.staggeredAnimation,
+                    delay: durations.staggeredAnimationDelay * timeDilation,
+                    childAnimationBuilder: (child) => SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(child: child),
+                    ),
+                    children: [
+                      ...preTiles.map((v) => v.build(context)),
+                      ...stepTiles.map((v) => v.build(context)),
+                      ...postWidgets,
+                    ],
+                  ),
+                );
+              },
             );
           },
         ),
@@ -134,7 +155,6 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
   }
 
   void _applyChanges(BuildContext context, ScenarioRow item) {
-    final updateItem = scenarios.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
-    Navigator.pop(context, updateItem);
+    Navigator.pop(context, item);
   }
 }

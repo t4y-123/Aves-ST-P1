@@ -25,8 +25,10 @@ class ScenarioBaseConfigActions with FeedbackMixin {
       // First, remove items not exist.      // remove relate schedules too.
       final currentItems = scenarios.bridgeAll;
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
+      // remove scenarios
       final removeBaseIds = itemsToRemove.map((e) => e.id).toSet();
       scenarios.removeEntries(itemsToRemove, type: ScenarioRowsType.bridgeAll);
+      // remove scenario steps
       final removeSteps = scenarioSteps.bridgeAll.where((e) => removeBaseIds.contains(e.scenarioId)).toSet();
       scenarioSteps.removeEntries(removeSteps, type: ScenarioStepRowsType.bridgeAll);
 
@@ -120,7 +122,7 @@ class ScenarioBaseConfigActions with FeedbackMixin {
   Future<void> editScenarioBase(
       BuildContext context, ScenarioRow? item, List<ScenarioRow?> allItems, Set<ScenarioRow?> activeItems) async {
     //t4y: for the all items in Config page will not be the latest data.
-    final ScenarioRow curItem = scenarios.all.firstWhere((i) => i.id == item!.id);
+    final ScenarioRow curItem = scenarios.bridgeAll.firstWhere((i) => i.id == item!.id);
     // add a new group of schedule to schedules bridge.
     final bridgeSubItems = scenarioSteps.bridgeAll.where((e) => e.scenarioId == curItem.id);
     await Navigator.push(

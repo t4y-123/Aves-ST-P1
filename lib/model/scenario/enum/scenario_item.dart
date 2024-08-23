@@ -47,6 +47,16 @@ extension ExtraScenarioLoadTypeView on ScenarioLoadType {
 
 enum ScenarioStepLoadType { unionOr, intersectAnd }
 
+extension ExtraScenarioStepLoadTypeView on ScenarioStepLoadType {
+  String getName(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (this) {
+      ScenarioStepLoadType.unionOr => l10n.scenarioStepLoadTypeUnion,
+      ScenarioStepLoadType.intersectAnd => l10n.scenarioStepLoadTypeIntersect,
+    };
+  }
+}
+
 enum ScenarioImportance { funcPinned, activePinned, excludeUnique, intersectAnd, unionOr }
 
 extension ExtraScenarioImportance on ScenarioImportance {

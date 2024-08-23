@@ -1201,6 +1201,19 @@
   "initFiltersSet333Name02": "Home: Moderate",
   "initFiltersSet333Name03": "Home: Safe",
 
+  "settingsScenarioTabTypes": "Scenarios",
+  "settingsScenarioStepsTabTypes": "Scenarios step",
+  "settingsScenarioEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsScenarioStepsAllBanner": "Can only add or remove schedule in scenario edit page.",
+  "settingsScenarioStepsEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsTileScenarioLoadType": "Load type",
+  "settingsTileScenarioLoadType": "Load type",
+  "settingsTileScenarioScenarioId": "ScenarioId",
+  "settingsTileScenarioStepNum": "StepNum",
+  "settingsTileScenarioOrderNum": "OrderNum",
+  "settingsTileScenarioDateMillis": "Date time",
+
+
   "drawerScenarioPage": "Scenarios",
   "scenarioPageTitle": "Scenario",
   "scenarioEmpty": "No scenario",
@@ -1209,6 +1222,9 @@
   "scenarioLoadTypeExclude": "Exclude (Only One)",
   "scenarioLoadTypeUnion": "Union (Or)",
   "scenarioLoadTypeIntersect": "Intersect (And)",
+  "scenarioStepLoadTypeUnion": "Union (Or)",
+  "scenarioStepLoadTypeIntersect": "Intersect (And)",
+
   "scenarioNamePrefix": "Scenario",
 
   "scenarioGroupImportance": "By importance",
@@ -1220,7 +1236,7 @@
   "scenarioTierActivePinned": "Active Pinned",
   "scenarioTierExcludeUnique": "Exclude (Unique)",
   "scenarioTierIntersectAnd": "Intersect (And)",
-  "scenarioTierUnionOr": "Union Or",
+  "scenarioTierUnionOr": "Union (Or)",
 
   "chipActionLockScenario": "Lock scenario",
   "chipActionUnlockScenario": "Unlock scenario",
@@ -1253,6 +1269,7 @@
   "settingsScenarioStepsTabTypes": "Scenario Steps",
   "settingsScenarioStepsNamePrefix": "Scenario steps: ",
   "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
+  "settingsScenarioEditSteps": "Edit steps",
 
   "settingsScenariosConfigPageTile": "Scenarios Edit",
   "settingsScenariosConfigPageTitle": "Scenarios Edit",

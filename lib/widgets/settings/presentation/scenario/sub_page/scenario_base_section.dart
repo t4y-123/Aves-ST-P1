@@ -6,8 +6,7 @@ import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/list_tiles/color.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
-import 'package:aves/widgets/settings/common/tiles.dart';
-import 'package:aves/widgets/settings/navigation/confirmation_dialogs.dart';
+import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_step_sub_page.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -226,7 +225,7 @@ class ScenarioActiveListTile extends SettingsTile {
 class ScenarioStepSubPageTile extends SettingsTile {
   @override
   String title(BuildContext context) {
-    return '${context.l10n.settingsScenarioStepsSubPagePrefix}: ';
+    return '${context.l10n.settingsScenarioStepsSubPagePrefix} ${subItem.stepNum}: ';
   }
 
   final ScenarioRow item;
@@ -238,23 +237,16 @@ class ScenarioStepSubPageTile extends SettingsTile {
   });
 
   @override
-  Widget build(BuildContext context) => SettingsSubPageTile(
+  Widget build(BuildContext context) => ItemSettingsSubPageTile<ScenarioSteps>(
         title: title(context),
-        routeName: ConfirmationDialogPage.routeName,
-        builder: (context) => const ConfirmationDialogPage(),
+        subtitleSelector: (context, s) {
+          final titlePost = scenarioSteps.bridgeAll.firstWhereOrNull((e) => e.id == subItem.id);
+          return titlePost != null ? titlePost.toMap().toString() : 'null';
+        },
+        routeName: ScenarioStepSubPage.routeName,
+        builder: (context) => ScenarioStepSubPage(
+          item: item,
+          scenarioStep: subItem,
+        ),
       );
-
-  // @override
-  // Widget build(BuildContext context) => ItemSettingsSubPageTile<WallpaperSteps>(
-  //       title: title(context),
-  //       subtitleSelector: (context, s) {
-  //         final titlePost = scenarioSteps.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
-  //         return titlePost.toString();
-  //       },
-  //       routeName:ScenarioScheduleSubPage.routeName,
-  //       builder: (context) =>ScenarioScheduleSubPage(
-  //         item: item,
-  //         item: item,
-  //       ),
-  //     );
 }

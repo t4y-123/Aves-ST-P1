@@ -214,7 +214,7 @@ class ScenarioSteps with ChangeNotifier {
       scenarioId: scenarioId,
       orderNum: maxOrderNum + existMaxOrderNumOffset,
       stepNum: finalStepNum,
-      labelName: labelName ?? 'S${thisScenario.orderNum}-id_$scenarioId-${thisScenario.labelName}-$finalStepNum',
+      labelName: labelName ?? 'S${thisScenario.orderNum}-$finalStepNum-id_$scenarioId-${thisScenario.labelName}',
       loadType: loadType ?? ScenarioStepLoadType.intersectAnd,
       filters: filters,
       dateMillis: dateMillis,
@@ -234,7 +234,7 @@ class ScenarioSteps with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setRowsWithProp(Set<ScenarioStepRow> rows, Map<String, dynamic> newValues,
+  Future<void> setExistRows(Set<ScenarioStepRow> rows, Map<String, dynamic> newValues,
       {ScenarioStepRowsType type = ScenarioStepRowsType.all}) async {
     final targetSet = _getTarget(type);
 
@@ -249,7 +249,7 @@ class ScenarioSteps with ChangeNotifier {
         stepNum: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
         orderNum: newValues[ScenarioStepRow.propOrderNum] ?? row.orderNum,
         labelName: newValues[ScenarioStepRow.propLabelName] ?? row.labelName,
-        loadType: newValues[ScenarioStepRow.propStepNum] ?? row.stepNum,
+        loadType: newValues[ScenarioStepRow.propLoadType] ?? row.loadType,
         filters: newValues[ScenarioStepRow.propFilters] ?? row.filters,
         dateMillis: newValues[ScenarioStepRow.propDateMills] ?? row.dateMillis,
         isActive: newValues[ScenarioStepRow.propIsActive] ?? row.isActive,

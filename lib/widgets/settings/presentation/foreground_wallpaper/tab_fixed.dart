@@ -27,6 +27,7 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
   final ItemsActionWidgetBuilder<T>? addItemAction;
   final bool useActiveButton;
   final bool canRemove;
+  final bool useSyncScheduleButton;
   final bannerString;
 
   const ForegroundWallpaperFixedListTab({
@@ -41,6 +42,7 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
     this.addItemAction,
     this.useActiveButton = true,
     this.canRemove = true,
+    this.useSyncScheduleButton = true,
   });
 
   @override
@@ -79,7 +81,7 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
     return Column(
       children: [
         if (!settings.useTvLayout) ...[
-          ForegroundWallpaperConfigBanner(bannerString:  widget.bannerString),
+          ForegroundWallpaperConfigBanner(bannerString: widget.bannerString),
           const Divider(height: 0),
         ],
         Flexible(
@@ -97,7 +99,7 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
               void onToggleVisibility() {
                 if (isActive && _activeItems.length <= 1) {
                   // Show a message that at least one item must remain active
-                  showFeedback(context, FeedbackType.info,  context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveBeActive);
+                  showFeedback(context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveBeActive);
                   return;
                 }
                 setState(() {
@@ -131,7 +133,8 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
               void onRemoveItem() {
                 if (_activeItems.length <= 1 || widget.items.length <= 1) {
                   // Show a message that at least one item must remain
-                  showFeedback(context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove);
+                  showFeedback(
+                      context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove);
                   return;
                 }
                 setState(() {
@@ -202,36 +205,37 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
             shrinkWrap: true,
           ),
         ),
-        const Divider(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            const SizedBox(width: 8),
-            AvesOutlinedButton(
-              icon: const Icon(AIcons.refresh),
-              label: context.l10n.settingsFgwScheduleSyncButtonText,
-              onPressed: () async {
-                await ForegroundWallpaperService.syncFgwScheduleChanges();
-                await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text(context.l10n.settingsFgwScheduleSyncButtonText),
-                      content: Text(context.l10n.settingsFgwScheduleSyncButtonAlert),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(context.l10n.applyTooltip),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            )
-          ],
-        ),
-        const Divider(height: 20),
+        if (widget.useSyncScheduleButton) const Divider(height: 8),
+        if (widget.useSyncScheduleButton)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const SizedBox(width: 8),
+              AvesOutlinedButton(
+                icon: const Icon(AIcons.refresh),
+                label: context.l10n.settingsFgwScheduleSyncButtonText,
+                onPressed: () async {
+                  await ForegroundWallpaperService.syncFgwScheduleChanges();
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(context.l10n.settingsFgwScheduleSyncButtonText),
+                        content: Text(context.l10n.settingsFgwScheduleSyncButtonAlert),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(context.l10n.applyTooltip),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              )
+            ],
+          ),
+        const Divider(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -265,9 +269,10 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
                     _isModified = true; // Mark as modified
                   });
                 },
-              )
+              ),
           ],
         ),
+        const Divider(height: 8),
       ],
     );
   }

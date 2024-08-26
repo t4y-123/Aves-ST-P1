@@ -17,7 +17,7 @@ typedef ItemActionWidgetBuilder<T> = void Function(BuildContext context, T item,
 typedef ItemsActionWidgetBuilder<T> = void Function(BuildContext context, List<T> items, Set<T> activeItems);
 typedef ItemsColorWidgetBuilder<T> = Color Function(T item);
 
-class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
+class MultiOpFixedListTab<T> extends StatefulWidget {
   final List<T> items;
   final Set<T> activeItems;
   final ItemWidgetBuilder<T> title;
@@ -28,9 +28,10 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
   final bool useActiveButton;
   final bool canRemove;
   final bool useSyncScheduleButton;
+  final bool canBeEmpty, canBeActiveEmpty;
   final bannerString;
 
-  const ForegroundWallpaperFixedListTab({
+  const MultiOpFixedListTab({
     super.key,
     required this.items,
     required this.activeItems,
@@ -43,13 +44,15 @@ class ForegroundWallpaperFixedListTab<T> extends StatefulWidget {
     this.useActiveButton = true,
     this.canRemove = true,
     this.useSyncScheduleButton = true,
+    this.canBeEmpty = false,
+    this.canBeActiveEmpty = false,
   });
 
   @override
-  State<ForegroundWallpaperFixedListTab<T>> createState() => _ForegroundWallpaperFixedListTabState<T>();
+  State<MultiOpFixedListTab<T>> createState() => _MultiOpFixedListTabState<T>();
 }
 
-class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaperFixedListTab<T>> with FeedbackMixin {
+class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with FeedbackMixin {
   Set<T> get _activeItems => widget.useActiveButton ? widget.activeItems : Set.from(widget.items);
   bool _isModified = false;
 
@@ -97,7 +100,7 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
               final isActive = _activeItems.contains(item);
               debugPrint('$runtimeType ReorderableListView.builder localItems ${widget.items} load');
               void onToggleVisibility() {
-                if (isActive && _activeItems.length <= 1) {
+                if (isActive && _activeItems.length <= 1 && !widget.canBeActiveEmpty) {
                   // Show a message that at least one item must remain active
                   showFeedback(context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveBeActive);
                   return;
@@ -131,7 +134,8 @@ class _ForegroundWallpaperFixedListTabState<T> extends State<ForegroundWallpaper
               }
 
               void onRemoveItem() {
-                if (_activeItems.length <= 1 || widget.items.length <= 1) {
+                if ((!widget.canBeActiveEmpty && _activeItems.length <= 1) ||
+                    (!widget.canBeEmpty && widget.items.length <= 1)) {
                   // Show a message that at least one item must remain
                   showFeedback(
                       context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove);

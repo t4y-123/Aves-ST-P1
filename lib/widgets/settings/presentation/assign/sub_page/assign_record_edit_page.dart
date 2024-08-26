@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:aves/model/scenario/scenario.dart';
-import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/app_bar/app_bar_title.dart';
@@ -9,35 +9,34 @@ import 'package:aves/widgets/common/basic/insets.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/extensions/media_query.dart';
-import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_section.dart';
-import 'package:aves/widgets/settings/presentation/scenario/sub_page/steps_config_page.dart';
+import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
+import 'package:aves/widgets/settings/presentation/assign/sub_page/assign_entries_edit_page.dart';
+import 'package:aves/widgets/settings/presentation/assign/sub_page/assign_record_base_section.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../common/identity/buttons/outlined_button.dart';
+class AssignRecordSettingPage extends StatefulWidget {
+  static const routeName = '/settings/presentation/assign_record_edit_sub_page';
 
-class ScenarioBaseSettingPage extends StatefulWidget {
-  static const routeName = '/settings/presentation/scenario_base_settings_page';
+  final AssignRecordRow item;
+  final Set<AssignEntryRow> subItems;
 
-  final ScenarioRow item;
-  final Set<ScenarioStepRow> subItems;
-
-  const ScenarioBaseSettingPage({
+  const AssignRecordSettingPage({
     super.key,
     required this.item,
     required this.subItems,
   });
 
   @override
-  State<ScenarioBaseSettingPage> createState() => _ScenarioBaseSettingPageState();
+  State<AssignRecordSettingPage> createState() => _AssignRecordSettingPageState();
 }
 
-class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with FeedbackMixin {
+class _AssignRecordSettingPageState extends State<AssignRecordSettingPage> with FeedbackMixin {
   final ValueNotifier<String?> _expandedNotifier = ValueNotifier(null);
-  ScenarioRow get _item => widget.item;
+  AssignRecordRow get _item => widget.item;
 
   @override
   void dispose() {
@@ -47,20 +46,14 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
 
   @override
   Widget build(BuildContext context) {
-    List<ScenarioStepRow> thisScenarioSteps =
-        scenarioSteps.bridgeAll.where((e) => e.scenarioId == widget.item.id).toList();
-    debugPrint('$runtimeType _ScenarioBaseSettingPageState $thisScenarioSteps');
+    List<AssignEntryRow> thisAssignEntry = assignEntries.bridgeAll.where((e) => e.assignId == widget.item.id).toList();
+    debugPrint('$runtimeType _ScenarioBaseSettingPageState $thisAssignEntry');
     final List<SettingsTile> preTiles = [
-      ScenarioPreInfoTitleTile(item: _item),
-      ScenarioLabelNameModifiedTile(item: _item),
-      //ScenarioColorPickerTile(item: _item),// not effect for the filter have its color.
-      ScenarioCopyStepsFromExistListTile(item: _item),
-      ScenarioLoadTypeSwitchTile(item: _item),
-      ScenarioActiveListTile(item: _item),
+      AssignRecordPreInfoTitleTile(item: _item),
+      AssignRecordLabelNameModifiedTile(item: _item),
+      //AssignRecordColorPickerTile(item: _item),// not effect for the filter have its color.
+      AssignRecordActiveListTile(item: _item),
     ];
-    // final List<SettingsTile> stepTiles =
-    //     thisScenarioSteps.map((e) => ScenarioStepSubPageTile(item: widget.item, subItem: e)).toList();
-    // debugPrint('$runtimeType _ScenarioBaseSettingPageState  stepTiles $stepTiles');
     final List<Widget> postWidgets = [
       const Divider(height: 10),
       Row(
@@ -71,13 +64,13 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ScenarioStepsPage(
-                    scenario: _item,
+                  builder: (context) => AssignEntriesEditConfigPage(
+                    assignRecord: _item,
                   ),
                 ),
               );
             },
-            label: context.l10n.settingsScenarioEditSteps,
+            label: context.l10n.settingsAssignEditEntries,
           ),
           AvesOutlinedButton(
             onPressed: () {
@@ -110,8 +103,8 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
     final theme = Theme.of(context);
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<Scenario>.value(value: scenarios),
-        ChangeNotifierProvider<ScenarioSteps>.value(value: scenarioSteps),
+        ChangeNotifierProvider<AssignRecord>.value(value: assignRecords),
+        ChangeNotifierProvider<AssignEntries>.value(value: assignEntries),
       ],
       child: Theme(
         data: theme.copyWith(
@@ -119,11 +112,11 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
             bodyMedium: const TextStyle(fontSize: 12),
           ),
         ),
-        child: Selector<ScenarioSteps, List<ScenarioStepRow>>(
-          selector: (context, steps) => steps.bridgeAll.where((e) => e.scenarioId == widget.item.id).toList(),
-          builder: (context, thisScenarioSteps, _) {
+        child: Selector<AssignEntries, List<AssignEntryRow>>(
+          selector: (context, subItems) => subItems.bridgeAll.where((e) => e.assignId == widget.item.id).toList(),
+          builder: (context, thisAssignEntry, _) {
             final stepTiles =
-                thisScenarioSteps.map((e) => ScenarioStepSubPageTile(item: widget.item, subItem: e)).toList();
+                thisAssignEntry.map((e) => AssignEntrySubPageTile(item: widget.item, subItem: e)).toList();
 
             final durations = context.watch<DurationsData>();
             debugPrint('$runtimeType _buildSettingsList stepTiles $stepTiles');
@@ -154,7 +147,7 @@ class _ScenarioBaseSettingPageState extends State<ScenarioBaseSettingPage> with 
     );
   }
 
-  void _applyChanges(BuildContext context, ScenarioRow item) {
+  void _applyChanges(BuildContext context, AssignRecordRow item) {
     Navigator.pop(context, item);
   }
 }

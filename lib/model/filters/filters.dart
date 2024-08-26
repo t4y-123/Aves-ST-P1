@@ -4,6 +4,7 @@ import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/coordinate.dart';
 import 'package:aves/model/filters/date.dart';
 import 'package:aves/model/filters/favourite.dart';
@@ -50,6 +51,7 @@ abstract class CollectionFilter extends Equatable implements Comparable<Collecti
     OrFilter.type,
     FgwUsedFilter.type,
     ScenarioFilter.type,
+    AssignFilter.type,
   ];
 
   final bool reversed;
@@ -97,6 +99,8 @@ abstract class CollectionFilter extends Equatable implements Comparable<Collecti
         return FgwUsedFilter.fromMap(jsonMap);
       case ScenarioFilter.type:
         return ScenarioFilter.fromMap(jsonMap);
+      case AssignFilter.type:
+        return AssignFilter.fromMap(jsonMap);
     }
     return null;
   }

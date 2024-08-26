@@ -58,21 +58,20 @@ class _ScenarioConfigPageState extends State<ScenarioConfigPage> with FeedbackMi
     final tabs = <(Tab, Widget)>[
       (
         Tab(text: l10n.settingsScenarioTabTypes),
-        ForegroundWallpaperFixedListTab<ScenarioRow?>(
+        MultiOpFixedListTab<ScenarioRow?>(
           items: _scenarios,
           activeItems: _activeScenarios,
           title: (item) => Text(item?.labelName ?? 'Empty'),
           editAction: _scenarioActions.editScenarioBase,
           applyChangesAction: _scenarioActions.applyScenarioBaseReorder,
           addItemAction: _scenarioActions.addScenarioBase,
-          avatarColor: _scenarioActions.privacyItemColor,
           bannerString: l10n.settingsScenarioEditBanner,
           useSyncScheduleButton: false,
         ),
       ),
       (
         Tab(text: l10n.settingsScenarioStepsTabTypes),
-        ForegroundWallpaperFixedListTab<ScenarioStepRow?>(
+        MultiOpFixedListTab<ScenarioStepRow?>(
           items: _scenarioSteps,
           activeItems: _activeScenarioSteps,
           title: (item) => Text(item?.labelName ?? 'Empty'),

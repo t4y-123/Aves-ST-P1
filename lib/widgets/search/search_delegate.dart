@@ -220,8 +220,8 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
     if (queryKey == QueryHelperType.path.getName(context)) {
       final path = await showModalBottomSheet<String>(
         context: context,
-        builder: (context) => const FilePickerPage(), // Your FilePickerPage as a bottom sheet
-        isScrollControlled: true, // If you need the sheet to be scrollable
+        builder: (context) => const FilePickerPage(),
+        isScrollControlled: true,
       );
 
       if (path != null && path.isNotEmpty) {
@@ -252,7 +252,9 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
     } else if (queryKey == QueryHelperType.keyContentId.getName(context)) {
       keyContent = QueryFilter.keyContentId;
     } else {
-      keyContent = ''; // Handle the case where no match is found
+      keyContent = '';
+      goBack(context);
+      return;
     }
 
     String operator = '<';

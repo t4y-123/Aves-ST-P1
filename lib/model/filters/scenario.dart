@@ -14,6 +14,7 @@ class ScenarioFilter extends CoveredCollectionFilter {
   static const scenarioAddNewItemId = -2;
   static const scenarioSettingId = -3;
   static const scenarioLockUnlockId = -4;
+
   final int scenarioId;
   final String displayName;
   late final EntryFilter _test;

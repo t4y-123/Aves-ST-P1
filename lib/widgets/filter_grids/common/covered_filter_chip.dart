@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:aves/model/apps.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/source/album.dart';
+import 'package:aves/model/source/assign.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/source/location/country.dart';
 import 'package:aves/model/source/scenario.dart';
@@ -109,6 +111,16 @@ class CoveredFilterChip<T extends CollectionFilter> extends StatelessWidget {
                   stream: source.eventBus
                       .on<ScenarioSummaryInvalidatedEvent>()
                       .where((event) => event.scenarioIds == null || event.scenarioIds!.contains(scenarioId)),
+                  builder: (context, snapshot) => _buildChip(context, source),
+                );
+              }
+            case AssignFilter filter:
+              {
+                final assignId = filter.assignId;
+                return StreamBuilder<AssignSummaryInvalidatedEvent>(
+                  stream: source.eventBus
+                      .on<AssignSummaryInvalidatedEvent>()
+                      .where((event) => event.assignIds == null || event.assignIds!.contains(assignId)),
                   builder: (context, snapshot) => _buildChip(context, source),
                 );
               }

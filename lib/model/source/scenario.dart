@@ -19,7 +19,7 @@ mixin ScenarioMixin on SourceBase {
     eventBus.fire(ScenariosChangedEvent());
   }
 
-  void _onScenarioChanged({bool notify = true}) {
+  void updateScenario({bool notify = true}) {
     if (notify) {
       notifyScenariosChanged();
     }

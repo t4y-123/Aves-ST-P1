@@ -45,7 +45,7 @@ class _ScenarioStepsPageState extends State<ScenarioStepsPage> with FeedbackMixi
     final tabs = <(Tab, Widget)>[
       (
         Tab(text: l10n.settingsScenarioStepsTabTypes),
-        ForegroundWallpaperFixedListTab<ScenarioStepRow?>(
+        MultiOpFixedListTab<ScenarioStepRow?>(
           items: _scenarioSteps,
           activeItems: _activeScenarioSteps,
           title: (item) => Text(item?.labelName ?? 'Empty'),

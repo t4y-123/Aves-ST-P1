@@ -1,3 +1,4 @@
+import 'package:aves/model/assign/enum/assign_item.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves_model/aves_model.dart';
@@ -66,4 +67,11 @@ mixin ScenarioSettings on SettingsAccess {
   static const useScenariosKey = 'use_scenarios';
   bool get useScenarios => getBool(useScenariosKey) ?? SettingsDefaults.useScenarios;
   set useScenarios(bool newValue) => set(useScenariosKey, newValue);
+
+  static const assignTemporaryFollowActionKey = 'assign_temporary_follow_action_type';
+  AssignTemporaryFollowAction get assignTemporaryFollowAction => getEnumOrDefault(
+      assignTemporaryFollowActionKey, SettingsDefaults.assignTemporaryFollowAction, AssignTemporaryFollowAction.values);
+
+  set assignTemporaryFollowAction(AssignTemporaryFollowAction newValue) =>
+      set(assignTemporaryFollowActionKey, newValue.toString());
 }

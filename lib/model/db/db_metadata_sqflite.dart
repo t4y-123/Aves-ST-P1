@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
@@ -53,7 +55,7 @@ class SqfliteMetadataDb implements MetadataDb {
   // t4y: presentation: scenario presentation
   static const scenarioTable = 'scenarioPresent';
   static const scenarioStepTable = 'scenarioStep';
-  static const assignFilterTable = 'assignFilter';
+  static const assignRecordTable = 'assignFilter';
   static const assignEntryTable = 'assignEntry';
   //End
 
@@ -196,6 +198,23 @@ class SqfliteMetadataDb implements MetadataDb {
             ', labelName TEXT'
             ', loadType TEXT'
             ', filters TEXT'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        //T4y: Assign entries Presentation
+        await db.execute('CREATE TABLE $assignRecordTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', assignType TEXT'
+            ', color INTEGER'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $assignEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', assignId INTEGER'
+            ', entryId INTEGER'
             ', dateMillis INTEGER'
             ', isActive INTEGER DEFAULT 0'
             ')');
@@ -1050,6 +1069,105 @@ class SqfliteMetadataDb implements MetadataDb {
   void _batchInsertScenarioSteps(Batch batch, ScenarioStepRow row) {
     batch.insert(
       scenarioStepTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // AssignRecord
+  @override
+  Future<void> clearAssignRecords() async {
+    final count = await _db.delete(assignRecordTable, where: '1');
+    debugPrint('clearAssignRecords deleted $count rows');
+  }
+
+  @override
+  Future<Set<AssignRecordRow>> loadAllAssignRecords() async {
+    final rows = await _db.query(assignRecordTable);
+    return rows.map(AssignRecordRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addAssignRecords(Set<AssignRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertAssignRecords(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateAssignRecordById(int id, AssignRecordRow row) async {
+    final batch = _db.batch();
+    batch.delete(assignRecordTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertAssignRecords(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeAssignRecords(Set<AssignRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(assignRecordTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertAssignRecords(Batch batch, AssignRecordRow row) {
+    batch.insert(
+      assignRecordTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  //t4y: share by copy copied entries
+  @override
+  Future<void> clearAssignEntries() async {
+    final count = await _db.delete(assignEntryTable, where: '1');
+    debugPrint('clearAssignEntries $assignEntryTable deleted $count rows');
+  }
+
+  @override
+  Future<Set<AssignEntryRow>> loadAllAssignEntries() async {
+    final rows = await _db.query(assignEntryTable);
+    return rows.map(AssignEntryRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addAssignEntries(Set<AssignEntryRow> rows) async {
+    debugPrint('addAssignEntries.add(_db:\n$rows');
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertAssignEntries(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateAssignEntries(int id, AssignEntryRow row) async {
+    final batch = _db.batch();
+    batch.delete(assignEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertAssignEntries(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeAssignEntries(Set<AssignEntryRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(assignEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertAssignEntries(Batch batch, AssignEntryRow row) {
+    debugPrint('addAssignEntries.add(_batchInsertAssignEntries:\n$batch \n $row');
+    batch.insert(
+      assignEntryTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

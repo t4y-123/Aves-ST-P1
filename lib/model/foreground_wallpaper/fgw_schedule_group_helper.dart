@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
+
 import '../../l10n/l10n.dart';
 import '../settings/settings.dart';
 import 'enum/fgw_schedule_item.dart';
@@ -74,7 +76,9 @@ class ForegroundWallpaperHelper {
 
     final glIds = privacyGuardLevels.all.map((e) => e.privacyGuardLevelID).toList();
     final fsIds = initFiltersSets.map((e) => e.id).toList();
-
+    int homeExposureSeconds = 15;
+    int homeModerateSeconds = 3 * 60;
+    int homeSafeSeconds = 30 * 60;
     List<WallpaperScheduleRow> type346Schedules = switch (fgwScheduleSetType) {
       FgwScheduleSetType.type346 => [
           // in type 346, only make the home lock screen wallpaper active.
@@ -82,29 +86,30 @@ class ForegroundWallpaperHelper {
           // home screen: 1-3 :lock screen.
           // home screen: 2-2 :lock screen.
           // use diff filters set in differ home screen, use a diff 4th filters set in lock screen.
-          newSchedule(1, glIds[0], fsIds[0], WallpaperUpdateType.home),
+          // 15 seconds for exposure.
+          newSchedule(1, glIds[0], fsIds[0], WallpaperUpdateType.home, homeExposureSeconds),
           newSchedule(2, glIds[0], fsIds[3], WallpaperUpdateType.lock, 0),
           newSchedule(3, glIds[0], fsIds[0], WallpaperUpdateType.both, 0, false),
-
-          newSchedule(4, glIds[1], fsIds[1], WallpaperUpdateType.home),
+          // 3min for moderate
+          newSchedule(4, glIds[1], fsIds[1], WallpaperUpdateType.home, homeModerateSeconds),
           newSchedule(5, glIds[1], fsIds[3], WallpaperUpdateType.lock, 0),
           newSchedule(6, glIds[1], fsIds[1], WallpaperUpdateType.both, 0, false),
-
-          newSchedule(7, glIds[2], fsIds[2], WallpaperUpdateType.home),
+          // 30 min for safe
+          newSchedule(7, glIds[2], fsIds[2], WallpaperUpdateType.home, homeSafeSeconds),
           newSchedule(8, glIds[2], fsIds[2], WallpaperUpdateType.lock, 0),
           newSchedule(9, glIds[2], fsIds[2], WallpaperUpdateType.both, 0, false),
         ],
       FgwScheduleSetType.type333 => [
           // in type 333, only make the home screen wallpaper active.
-          newSchedule(1, glIds[0], fsIds[0], WallpaperUpdateType.home),
+          newSchedule(1, glIds[0], fsIds[0], WallpaperUpdateType.home, homeExposureSeconds),
           newSchedule(2, glIds[0], fsIds[0], WallpaperUpdateType.lock, 0, false),
           newSchedule(3, glIds[0], fsIds[0], WallpaperUpdateType.both, 0, false),
 
-          newSchedule(4, glIds[1], fsIds[1], WallpaperUpdateType.home),
+          newSchedule(4, glIds[1], fsIds[1], WallpaperUpdateType.home, homeModerateSeconds),
           newSchedule(5, glIds[1], fsIds[1], WallpaperUpdateType.lock, 0, false),
           newSchedule(6, glIds[1], fsIds[1], WallpaperUpdateType.both, 0, false),
 
-          newSchedule(7, glIds[2], fsIds[2], WallpaperUpdateType.home),
+          newSchedule(7, glIds[2], fsIds[2], WallpaperUpdateType.home, homeSafeSeconds),
           newSchedule(8, glIds[2], fsIds[2], WallpaperUpdateType.lock, 0, false),
           newSchedule(9, glIds[2], fsIds[2], WallpaperUpdateType.both, 0, false),
         ],
@@ -118,9 +123,9 @@ class ForegroundWallpaperHelper {
     filtersRow ??= filtersSets.all.first;
     if (filtersRow != null) {
       List<WallpaperScheduleRow> newSchedules = [
-        newSchedule(1, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.home, 0, false,rowsType),
-        newSchedule(2, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.lock, 0, false,rowsType),
-        newSchedule(3, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.both, 0, false,rowsType),
+        newSchedule(1, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.home, 30, false, rowsType),
+        newSchedule(2, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.lock, 0, false, rowsType),
+        newSchedule(3, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.both, 0, false, rowsType),
       ];
       debugPrint('newSchedulesGroup =\n $newSchedules');
       return newSchedules;
@@ -129,7 +134,7 @@ class ForegroundWallpaperHelper {
   }
 
   WallpaperScheduleRow newSchedule(int offset, int levelId, int filtersSetId, updateType,
-      [int? interval, bool isActive = true,ScheduleRowType type = ScheduleRowType.all]) {
+      [int? interval, bool isActive = true, ScheduleRowType type = ScheduleRowType.all]) {
     return wallpaperSchedules.newRow(
       existMaxOrderNumOffset: offset,
       privacyGuardLevelId: levelId,
@@ -137,7 +142,7 @@ class ForegroundWallpaperHelper {
       updateType: updateType,
       interval: interval,
       isActive: isActive,
-      type:type,
+      type: type,
     );
   }
 

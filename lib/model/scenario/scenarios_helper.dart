@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
 import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
@@ -33,6 +35,8 @@ class ScenariosHelper {
     if (settings.scenarioPinnedExcludeFilters.isEmpty) {
       setExcludeScenarioFilterSetting(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
     }
+    await assignRecords.init();
+    await assignEntries.init();
   }
 
   Future<void> clearScenarios() async {

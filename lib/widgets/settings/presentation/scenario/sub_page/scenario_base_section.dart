@@ -74,7 +74,7 @@ class ScenarioLabelNameModifiedTile extends SettingsTile {
 
 class ScenarioColorPickerTile extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsScenarioColor;
+  String title(BuildContext context) => context.l10n.settingsItemTileColor;
   final ScenarioRow item;
 
   ScenarioColorPickerTile({

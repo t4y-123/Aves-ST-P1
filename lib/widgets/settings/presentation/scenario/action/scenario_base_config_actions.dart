@@ -89,11 +89,6 @@ class ScenarioBaseConfigActions with FeedbackMixin {
           item: newItem,
           subItems: bridgeSubItems.toSet(),
         ),
-        // builder: (context) => ScenarioBaseWithScheduleConfigPage(
-        //   item: null, // Pass null to create a new item
-        //   allItems: allItems,
-        //   activeItems: activeItems,
-        // ),
       ),
     ).then((newItem) {
       if (newItem != null) {
@@ -105,12 +100,6 @@ class ScenarioBaseConfigActions with FeedbackMixin {
           allItems.add(updateItem);
           if (updateItem.isActive) activeItems.add(updateItem);
           allItems.sort();
-          // scenarios.add({newItem});
-          // allItems.add(newItem);
-          // if (newItem.isActive) {
-          //   activeItems.add(newItem);
-          // }
-          // allItems.sort();
         });
       } else {
         scenarios.removeEntries({newItem}, type: ScenarioRowsType.bridgeAll);
@@ -132,12 +121,6 @@ class ScenarioBaseConfigActions with FeedbackMixin {
           item: curItem,
           subItems: bridgeSubItems.toSet(),
         ),
-        // MaterialPageRoute(
-        //   builder: (context) => ScenarioBaseWithScheduleConfigPage(
-        //     item: currentItem,
-        //     allItems: allItems,
-        //     activeItems: activeItems,
-        //   ),
       ),
     ).then((updatedItem) async {
       if (updatedItem != null) {

@@ -1,3 +1,5 @@
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
@@ -211,4 +213,27 @@ abstract class MetadataDb {
   Future<void> updateScenarioStepById(int id, ScenarioStepRow row);
 
   Future<void> removeScenarioSteps(Set<ScenarioStepRow> rows);
+
+  // Assign Filter
+
+  Future<void> clearAssignRecords();
+
+  Future<Set<AssignRecordRow>> loadAllAssignRecords();
+
+  Future<void> addAssignRecords(Set<AssignRecordRow> rows);
+
+  Future<void> updateAssignRecordById(int id, AssignRecordRow row);
+
+  Future<void> removeAssignRecords(Set<AssignRecordRow> rows);
+
+  // share copied entries
+  Future<void> clearAssignEntries();
+
+  Future<Set<AssignEntryRow>> loadAllAssignEntries();
+
+  Future<void> addAssignEntries(Set<AssignEntryRow> rows);
+
+  Future<void> updateAssignEntries(int id, AssignEntryRow row);
+
+  Future<void> removeAssignEntries(Set<AssignEntryRow> rows);
 }

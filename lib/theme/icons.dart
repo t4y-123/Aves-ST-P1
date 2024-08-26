@@ -218,7 +218,9 @@ class AIcons {
   static const opScenario = Icons.settings;
   static const scenarioActive = Icons.visibility_outlined;
   static const scenarioInactive = Icons.block;
-
+  // t4y:assign filters
+  static const assignP = Icons.assignment_turned_in;
+  static const assignT = Icons.free_cancellation;
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking
   static const labelImportantOutlineCodePoint = 0xe362;

@@ -36,6 +36,9 @@ enum EntrySetAction {
   // t4y, add for some special share.
   shareByCopy,
   shareByDateNow,
+  //t4y, add for assign filter.
+  assignPermanent,
+  assignTemporary,
 }
 
 class EntrySetActions {
@@ -85,6 +88,8 @@ class EntrySetActions {
     //t4y
     EntrySetAction.shareByCopy,
     EntrySetAction.shareByDateNow,
+    EntrySetAction.assignPermanent,
+    EntrySetAction.assignTemporary,
     null,
     EntrySetAction.map,
     EntrySetAction.slideshow,

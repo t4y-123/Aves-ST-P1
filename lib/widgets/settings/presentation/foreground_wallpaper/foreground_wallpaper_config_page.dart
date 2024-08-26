@@ -5,8 +5,8 @@ import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/guard_level/privacy_guard_level_config_actions.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/tab_fixed.dart';
-
 import 'package:flutter/material.dart';
+
 import '../../../../model/foreground_wallpaper/filtersSet.dart';
 import '../../../common/action_mixins/feedback.dart';
 import 'filter_set/filter_set_config_actions.dart';
@@ -68,7 +68,7 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
     final tabs = <(Tab, Widget)>[
       (
         Tab(text: l10n.settingsPrivacyGuardLevelTabTypes),
-        ForegroundWallpaperFixedListTab<PrivacyGuardLevelRow?>(
+        MultiOpFixedListTab<PrivacyGuardLevelRow?>(
           items: _privacyGuardLevels,
           activeItems: _activePrivacyGuardLevelsTypes,
           title: (item) => Text(item?.labelName ?? 'Empty'),
@@ -81,27 +81,27 @@ class _ForegroundWallpaperConfigPageState extends State<ForegroundWallpaperConfi
       ),
       (
         Tab(text: l10n.settingsWallpaperScheduleTabTypes),
-        ForegroundWallpaperFixedListTab<WallpaperScheduleRow?>(
+        MultiOpFixedListTab<WallpaperScheduleRow?>(
           items: _wallpaperSchedules,
           activeItems: _activeWallpaperSchedules,
           title: (item) => Text(item?.labelName ?? 'Empty'),
           applyChangesAction: _wallpaperSchedulesActions.applyWallpaperScheduleReorder,
-          editAction:_wallpaperSchedulesActions.editWallpaperSchedule,
+          editAction: _wallpaperSchedulesActions.editWallpaperSchedule,
           canRemove: false,
           bannerString: l10n.settingsFgwScheduleBanner,
         ),
       ),
       (
-      Tab(text: l10n.settingsFilterSetTabTypes),
-      ForegroundWallpaperFixedListTab<FiltersSetRow?>(
-        items: _filterSet,
-        activeItems: _activeFilterSet,
-        title: (item) => Text(item?.labelName ?? 'Empty'),
-        editAction: _filterSetActions.editFilterSet,
-        applyChangesAction: _filterSetActions.applyFilterSet,
-        addItemAction: _filterSetActions.addFilterSet,
-        bannerString: l10n.settingsFgwFiltersSetBanner,
-      ),
+        Tab(text: l10n.settingsFilterSetTabTypes),
+        MultiOpFixedListTab<FiltersSetRow?>(
+          items: _filterSet,
+          activeItems: _activeFilterSet,
+          title: (item) => Text(item?.labelName ?? 'Empty'),
+          editAction: _filterSetActions.editFilterSet,
+          applyChangesAction: _filterSetActions.applyFilterSet,
+          addItemAction: _filterSetActions.addFilterSet,
+          bannerString: l10n.settingsFgwFiltersSetBanner,
+        ),
       ),
     ];
 

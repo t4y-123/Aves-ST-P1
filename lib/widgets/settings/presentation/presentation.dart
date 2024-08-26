@@ -6,6 +6,8 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/tile_leading.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:aves/widgets/settings/navigation/drawer.dart';
+import 'package:aves/widgets/settings/presentation/assign/assign_edit_config_page.dart';
+import 'package:aves/widgets/settings/presentation/assign/assign_operation_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
 import 'package:aves/widgets/settings/presentation/share_by_copy.dart';
@@ -36,6 +38,8 @@ class PresentationSection extends SettingsSection {
         SettingsTileShareByCopy(),
         SettingsTileScenariosConfigPage(),
         SettingsScenariosOperationPage(),
+        SettingsAssignEditConfigPage(),
+        SettingsAssignOperationPage(),
       ];
 }
 
@@ -96,5 +100,29 @@ class SettingsScenariosOperationPage extends SettingsTile {
         title: title(context),
         routeName: ScenariosOperationPage.routeName,
         builder: (context) => const ScenariosOperationPage(),
+      );
+}
+
+class SettingsAssignEditConfigPage extends SettingsTile {
+  @override
+  String title(BuildContext context) => context.l10n.settingsAssignConfigPageTitle;
+
+  @override
+  Widget build(BuildContext context) => SettingsSubPageTile(
+        title: title(context),
+        routeName: AssignEditConfigPage.routeName,
+        builder: (context) => const AssignEditConfigPage(),
+      );
+}
+
+class SettingsAssignOperationPage extends SettingsTile {
+  @override
+  String title(BuildContext context) => context.l10n.settingsAssignOperationTitle;
+
+  @override
+  Widget build(BuildContext context) => SettingsSubPageTile(
+        title: title(context),
+        routeName: AssignOperationPage.routeName,
+        builder: (context) => const AssignOperationPage(),
       );
 }

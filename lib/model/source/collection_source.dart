@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
@@ -7,6 +9,7 @@ import 'package:aves/model/entry/extensions/location.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/scenario.dart';
@@ -16,10 +19,12 @@ import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
 import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/modules/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/analysis_controller.dart';
+import 'package:aves/model/source/assign.dart';
 import 'package:aves/model/source/events.dart';
 import 'package:aves/model/source/location/country.dart';
 import 'package:aves/model/source/location/location.dart';
@@ -78,7 +83,8 @@ abstract class CollectionSource
         LocationMixin,
         TagMixin,
         TrashMixin,
-        ScenarioMixin {
+        ScenarioMixin,
+        AssignMixin {
   CollectionSource() {
     if (kFlutterMemoryAllocationsEnabled) {
       FlutterMemoryAllocations.instance.dispatchObjectCreated(
@@ -115,6 +121,10 @@ abstract class CollectionSource
           vaults.vaultDirectories.whereNot(vaults.isLocked).map((v) => AlbumFilter(v, null)).toSet();
       _onFilterVisibilityChanged(newlyVisibleFilters);
     });
+
+    assignRecords.addListener(updateAssigns);
+    assignEntries.addListener(updateAssigns);
+    scenarios.addListener(updateScenario);
   }
 
   @mustCallSuper
@@ -676,6 +686,7 @@ abstract class CollectionSource
     }
     if (filter is TagFilter) return tagEntryCount(filter);
     if (filter is ScenarioFilter) return scenarioEntryCount(filter);
+    if (filter is AssignFilter) return assignEntryCount(filter);
     return 0;
   }
 
@@ -693,6 +704,7 @@ abstract class CollectionSource
     }
     if (filter is TagFilter) return tagSize(filter);
     if (filter is ScenarioFilter) return scenarioSize(filter);
+    if (filter is AssignFilter) return assignSize(filter);
     return 0;
   }
 
@@ -710,6 +722,7 @@ abstract class CollectionSource
     }
     if (filter is TagFilter) return tagRecentEntry(filter);
     if (filter is ScenarioFilter) return scenarioRecentEntry(filter);
+    if (filter is AssignFilter) return assignRecentEntry(filter);
     return null;
   }
 

@@ -2,7 +2,6 @@ import 'package:aves/model/filters/favourite.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/type.dart';
-import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/about/about_page.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -10,6 +9,7 @@ import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/debug/app_debug_page.dart';
 import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
+import 'package:aves/widgets/filter_grids/assign_page.dart';
 import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/places_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
@@ -56,6 +56,9 @@ class NavigationDisplay {
         return MaterialLocalizations.of(context).searchFieldLabel;
       case SettingsPage.routeName:
         return l10n.settingsPageTitle;
+      case AssignListPage.routeName:
+        return l10n.drawerAssignPage;
+
       default:
         return route;
     }
@@ -83,6 +86,8 @@ class NavigationDisplay {
         return AIcons.search;
       case SettingsPage.routeName:
         return AIcons.settings;
+      case AssignListPage.routeName:
+        return AIcons.assignP;
       default:
         return null;
     }

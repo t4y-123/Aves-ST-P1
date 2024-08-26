@@ -1207,7 +1207,6 @@
   "settingsScenarioStepsAllBanner": "Can only add or remove schedule in scenario edit page.",
   "settingsScenarioStepsEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
   "settingsTileScenarioLoadType": "Load type",
-  "settingsTileScenarioLoadType": "Load type",
   "settingsTileScenarioScenarioId": "ScenarioId",
   "settingsTileScenarioStepNum": "StepNum",
   "settingsTileScenarioOrderNum": "OrderNum",
@@ -1293,7 +1292,7 @@
 
   "scenarioTitle": "Scenario",
   "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",
-  "settingsScenarioColor": "Color:",
+  "settingsItemTileColor": "Color:",
   "settingsScenarioDateMills":"Date:",
   "settingsScenarioLoadTypeMultiSelectionTitle": "Load type: (used in sequence.)",
   "settingsScenarioLoadTypeSelectionTile": "Load type",
@@ -1319,6 +1318,39 @@
   "queryHelperDialogMinutes":"Minutes",
   "queryHelperDialogSeconds":"Seconds",
   "queryHelperDialogValueHintText":"Value",
+
+  "assignFilterNamePrefix": "Assign",
+  "assignTypePermanent": "Permanent",
+  "assignTypeTemporary": "Temporary",
+  "filterNoAssignLabel": "Not assign",
+
+  "assignTemporaryFollowActionNone": "None",
+  "assignTemporaryFollowActionMakeExclude": "New Exclude Scenario",
+  "assignTemporaryFollowActionActiveExclude": "New and active Exclude Scenario",
+  "assignTemporaryFollowActionActiveAndLock": "Active and lock Exclude Scenario",
+
+  "entryActionAssignPermanent": "Assign Permanent",
+  "entryActionAssignTemporary": "Assign temporary",
+
+  "settingsAssignConfigPageTitle": "Assign Edit",
+  "settingsTileAssignType": "Assign type",
+  "settingsAssignRecordTabTypes": "Assign Records",
+  "settingsAssignNamePrefix": "Assign Records",
+  "settingsAssignEntryTabTypes": "Assign Entries",
+  "settingsAssignEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsAssignStepsAllBanner": "Can only remove or inactive entries assigned.",
+  "settingsAssignEntryNotExistWarn": "Can only remove or inactive entries assigned.",
+  "settingsAssignEntrySubPagePrefix": "Assign entry :",
+  "settingsAssignEditEntries": "Edit assign entries",
+
+
+   "settingsAssignOperationTitle": "Assign operate",
+   "settingsAssignResetDefaultText": "Clear all assign record",
+   "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
+  "settingsAssignTemporaryFollowActionTile": "Assign temporary follow action",
+
+  "assignListPageDangerWarningDialogMessage": "Remove a assign filter will not remove the original entries,\n while remove entries is remove entries without remove assign filter.\nAre you sure continue",
+  "drawerAssignPage": "Assigns",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

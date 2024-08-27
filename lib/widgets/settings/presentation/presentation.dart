@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -36,8 +37,8 @@ class PresentationSection extends SettingsSection {
         SettingsTileForegroundWallpaperDrawer(),
         SettingsTileAddDefaultGroupsSchedules(),
         SettingsTileShareByCopy(),
-        SettingsTileScenariosConfigPage(),
-        SettingsScenariosOperationPage(),
+        if (!settings.scenarioLock) SettingsTileScenariosConfigPage(),
+        if (!settings.scenarioLock) SettingsScenariosOperationPage(),
         SettingsAssignEditConfigPage(),
         SettingsAssignOperationPage(),
       ];

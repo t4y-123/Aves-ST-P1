@@ -74,4 +74,38 @@ mixin ScenarioSettings on SettingsAccess {
 
   set assignTemporaryFollowAction(AssignTemporaryFollowAction newValue) =>
       set(assignTemporaryFollowActionKey, newValue.toString());
+
+  static const assignTemporaryExpiredIntervalKey = 'assign_temporary_expired_interval';
+  int get assignTemporaryExpiredInterval =>
+      getInt(assignTemporaryExpiredIntervalKey) ?? SettingsDefaults.assignTemporaryExpiredInterval;
+  set assignTemporaryExpiredInterval(int newValue) => set(assignTemporaryExpiredIntervalKey, newValue);
+
+  static const canAutoRemoveExpiredTempAssignKey = 'can_auto_remove_expired_tmp_assign';
+  bool get canAutoRemoveExpiredTempAssign =>
+      getBool(canAutoRemoveExpiredTempAssignKey) ?? SettingsDefaults.canAutoRemoveExpiredTempAssign;
+  set canAutoRemoveExpiredTempAssign(bool newValue) => set(canAutoRemoveExpiredTempAssignKey, newValue);
+
+  static const autoRemoveCorrespondScenarioAsTempAssignRemoveKey =
+      'can_auto_remove_correspond_scenario_when_temp_assign_remove';
+  bool get autoRemoveCorrespondScenarioAsTempAssignRemove =>
+      getBool(autoRemoveCorrespondScenarioAsTempAssignRemoveKey) ??
+      SettingsDefaults.autoRemoveCorrespondScenarioAsTempAssignRemove;
+  set autoRemoveCorrespondScenarioAsTempAssignRemove(bool newValue) =>
+      set(autoRemoveCorrespondScenarioAsTempAssignRemoveKey, newValue);
+
+  static const autoRemoveTempAssignAsCorrespondScenarioRemoveKey =
+      'can_auto_remove_temp_assign_as_remove_relateScenario';
+  bool get autoRemoveTempAssignAsCorrespondScenarioRemove =>
+      getBool(autoRemoveTempAssignAsCorrespondScenarioRemoveKey) ??
+      SettingsDefaults.autoRemoveTempAssignAsCorrespondScenarioRemove;
+  set autoRemoveTempAssignAsCorrespondScenarioRemove(bool newValue) =>
+      set(autoRemoveTempAssignAsCorrespondScenarioRemoveKey, newValue);
+
+  static const confirmRemoveScenarioKey = 'confirm_remove_scenario';
+  set confirmRemoveScenario(bool newValue) => set(confirmRemoveScenarioKey, newValue);
+  bool get confirmRemoveScenario => getBool(confirmRemoveScenarioKey) ?? SettingsDefaults.confirmRemoveScenario;
+
+  static const confirmRemoveAssignKey = 'confirm_remove_assign';
+  set confirmRemoveAssign(bool newValue) => set(confirmRemoveAssignKey, newValue);
+  bool get confirmRemoveAssign => getBool(confirmRemoveAssignKey) ?? SettingsDefaults.confirmRemoveAssign;
 }

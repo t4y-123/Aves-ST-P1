@@ -3,6 +3,8 @@ import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -18,6 +20,7 @@ import 'package:aves/widgets/filter_grids/common/filter_chip_grid_decorator.dart
 import 'package:aves/widgets/filter_grids/common/list_details.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_setting_page.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -71,10 +74,12 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
             switch (filter) {
               case ScenarioFilter filter:
                 {
+                  bool tapUnlock = false;
+                  if (settings.scenarioLock) {
+                    if (!await unlockScenarios(context)) return;
+                    tapUnlock = true;
+                  }
                   if (filter.scenarioId >= 0) {
-                    if (settings.scenarioLock) {
-                      if (!await unlockScenarios(context)) return;
-                    }
                     switch (filter.scenario!.loadType) {
                       case ScenarioLoadType.excludeUnique:
                         // final removeFilters = settings.scenarioPinnedExcludeFilters
@@ -117,13 +122,47 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                       ),
                     );
                   } else if (filter.scenarioId == ScenarioFilter.scenarioLockUnlockId) {
-                    if (settings.scenarioLock) {
-                      if (!await unlockScenarios(context)) return;
-                    } else {
+                    if (!tapUnlock) {
+                      // only when the unlock mode is not unlock by now need to lock scenario.
                       settings.scenarioLock = true;
                     }
-                    ;
-                  } else if (filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {}
+                  } else if (filter.scenarioId == ScenarioFilter.scenarioAddNewItemId) {
+                    await scenarios.syncRowsToBridge();
+                    await scenarioSteps.syncRowsToBridge();
+
+                    final newItem = await scenarios.newRow(1, type: ScenarioRowsType.bridgeAll);
+                    debugPrint('addScenarioBase newItem $newItem\n');
+                    await scenarios.add({newItem}, type: ScenarioRowsType.bridgeAll);
+
+                    // add a new group of schedule to schedules bridge.
+                    final bridgeSubItems =
+                        await scenariosHelper.newScenarioStepsGroup(newItem, rowsType: ScenarioStepRowsType.bridgeAll);
+                    await scenarioSteps.add(bridgeSubItems.toSet(), type: ScenarioStepRowsType.bridgeAll);
+
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ScenarioBaseSettingPage(
+                          item: newItem,
+                          subItems: bridgeSubItems.toSet(),
+                        ),
+                      ),
+                    ).then((newItem) {
+                      if (newItem != null) {
+                        //final newRow = newItem as ScenarioBaseRow;
+                        setState(() {
+                          // not sync until tap apply button.
+                          // scenarios.syncBridgeToRows();
+                          //sync bridgeRows to privacy
+                          scenarios.syncBridgeToRows();
+                          scenarioSteps.syncBridgeToRows();
+                        });
+                      } else {
+                        scenarios.removeRows({newItem}, type: ScenarioRowsType.bridgeAll);
+                        scenarioSteps.removeEntries(bridgeSubItems.toSet(), type: ScenarioStepRowsType.bridgeAll);
+                      }
+                    });
+                  }
                 }
               default:
               //do nothing.

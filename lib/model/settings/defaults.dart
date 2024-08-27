@@ -208,4 +208,10 @@ class SettingsDefaults {
 
   // t4y: assign:
   static const assignTemporaryFollowAction = AssignTemporaryFollowAction.activeExcludeAndLock;
+  static const assignTemporaryExpiredInterval = 10;
+  static const canAutoRemoveExpiredTempAssign = true; // seconds
+  static const confirmRemoveScenario = true;
+  static const confirmRemoveAssign = true;
+  static const autoRemoveCorrespondScenarioAsTempAssignRemove = true;
+  static const autoRemoveTempAssignAsCorrespondScenarioRemove = true;
 }

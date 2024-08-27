@@ -40,7 +40,20 @@ class AssignRecord with ChangeNotifier {
 
   int get count => _rows.length;
 
-  Set<AssignRecordRow> get all => Set.unmodifiable(_rows);
+  Set<AssignRecordRow> get all {
+    if (settings.canAutoRemoveExpiredTempAssign) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final expirationTime = settings.assignTemporaryExpiredInterval * 1000; // Convert to milliseconds
+      final expiredRows = _rows
+          .where((row) => (now - row.dateMillis) > expirationTime && row.assignType == AssignRecordType.temporary)
+          .toSet();
+
+      if (expiredRows.isNotEmpty) {
+        removeRows(expiredRows, type: AssignRecordRowsType.all); // Remove expired records
+      }
+    }
+    return Set.unmodifiable(_rows);
+  }
 
   Set<AssignRecordRow> get bridgeAll => Set.unmodifiable(_bridgeRows);
 
@@ -114,7 +127,7 @@ class AssignRecord with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<AssignRecordRow> rows, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
+  Future<void> removeRows(Set<AssignRecordRow> rows, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
     await removeIds(rows.map((row) => row.id).toSet(), type: type);
   }
 
@@ -130,9 +143,9 @@ class AssignRecord with ChangeNotifier {
     };
     if (type == AssignRecordRowsType.all) {
       await metadataDb.removeAssignRecords(removedRows);
-      await assignEntries.removeEntries(removeAssignEntries, type: AssignEntryRowsType.all);
+      await assignEntries.removeRows(removeAssignEntries, type: AssignEntryRowsType.all);
     } else {
-      await assignEntries.removeEntries(removeAssignEntries, type: AssignEntryRowsType.bridgeAll);
+      await assignEntries.removeRows(removeAssignEntries, type: AssignEntryRowsType.bridgeAll);
     }
     removedRows.forEach(targetSet.remove);
 

@@ -1,6 +1,7 @@
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
+import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_setting_page.dart';
@@ -27,7 +28,8 @@ class ScenarioBaseConfigActions with FeedbackMixin {
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
       // remove scenarios
       final removeBaseIds = itemsToRemove.map((e) => e.id).toSet();
-      scenarios.removeEntries(itemsToRemove, type: ScenarioRowsType.bridgeAll);
+      scenarios.removeRows(itemsToRemove, type: ScenarioRowsType.bridgeAll);
+      scenariosHelper.removeScenarioPinnedFilters(itemsToRemove);
       // remove scenario steps
       final removeSteps = scenarioSteps.bridgeAll.where((e) => removeBaseIds.contains(e.scenarioId)).toSet();
       scenarioSteps.removeEntries(removeSteps, type: ScenarioStepRowsType.bridgeAll);
@@ -64,6 +66,9 @@ class ScenarioBaseConfigActions with FeedbackMixin {
       scenarioSteps.syncBridgeToRows();
       allItems.sort();
       //
+      if (settings.scenarioPinnedExcludeFilters.isEmpty) {
+        scenariosHelper.setExcludeDefaultFirst();
+      }
       showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
     });
   }
@@ -102,7 +107,7 @@ class ScenarioBaseConfigActions with FeedbackMixin {
           allItems.sort();
         });
       } else {
-        scenarios.removeEntries({newItem}, type: ScenarioRowsType.bridgeAll);
+        scenarios.removeRows({newItem}, type: ScenarioRowsType.bridgeAll);
         scenarioSteps.removeEntries(bridgeSubItems.toSet(), type: ScenarioStepRowsType.bridgeAll);
       }
     });

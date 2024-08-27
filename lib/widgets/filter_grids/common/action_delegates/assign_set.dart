@@ -3,15 +3,15 @@ import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/settings/settings.dart';
-import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/filter_editors/rename_album_dialog.dart';
 import 'package:aves/widgets/filter_grids/assign_page.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip_set.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
   final Iterable<FilterGridItem<AssignFilter>> _items;
@@ -50,6 +50,9 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
     final isMain = appMode == AppMode.main;
 
     switch (action) {
+      case ChipSetAction.rename:
+        if (selectedFilters.length != 1) return false;
+        return true;
       case ChipSetAction.delete:
         return isMain && isSelecting && !settings.isReadOnly;
       default:
@@ -70,6 +73,9 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
       // single/multiple filters
       case ChipSetAction.delete:
         _delete(context);
+      // single filter
+      case ChipSetAction.rename:
+        _rename(context);
       default:
         break;
     }
@@ -78,15 +84,12 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
 
   Future<void> _delete(BuildContext context) async {
     final filters = getSelectedFilters(context);
-
-    final source = context.read<CollectionSource>();
-    final todoEntries = source.visibleEntries.where((entry) => filters.any((f) => f.test(entry))).toSet();
     final todoAssignIds = filters.map((v) => v.assignId).toSet();
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AvesDialog(
-        content: Text(context.l10n.assignListPageDangerWarningDialogMessage),
+        content: Text(context.l10n.chipRemoveAssignFiltersMessage),
         actions: [
           const CancelButton(),
           TextButton(
@@ -102,5 +105,21 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
     await assignRecords.removeIds(todoAssignIds);
 
     browse(context);
+  }
+
+  Future<void> _rename(BuildContext context) async {
+    final l10n = context.l10n;
+    final filters = getSelectedFilters(context);
+    final filter = filters.first;
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => RenameAlbumDialog(album: filter.displayName),
+      routeSettings: const RouteSettings(name: RenameAlbumDialog.routeName),
+    );
+    if (newName == null || newName.isEmpty) return;
+
+    final newItem = filter.assignRecord!.copyWith(labelName: newName);
+    await assignRecords.setRows({newItem});
+    showFeedback(context, FeedbackType.info, l10n.applyCompletedFeedback);
   }
 }

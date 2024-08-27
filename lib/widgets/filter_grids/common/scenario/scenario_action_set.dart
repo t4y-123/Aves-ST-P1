@@ -1,12 +1,19 @@
 import 'package:aves/app_mode.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/view/view.dart';
 import 'package:aves/widgets/common/action_mixins/entry_storage.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/scenario_aware.dart';
+import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/tile_extent_controller.dart';
+import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
+import 'package:aves/widgets/dialogs/aves_dialog.dart';
+import 'package:aves/widgets/dialogs/filter_editors/rename_album_dialog.dart';
 import 'package:aves/widgets/dialogs/tile_view_dialog.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip_set.dart';
 import 'package:aves/widgets/filter_grids/scenario_page.dart';
@@ -17,7 +24,8 @@ import 'package:provider/provider.dart';
 
 import '../../../../model/filters/scenario.dart';
 
-class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter> with EntryStorageMixin {
+class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter>
+    with EntryStorageMixin, ScenarioAwareMixin {
   final Iterable<FilterGridItem<ScenarioFilter>> _items;
 
   ScenarioChipSetActionDelegate(Iterable<FilterGridItem<ScenarioFilter>> items) : _items = items;
@@ -67,12 +75,11 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
       case ChipSetAction.createVault:
       case ChipSetAction.configureVault:
       case ChipSetAction.lockVault:
+      case ChipSetAction.hide:
         return false;
       case ChipSetAction.delete:
       case ChipSetAction.rename:
         return isMain && isSelecting && !settings.isReadOnly;
-      case ChipSetAction.hide:
-        return isMain;
       default:
         return super.isVisible(
           action,
@@ -95,8 +102,6 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
       case ChipSetAction.rename:
         if (selectedFilters.length != 1) return false;
         return true;
-      case ChipSetAction.hide:
-        return false;
       default:
         return super.canApply(
           action,
@@ -164,23 +169,95 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
   }
 
   Future<void> _delete(BuildContext context) async {
-    // t4y: todo:
+    final l10n = context.l10n;
+    final filters = getSelectedFilters(context);
+    // can not remove func scenario filter.
+    if (filters is Set<ScenarioFilter> && filters.any((e) => e.scenarioId <= 0)) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AvesDialog(
+          content: Text(l10n.canNotRemoveFuncScenarioFiltersMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.maybeOf(context)?.pop(),
+              child: Text(context.l10n.continueButtonLabel),
+            ),
+          ],
+        ),
+        routeSettings: const RouteSettings(name: AvesDialog.warningRouteName),
+      );
+      return;
+    }
+
+    // can not remove func scenario filter.
+    final todoExcludeFilterCount =
+        filters.where((e) => e is ScenarioFilter && e.scenario?.loadType == ScenarioLoadType.excludeUnique).length;
+    final allExcludeFilterCount =
+        scenarios.all.where((e) => e.isActive && e.loadType == ScenarioLoadType.excludeUnique).length;
+
+    if (todoExcludeFilterCount >= allExcludeFilterCount) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AvesDialog(
+          content: Text(l10n.canNotRemoveAllExcludeScenarioFiltersMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.maybeOf(context)?.pop(),
+              child: Text(context.l10n.continueButtonLabel),
+            ),
+          ],
+        ),
+        routeSettings: const RouteSettings(name: AvesDialog.warningRouteName),
+      );
+      return;
+    }
+
+    if (settings.scenarioLock && !await unlockScenarios(context)) return;
+    if (!await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.chipRemoveScenario,
+      message: l10n.chipRemoveScenarioFiltersMessage,
+      confirmationButtonLabel: l10n.deleteButtonLabel,
+    )) return;
+
+    final scenarioIds = filters.map((e) => e.scenarioId).toSet();
+    await scenarios.removeIds(scenarioIds);
+
     browse(context);
   }
 
-  Future<void> _doDelete({
-    required BuildContext context,
-    required Set<ScenarioFilter> filters,
-    required bool enableBin,
-  }) async {
-    // t4y: todo:
-  }
-
   Future<void> _rename(BuildContext context) async {
-    // t4y: todo:
-  }
+    final l10n = context.l10n;
+    final filters = getSelectedFilters(context);
+    if (filters is Set<ScenarioFilter> && filters.any((e) => e.scenarioId <= 0)) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AvesDialog(
+          content: Text(l10n.canNotRenameFuncScenarioFiltersMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.maybeOf(context)?.pop(),
+              child: Text(context.l10n.continueButtonLabel),
+            ),
+          ],
+        ),
+        routeSettings: const RouteSettings(name: AvesDialog.warningRouteName),
+      );
+      return;
+    }
+    if (filters.isEmpty || filters.first.scenario == null) return;
+    final filter = filters.first;
+    if (settings.scenarioLock && !await unlockScenarios(context)) return;
 
-  Future<void> _doRename(BuildContext context, ScenarioFilter filter, String newName) async {
-    // t4y: todo:
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => RenameAlbumDialog(album: filter.displayName),
+      routeSettings: const RouteSettings(name: RenameAlbumDialog.routeName),
+    );
+    if (newName == null || newName.isEmpty) return;
+
+    final newScenario = filter.scenario!.copyWith(labelName: newName);
+    await scenarios.setRows({newScenario});
+    showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
   }
 }

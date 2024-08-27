@@ -33,15 +33,40 @@ class ScenariosHelper {
       await addDefaultScenarios();
     }
     if (settings.scenarioPinnedExcludeFilters.isEmpty) {
-      setExcludeScenarioFilterSetting(ScenarioFilter(scenarios.all.first.id, scenarios.all.first.labelName));
+      setExcludeDefaultFirst();
     }
     await assignRecords.init();
     await assignEntries.init();
   }
 
+  void setExcludeDefaultFirst() {
+    setExcludeScenarioFilterSetting(ScenarioFilter(
+        scenarios.all.firstWhere((e) => e.loadType == ScenarioLoadType.excludeUnique).id,
+        scenarios.all.first.labelName));
+  }
+
+  void removeScenarioPinnedFilters(Set<ScenarioRow> rows) {
+    final rowsIds = rows.map((e) => e.id);
+    final todoExclude =
+        settings.scenarioPinnedExcludeFilters.where((e) => e is ScenarioFilter && rowsIds.contains(e.scenarioId));
+    final todoInject =
+        settings.scenarioPinnedIntersectFilters.where((e) => e is ScenarioFilter && rowsIds.contains(e.scenarioId));
+    final todoUnion =
+        settings.scenarioPinnedUnionFilters.where((e) => e is ScenarioFilter && rowsIds.contains(e.scenarioId));
+    settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters..removeAll(todoExclude);
+    settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters..removeAll(todoInject);
+    settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..removeAll(todoUnion);
+
+    if (settings.scenarioPinnedExcludeFilters.isEmpty) setExcludeDefaultFirst();
+  }
+
   Future<void> clearScenarios() async {
     await scenarios.clear();
     await scenarioSteps.clear();
+    clearActivePinnedSettings();
+  }
+
+  void clearActivePinnedSettings() {
     settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters..clear();
     settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters..clear();
     settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..clear();
@@ -167,6 +192,19 @@ class ScenariosHelper {
     final curSteps = targetSet.where((e) => e.scenarioId == curScenario.id).toSet();
     debugPrint('$runtimeType getStepsOfScenario \n curScenario $curScenario \n curSchedules :$curScenario');
     return curSteps;
+  }
+
+  Future<ScenarioRow> newScenarioByFilter(Set<CollectionFilter> filters,
+      {ScenarioRowsType rowsType = ScenarioRowsType.all}) async {
+    final stepRowsType = rowsType == ScenarioRowsType.all ? ScenarioStepRowsType.all : ScenarioStepRowsType.bridgeAll;
+    final newScenario = await scenarios.newRow(1);
+    await scenarios.add({newScenario}, type: rowsType);
+
+    List<ScenarioStepRow> newScenarioSteps = [
+      newScenarioStep(1, newScenario.id, 1, filters, type: stepRowsType),
+    ];
+    await scenarioSteps.add(newScenarioSteps.toSet(), type: stepRowsType);
+    return newScenario;
   }
 
   // import/export

@@ -1,5 +1,7 @@
 import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
 import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -97,6 +99,7 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
                 _canRemove = !wallpaperSchedules.bridgeAll.any((e) => e.filtersSetId == item.id) &&
                     !wallpaperSchedules.all.any((e) => e.filtersSetId == item.id);
               }
+
               final isActive = _activeItems.contains(item);
               debugPrint('$runtimeType ReorderableListView.builder localItems ${widget.items} load');
               void onToggleVisibility() {
@@ -104,6 +107,17 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
                   // Show a message that at least one item must remain active
                   showFeedback(context, FeedbackType.info, context.l10n.settingsFgwFixedTabAtLeastOneItemLeaveBeActive);
                   return;
+                }
+                if (item is ScenarioRow) {
+                  if (widget.items
+                          .where((e) => e is ScenarioRow && e.loadType == ScenarioLoadType.excludeUnique && e.isActive)
+                          .toSet()
+                          .length <=
+                      1) {
+                    showFeedback(
+                        context, FeedbackType.info, context.l10n.settingsScenarioAtLeastOneExcludeItemLeaveWhenRemove);
+                    return;
+                  }
                 }
                 setState(() {
                   if (isActive) {
@@ -134,6 +148,17 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
               }
 
               void onRemoveItem() {
+                if (item is ScenarioRow) {
+                  if (widget.items
+                          .where((e) => e is ScenarioRow && e.loadType == ScenarioLoadType.excludeUnique)
+                          .toSet()
+                          .length <=
+                      1) {
+                    showFeedback(
+                        context, FeedbackType.info, context.l10n.settingsScenarioAtLeastOneExcludeItemLeaveWhenRemove);
+                    return;
+                  }
+                }
                 if ((!widget.canBeActiveEmpty && _activeItems.length <= 1) ||
                     (!widget.canBeEmpty && widget.items.length <= 1)) {
                   // Show a message that at least one item must remain

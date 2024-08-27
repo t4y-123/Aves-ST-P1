@@ -1285,10 +1285,13 @@
   "settingsScenariosOperationTitle": "Scenarios Operate",
   "settingsScenarioResetDefaultText": "Reset scenarios to default",
   "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
+  "settingsScenarioResetActivePinnedScenarioText": "Reset active scenarios to only first exclude scenario",
+  "settingsScenarioResetActivePinnedScenarioAlert": "Reset active scenarios to default to clear some potential mistake in using scenario like miss scenarios.",
   "settingsScenarioSetScenarioPassDefaultText": "Set scenario unlock password (default 1234)",
   "settingsScenarioSetScenarioPassDefaultAlert": "The default value 1234",
   "settingsCanScenarioAffectFgwTileText": "Can scenario affect foreground wallpaper",
-
+  "settingsConfirmationRemoveScenario": "Ask before remove scenario",
+  "settingsConfirmationRemoveAssign": "Ask before remove Assign",
 
   "scenarioTitle": "Scenario",
   "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",
@@ -1296,7 +1299,12 @@
   "settingsScenarioDateMills":"Date:",
   "settingsScenarioLoadTypeMultiSelectionTitle": "Load type: (used in sequence.)",
   "settingsScenarioLoadTypeSelectionTile": "Load type",
+  "settingsScenarioAtLeastOneExcludeItemLeaveWhenRemove":"At least one exclude scenario item remain active.",
 
+  "canNotRemoveFuncScenarioFiltersMessage": "Can not remove func scenario filters !!!\n\nTry else.",
+  "canNotRenameFuncScenarioFiltersMessage": "Can not rename func scenario filters !!!\n\nTry else.",
+  "canNotRemoveAllExcludeScenarioFiltersMessage": "At least 1 exclude scenario filters must remain !!!\n\nTry else.",
+  "chipRemoveScenarioFiltersMessage": "Only remove scenario filters without remove entries.\n\nContinue? ",
 
   "searchQueryHelperSectionTitle": "Query Helper",
   "queryHelperTypePath": "path",
@@ -1329,7 +1337,7 @@
   "assignTemporaryFollowActionActiveExclude": "New and active Exclude Scenario",
   "assignTemporaryFollowActionActiveAndLock": "Active and lock Exclude Scenario",
 
-  "entryActionAssignPermanent": "Assign Permanent",
+  "entryActionAssignPermanent": "Assign permanent",
   "entryActionAssignTemporary": "Assign temporary",
 
   "settingsAssignConfigPageTitle": "Assign Edit",
@@ -1344,12 +1352,16 @@
   "settingsAssignEditEntries": "Edit assign entries",
 
 
-   "settingsAssignOperationTitle": "Assign operate",
-   "settingsAssignResetDefaultText": "Clear all assign record",
-   "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
+  "settingsAssignOperationTitle": "Assign operate",
+  "settingsAssignResetDefaultText": "Clear all assign record",
+  "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
   "settingsAssignTemporaryFollowActionTile": "Assign temporary follow action",
+  "settingsSlideshowIntervalTile": "Temporary assign expired interval",
+  "settingsAutoRemoveExpiredTempAssign": "Auto remove expired temporary assign",
+  "settingsAutoRemoveCorrespondScenarioAsTempAssignRemoveTile": "Auto remove correspond scenario as temp assign removed",
+  "settingsAutoRemoveTempAssignAsCorrespondScenarioRemoveTile": "Auto remove  temp assign as correspond scenario removed",
 
-  "assignListPageDangerWarningDialogMessage": "Remove a assign filter will not remove the original entries,\n while remove entries is remove entries without remove assign filter.\nAre you sure continue",
+  "chipRemoveAssignFiltersMessage": "Only remove assign record without romove entries.\nAre you sure continue??",
   "drawerAssignPage": "Assigns",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:aves/model/foreground_wallpaper/fgw_schedule_helper.dart';
 import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -37,7 +38,7 @@ class FgwUsedEntryRecord with ChangeNotifier {
   }
 
   Future<void> setRows(Set<FgwUsedEntryRecordRow> newRows) async {
-    await removeEntries(newRows);
+    await removeRows(newRows);
     for (var row in newRows) {
       await set(
         id: row.id,
@@ -75,7 +76,13 @@ class FgwUsedEntryRecord with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<FgwUsedEntryRecordRow> rows) => removeIds(rows.map((row) => row.id).toSet());
+  Future<void> removeRows(Set<FgwUsedEntryRecordRow> rows) => removeIds(rows.map((row) => row.id).toSet());
+
+  Future<void> removeEntries(Set<AvesEntry> entries) async {
+    final entryIds = entries.map((entry) => entry.id).toSet();
+    final todoRows = _rows.where((row) => entryIds.contains(row.entryId)).toSet();
+    await removeRows(todoRows);
+  }
 
   Future<void> removeIds(Set<int> rowIds) async {
     final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();

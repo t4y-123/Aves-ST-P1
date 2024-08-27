@@ -71,6 +71,10 @@ bool _shouldConfirm(ConfirmationDialog type) {
       return settings.confirmShareByCopy;
     case ConfirmationDialog.editAsCopiedFirst:
       return settings.confirmEditAsCopiedFirst;
+    case ConfirmationDialog.chipRemoveScenario:
+      return settings.confirmRemoveScenario;
+    case ConfirmationDialog.chipRemoveAssign:
+      return settings.confirmRemoveAssign;
   }
 }
 
@@ -90,6 +94,10 @@ void _skipConfirmation(ConfirmationDialog type) {
       settings.confirmShareByCopy = false;
     case ConfirmationDialog.editAsCopiedFirst:
       settings.confirmEditAsCopiedFirst = false;
+    case ConfirmationDialog.chipRemoveScenario:
+      settings.confirmRemoveScenario = false;
+    case ConfirmationDialog.chipRemoveAssign:
+      settings.confirmRemoveAssign = false;
   }
 }
 

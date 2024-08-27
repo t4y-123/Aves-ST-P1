@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:collection/collection.dart';
@@ -112,7 +113,7 @@ class Scenario with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<ScenarioRow> rows, {ScenarioRowsType type = ScenarioRowsType.all}) async {
+  Future<void> removeRows(Set<ScenarioRow> rows, {ScenarioRowsType type = ScenarioRowsType.all}) async {
     await removeIds(rows.map((row) => row.id).toSet(), type: type);
   }
 
@@ -121,6 +122,7 @@ class Scenario with ChangeNotifier {
 
     final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
     if (type == ScenarioRowsType.all) {
+      scenariosHelper.removeScenarioPinnedFilters(removedRows);
       await metadataDb.removeScenarios(removedRows);
     }
     removedRows.forEach(targetSet.remove);
@@ -149,10 +151,14 @@ class Scenario with ChangeNotifier {
     );
   }
 
-  Future<String> getLabelName(int orderNum) async {
+  Future<String> getLabelName(int orderNum, ScenarioLoadType loadType) async {
     AppLocalizations _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
-    final prefix = _l10n.scenarioNamePrefix;
-    return '$prefix $orderNum';
+    final loadName = switch (loadType) {
+      ScenarioLoadType.excludeUnique => _l10n.scenarioLoadTypeExclude,
+      ScenarioLoadType.unionOr => _l10n.scenarioLoadTypeUnion,
+      ScenarioLoadType.intersectAnd => _l10n.scenarioLoadTypeIntersect,
+    };
+    return '$orderNum-$loadName';
   }
 
   Future<ScenarioRow> newRow(int existOrderNumOffset,
@@ -163,7 +169,7 @@ class Scenario with ChangeNotifier {
       bool isActive = true,
       ScenarioRowsType type = ScenarioRowsType.all}) async {
     final targetSet = _getTarget(type);
-
+    final newLoadType = loadType ?? ScenarioLoadType.excludeUnique;
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxGuardLevel =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
@@ -171,9 +177,9 @@ class Scenario with ChangeNotifier {
     return ScenarioRow(
       id: metadataDb.nextId,
       orderNum: orderNum,
-      labelName: labelName ?? await getLabelName(orderNum),
+      labelName: labelName ?? await getLabelName(orderNum, newLoadType),
       color: color ?? getRandomColor(),
-      loadType: loadType ?? ScenarioLoadType.excludeUnique,
+      loadType: newLoadType,
       dateMillis: dateMillis ?? DateTime.now().millisecondsSinceEpoch,
       isActive: isActive,
     );

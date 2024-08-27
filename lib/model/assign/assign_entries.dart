@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:aves/model/entry/entry.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
@@ -70,7 +71,7 @@ class AssignEntries with ChangeNotifier {
   }
 
   Future<void> setRows(Set<AssignEntryRow> newRows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    await removeEntries(newRows, type: type);
+    await removeRows(newRows, type: type);
     for (var row in newRows) {
       await set(
         id: row.id,
@@ -112,7 +113,14 @@ class AssignEntries with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeEntries(Set<AssignEntryRow> rows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
+  Future<void> removeEntries(Set<AvesEntry> entries, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
+    final targetSet = _getTarget(type);
+    final entryIds = entries.map((entry) => entry.id).toSet();
+    final todoRows = targetSet.where((row) => entryIds.contains(row.entryId)).toSet();
+    await removeRows(todoRows);
+  }
+
+  Future<void> removeRows(Set<AssignEntryRow> rows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
     await removeIds(rows.map((row) => row.id).toSet(), type: type);
   }
 
@@ -207,7 +215,7 @@ class AssignEntries with ChangeNotifier {
         isActive: newValues[AssignEntryRow.propIsActive] ?? row.isActive,
       );
       if (oldRow != null) {
-        await removeEntries({oldRow}, type: type);
+        await removeRows({oldRow}, type: type);
         await setRows({updatedRow}, type: type);
       } else {
         await add({updatedRow}, type: type);

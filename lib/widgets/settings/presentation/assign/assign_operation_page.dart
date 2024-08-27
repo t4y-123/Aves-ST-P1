@@ -43,6 +43,26 @@ class AssignOperationPage extends StatelessWidget with FeedbackMixin {
             onSelection: (v) => settings.assignTemporaryFollowAction = v,
             tileTitle: l10n.settingsAssignTemporaryFollowActionTile,
           ),
+          SettingsDurationListTile(
+            selector: (context, s) => s.assignTemporaryExpiredInterval,
+            onChanged: (v) => settings.assignTemporaryExpiredInterval = v,
+            title: l10n.settingsSlideshowIntervalTile,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.canAutoRemoveExpiredTempAssign,
+            onChanged: (v) => settings.canAutoRemoveExpiredTempAssign = v,
+            title: l10n.settingsAutoRemoveExpiredTempAssign,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.autoRemoveCorrespondScenarioAsTempAssignRemove,
+            onChanged: (v) => settings.autoRemoveCorrespondScenarioAsTempAssignRemove = v,
+            title: l10n.settingsAutoRemoveCorrespondScenarioAsTempAssignRemoveTile,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.autoRemoveTempAssignAsCorrespondScenarioRemove,
+            onChanged: (v) => settings.autoRemoveTempAssignAsCorrespondScenarioRemove = v,
+            title: l10n.settingsAutoRemoveTempAssignAsCorrespondScenarioRemoveTile,
+          ),
         ]),
       ),
     );

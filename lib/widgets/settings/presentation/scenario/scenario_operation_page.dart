@@ -1,3 +1,6 @@
+import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/durations.dart';
@@ -38,6 +41,20 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, Scenari
                 l10n.settingsScenarioResetDefaultAlert,
                 () {
                   _resetAllToDefault(context);
+                },
+              ),
+              child: Text(l10n.applyButtonLabel),
+            ),
+          ),
+          ListTile(
+            title: Text(l10n.settingsScenarioResetActivePinnedScenarioText),
+            trailing: ElevatedButton(
+              onPressed: () => _showConfirmationDialog(
+                context,
+                l10n.settingsScenarioResetActivePinnedScenarioText,
+                l10n.settingsScenarioResetActivePinnedScenarioAlert,
+                () {
+                  _resetActivePinned(context);
                 },
               ),
               child: Text(l10n.applyButtonLabel),
@@ -100,8 +117,21 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, Scenari
   }
 
   Future<void> _resetAllToDefault(BuildContext context) async {
+    if (settings.scenarioLock) {
+      if (!await unlockScenarios(context)) return;
+    }
     await scenariosHelper.clearScenarios();
     await scenariosHelper.initScenarios();
+    showFeedback(context, FeedbackType.info, context.l10n.resetCompletedFeedback);
+  }
+
+  Future<void> _resetActivePinned(BuildContext context) async {
+    if (settings.scenarioLock) {
+      if (!await unlockScenarios(context)) return;
+    }
+    scenariosHelper.clearActivePinnedSettings();
+    final firstExclude = scenarios.all.firstWhere((e) => e.loadType == ScenarioLoadType.excludeUnique);
+    scenariosHelper.setExcludeScenarioFilterSetting(ScenarioFilter(firstExclude.id, firstExclude.labelName));
     showFeedback(context, FeedbackType.info, context.l10n.resetCompletedFeedback);
   }
 }

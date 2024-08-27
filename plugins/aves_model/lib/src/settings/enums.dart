@@ -13,7 +13,9 @@ enum ConfirmationDialog {
   moveUndatedItems,
   setDateToNow,
   shareByCopy,
-  editAsCopiedFirst
+  editAsCopiedFirst,
+  chipRemoveScenario,
+  chipRemoveAssign,
 }
 
 enum CoordinateFormat { dms, decimal }

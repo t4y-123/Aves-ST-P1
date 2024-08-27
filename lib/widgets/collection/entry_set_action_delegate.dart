@@ -14,9 +14,13 @@ import 'package:aves/model/favourites.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
+import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/model/query.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
@@ -314,6 +318,10 @@ class EntrySetActionDelegate
               enableBin: kv.key,
             ));
 
+    await shareCopiedEntries.removeEntries(entries);
+    await assignEntries.removeEntries(entries);
+    await fgwUsedEntryRecord.removeEntries(entries);
+
     _browse(context);
   }
 
@@ -392,6 +400,22 @@ class EntrySetActionDelegate
         'newRecordList ${newAssignEntries.map((e) => e.toMap())}');
     await assignRecords.add({newRecord});
     await assignEntries.add(newAssignEntries.toSet());
+
+    if (assignType == AssignRecordType.temporary) {
+      if (settings.assignTemporaryFollowAction != AssignTemporaryFollowAction.none) {
+        final newAssignScenario =
+            await scenariosHelper.newScenarioByFilter({AssignFilter(newRecord.id, newRecord.labelName)});
+        if ({AssignTemporaryFollowAction.activeExclude, AssignTemporaryFollowAction.activeExcludeAndLock}
+            .contains(settings.assignTemporaryFollowAction)) {
+          scenariosHelper
+              .setExcludeScenarioFilterSetting(ScenarioFilter(newAssignScenario.id, newAssignScenario.labelName));
+        }
+        if (settings.assignTemporaryFollowAction == AssignTemporaryFollowAction.activeExcludeAndLock) {
+          settings.scenarioLock = true;
+        }
+      }
+    }
+
     var collection = context.read<CollectionLens>();
     collection.addFilter(AssignFilter(newRecord.id, newRecord.labelName));
   }

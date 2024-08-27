@@ -124,7 +124,9 @@ abstract class CollectionSource
 
     assignRecords.addListener(updateAssigns);
     assignEntries.addListener(updateAssigns);
+    assignRecords.addListener(updateScenario);
     scenarios.addListener(updateScenario);
+    scenarios.addListener(updateAssigns);
   }
 
   @mustCallSuper
@@ -152,7 +154,7 @@ abstract class CollectionSource
   @override
   Set<AvesEntry> get allEntries => Set.unmodifiable(_rawEntries);
 
-  Set<AvesEntry>? _visibleEntries, _trashedEntries;
+  Set<AvesEntry>? _visibleEntries, _trashedEntries, _noneScenarioVisibleEntries;
 
   @override
   Set<AvesEntry> get visibleEntries {
@@ -161,7 +163,8 @@ abstract class CollectionSource
   }
 
   Set<AvesEntry> get noneScenarioVisibleEntries {
-    return Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: false))!;
+    _noneScenarioVisibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: false));
+    return _noneScenarioVisibleEntries!;
   }
 
   @override
@@ -272,6 +275,7 @@ abstract class CollectionSource
     invalidateStateFilterSummary(entries: entries, notify: notify);
     invalidateTagFilterSummary(entries: entries, notify: notify);
     invalidateScenarioFilterSummary(entries: entries, notify: notify);
+    invalidateAssignFilterSummary(entries: entries, notify: notify);
   }
 
   @override

@@ -24,7 +24,7 @@ class AssignEntryActions with FeedbackMixin {
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
       // remove assignEntries
       final removeItems = itemsToRemove.map((e) => e.id).toSet();
-      assignEntries.removeEntries(itemsToRemove, type: AssignEntryRowsType.bridgeAll);
+      assignEntries.removeRows(itemsToRemove, type: AssignEntryRowsType.bridgeAll);
 
       // according to order in allItems, reorder the data .active items first.
       allItems.where((item) => activeItems.contains(item)).forEach((item) {

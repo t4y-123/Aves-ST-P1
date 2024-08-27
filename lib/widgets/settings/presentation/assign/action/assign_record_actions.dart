@@ -27,10 +27,10 @@ class AssignRecordActions with FeedbackMixin {
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
       // remove assignRecords
       final removeBaseIds = itemsToRemove.map((e) => e.id).toSet();
-      assignRecords.removeEntries(itemsToRemove, type: AssignRecordRowsType.bridgeAll);
+      assignRecords.removeRows(itemsToRemove, type: AssignRecordRowsType.bridgeAll);
       // remove assign entries record
       final removeEntries = assignEntries.bridgeAll.where((e) => removeBaseIds.contains(e.assignId)).toSet();
-      assignEntries.removeEntries(removeEntries, type: AssignEntryRowsType.bridgeAll);
+      assignEntries.removeRows(removeEntries, type: AssignEntryRowsType.bridgeAll);
 
       // according to order in allItems, reorder the data .active items first.
       int starOrderNum = 1;

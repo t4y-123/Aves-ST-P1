@@ -24,7 +24,7 @@ class AssignListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final source = context.read<CollectionSource>();
     return Selector<Settings, (ChipSortFactor, bool, Set<CollectionFilter>)>(
-      selector: (context, s) => (s.tagSortFactor, s.tagSortReverse, s.pinnedFilters),
+      selector: (context, s) => (s.assignSortFactor, s.assignSortReverse, s.pinnedFilters),
       shouldRebuild: (t1, t2) {
         // `Selector` by default uses `DeepCollectionEquality`, which does not go deep in collections within records
         const eq = DeepCollectionEquality();
@@ -37,14 +37,14 @@ class AssignListPage extends StatelessWidget {
             final gridItems = _getGridItems(source);
             return FilterNavigationPage<AssignFilter, AssignChipSetActionDelegate>(
               source: source,
-              title: context.l10n.tagPageTitle,
-              sortFactor: settings.tagSortFactor,
+              title: context.l10n.assignPageTitle,
+              sortFactor: settings.assignSortFactor,
               actionDelegate: AssignChipSetActionDelegate(gridItems),
               filterSections: _groupToSections(gridItems),
               applyQuery: applyQuery,
               emptyBuilder: () => EmptyContent(
-                icon: AIcons.tag,
-                text: context.l10n.tagEmpty,
+                icon: AIcons.assignP,
+                text: context.l10n.assignEmpty,
               ),
             );
           },

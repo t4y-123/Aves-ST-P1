@@ -1,11 +1,13 @@
-import 'package:aves/model/foreground_wallpaper/enum/fgw_schedule_item.dart';
-import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
+
 import '../../../../../theme/format.dart';
 import '../../../../common/action_mixins/feedback.dart';
 import '../../../../dialogs/big_duration_dialog.dart';
@@ -15,8 +17,8 @@ import '../schedule/schedule_collection_tile.dart';
 
 class GuardLevelScheduleSubPage extends StatefulWidget {
   static const routeName = '/settings/presentation/guard_level_setting_page/gl_schedule_sub_page';
-  final PrivacyGuardLevelRow item;
-  final WallpaperScheduleRow schedule;
+  final FgwGuardLevelRow item;
+  final FgwScheduleRow schedule;
 
   const GuardLevelScheduleSubPage({
     super.key,
@@ -46,9 +48,9 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
         ),
         body: MultiProvider(
           providers: [
-            ChangeNotifierProvider<PrivacyGuardLevel>.value(value: privacyGuardLevels),
-            ChangeNotifierProvider<WallpaperSchedules>.value(value: wallpaperSchedules),
-            ChangeNotifierProvider<FilterSet>.value(value: filtersSets),
+            ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
+            ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
+            ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
           ],
           child: SafeArea(
             child: ListView(
@@ -70,11 +72,14 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
                 const Divider(
                   height: 16,
                 ),
-                ItemSettingsSwitchListTile<WallpaperSchedules>(
-                  selector: (context, s) => (s.bridgeAll.firstWhereOrNull((e)=>e.id == widget.schedule.id) ?? widget.schedule).isActive,
+                ItemSettingsSwitchListTile<FgwSchedule>(
+                  selector: (context, s) =>
+                      (s.bridgeAll.firstWhereOrNull((e) => e.id == widget.schedule.id) ?? widget.schedule).isActive,
                   onChanged: (v) async {
-                    final curSchedule = wallpaperSchedules.bridgeAll.firstWhereOrNull((e)=> e.id == widget.schedule.id) ?? widget.schedule;
-                    await wallpaperSchedules.setExistRows({curSchedule}, {WallpaperScheduleRow.propIsActive:v},type:ScheduleRowType.bridgeAll);
+                    final curSchedule =
+                        fgwSchedules.bridgeAll.firstWhereOrNull((e) => e.id == widget.schedule.id) ?? widget.schedule;
+                    await fgwSchedules.setExistRows({curSchedule}, {FgwScheduleRow.propIsActive: v},
+                        type: PresentationRowType.bridgeAll);
                   },
                   title: l10n.settingsScheduleIsActiveTitle,
                 ),
@@ -96,9 +101,9 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
         ));
   }
 
-  Widget _buildIntervalSelectTile(WallpaperScheduleRow schedule) {
-    return Selector<WallpaperSchedules, WallpaperScheduleRow>(selector: (context, s) {
-      final curSchedule = wallpaperSchedules.bridgeAll.firstWhere((e) => e.id == widget.schedule.id);
+  Widget _buildIntervalSelectTile(FgwScheduleRow schedule) {
+    return Selector<FgwSchedule, FgwScheduleRow>(selector: (context, s) {
+      final curSchedule = fgwSchedules.bridgeAll.firstWhere((e) => e.id == widget.schedule.id);
       debugPrint('$runtimeType  _buildIntervalSelectTile curSchedule $curSchedule');
       return curSchedule;
     }, builder: (context, current, child) {
@@ -119,7 +124,7 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
     });
   }
 
-  List<Widget> _buildIntervalOptions(WallpaperScheduleRow schedule) {
+  List<Widget> _buildIntervalOptions(FgwScheduleRow schedule) {
     final l10n = context.l10n;
     String _curIntervalString = formatToLocalDuration(context, Duration(seconds: schedule.interval));
     var _useInterval = schedule.interval == 0 ? false : true;
@@ -139,9 +144,9 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
             if (v) {
               await _buildInterval(schedule);
               return;
-            }else{
-              await wallpaperSchedules
-                  .setExistRows({schedule}, {WallpaperScheduleRow.propInterval: 0}, type: ScheduleRowType.bridgeAll);
+            } else {
+              await fgwSchedules
+                  .setExistRows({schedule}, {FgwScheduleRow.propInterval: 0}, type: PresentationRowType.bridgeAll);
             }
             _useInterval = v;
             setState(() {});
@@ -172,23 +177,23 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
     ).toList();
   }
 
-  Future<void> _buildInterval(WallpaperScheduleRow schedule) async {
+  Future<void> _buildInterval(FgwScheduleRow schedule) async {
     final v = await showDialog<int>(
       context: context,
       builder: (context) => HmsDurationDialog(initialSeconds: schedule.interval),
     );
     if (v != null) {
-      await wallpaperSchedules
-          .setExistRows({schedule}, {WallpaperScheduleRow.propInterval: v}, type: ScheduleRowType.bridgeAll);
+      await fgwSchedules
+          .setExistRows({schedule}, {FgwScheduleRow.propInterval: v}, type: PresentationRowType.bridgeAll);
     }
   }
 
-  Selector<WallpaperSchedules, Set<FiltersSetRow>> buildFilterSetTile() {
-    return Selector<WallpaperSchedules, Set<FiltersSetRow>>(
+  Selector<FgwSchedule, Set<FiltersSetRow>> buildFilterSetTile() {
+    return Selector<FgwSchedule, Set<FiltersSetRow>>(
       selector: (context, s) {
         final curSchedule = s.bridgeAll.firstWhere((e) => e.id == widget.schedule.id);
 
-        final selectedFiltersSet = filtersSets.all.firstWhere((e) => e.id == curSchedule.filtersSetId);
+        final selectedFiltersSet = filtersSets.bridgeAll.firstWhere((e) => e.id == curSchedule.filtersSetId);
         return {selectedFiltersSet};
       },
       builder: (context, current, child) {
@@ -196,9 +201,8 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
           selectedFilterSet: current,
           onSelection: (v) {
             final curFilterSetRow = v.first;
-            wallpaperSchedules.setExistRows(
-                {widget.schedule}, {WallpaperScheduleRow.propFiltersSetId: curFilterSetRow.id},
-                type: ScheduleRowType.bridgeAll);
+            fgwSchedules.setExistRows({widget.schedule}, {FgwScheduleRow.propFiltersSetId: curFilterSetRow.id},
+                type: PresentationRowType.bridgeAll);
           },
           title: current.first.id.toString(),
         );
@@ -210,14 +214,14 @@ class _GuardLevelScheduleSubPageState extends State<GuardLevelScheduleSubPage> w
 class ScheduleLabelNameModifiedTile extends SettingsTile {
   @override
   String title(BuildContext context) => context.l10n.renameLabelNameTileTitle;
-  final WallpaperScheduleRow schedule;
+  final FgwScheduleRow schedule;
 
   ScheduleLabelNameModifiedTile({
     required this.schedule,
   });
 
   @override
-  Widget build(BuildContext context) => ItemSettingsLabelNameListTile<WallpaperSchedules>(
+  Widget build(BuildContext context) => ItemSettingsLabelNameListTile<FgwSchedule>(
         tileTitle: title(context),
         selector: (context, levels) {
           debugPrint('$runtimeType GuardLevelLabelNameModifiedTile\n'
@@ -236,35 +240,34 @@ class ScheduleLabelNameModifiedTile extends SettingsTile {
               'row.labelName ${schedule.labelName} \n'
               'to value $value\n');
           // if(wallpaperSchedules.bridgeAll.map((e)=> e.id).contains(schedule.id)){
-          wallpaperSchedules
-              .setExistRows({schedule}, {WallpaperScheduleRow.propLabelName: value}, type: ScheduleRowType.bridgeAll);
+          fgwSchedules
+              .setExistRows({schedule}, {FgwScheduleRow.propLabelName: value}, type: PresentationRowType.bridgeAll);
           // };
         },
       );
 }
 
-
 class ScheduleDisplayTypeSwitchTile extends SettingsTile with FeedbackMixin {
   @override
   String title(BuildContext context) => context.l10n.fgwDisplayType;
-  final WallpaperScheduleRow schedule;
-
+  final FgwScheduleRow schedule;
 
   ScheduleDisplayTypeSwitchTile({
     required this.schedule,
   });
 
   @override
-  Widget build(BuildContext context) =>
-      ItemSettingsSelectionListTile<WallpaperSchedules,FgwDisplayedType>(
+  Widget build(BuildContext context) => ItemSettingsSelectionListTile<FgwSchedule, FgwDisplayedType>(
         values: FgwDisplayedType.values,
         getName: (context, v) => v.getName(context),
-        selector: (context, s) => s.bridgeAll.firstWhereOrNull((e)=> e.id == schedule.id)?.displayType ?? schedule.displayType,
+        selector: (context, s) =>
+            s.bridgeAll.firstWhereOrNull((e) => e.id == schedule.id)?.displayType ?? schedule.displayType,
         onSelection: (v) async {
           debugPrint('$runtimeType ScheduleDisplayTypeSwitchTile\n'
               'ItemSettingsSelectionListTile onSelection v :$schedule \n');
-          final curSchedule = wallpaperSchedules.bridgeAll.firstWhereOrNull((e)=> e.id == schedule.id) ?? schedule;
-          await wallpaperSchedules.setExistRows({curSchedule}, {WallpaperScheduleRow.propDisplayType:v},type:ScheduleRowType.bridgeAll);
+          final curSchedule = fgwSchedules.bridgeAll.firstWhereOrNull((e) => e.id == schedule.id) ?? schedule;
+          await fgwSchedules
+              .setExistRows({curSchedule}, {FgwScheduleRow.propDisplayType: v}, type: PresentationRowType.bridgeAll);
           // t4y:TODO：　after copy, reset all related schedules.
         },
         tileTitle: title(context),

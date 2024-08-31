@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/common/aves_expansion_flexible_height_tile.dart';
+import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/widgets.dart';
-
-import '../../../settings_definition.dart';
 
 abstract class ItemSettingsSection {
   String get key;

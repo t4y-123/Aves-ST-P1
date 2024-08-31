@@ -1,12 +1,13 @@
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/services/intent_service.dart';
+import 'package:aves/theme/icons.dart';
+import 'package:aves/widgets/collection/filter_bar.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/filter_set/filter_set_config_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/schedule/generic_selection_page.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-import '../../../../../services/intent_service.dart';
-import '../../../../../theme/icons.dart';
-import '../../../../collection/filter_bar.dart';
-import '../../../../common/action_mixins/feedback.dart';
-import '../filter_set/filter_set_config_page.dart';
-import 'generic_selection_page.dart';
 
 class ScheduleCollectionTile extends StatefulWidget {
   final Set<FiltersSetRow> selectedFilterSet;
@@ -23,8 +24,7 @@ class ScheduleCollectionTile extends StatefulWidget {
   State<ScheduleCollectionTile> createState() => _ScheduleCollectionTileState();
 }
 
-class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
-    with FeedbackMixin  {
+class _ScheduleCollectionTileState extends State<ScheduleCollectionTile> with FeedbackMixin {
   late Set<FiltersSetRow> _selectedFilterSet;
 
   @override
@@ -56,11 +56,12 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if(widget.title != null) Column(
+            if (widget.title != null)
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                   '${context.l10n.settingsFilterSetTile}:  (id:${_selectedFilterSet.first.id})',
+                    '${context.l10n.settingsFilterSetTile}:  (id:${_selectedFilterSet.first.id})',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
@@ -89,7 +90,7 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                           builder: (context) => GenericForegroundWallpaperItemsSelectionPage<FiltersSetRow>(
                             selectedItems: _selectedFilterSet,
                             maxSelection: 1,
-                            allItems: filtersSets.all.where((e) => e.isActive).toList(),
+                            allItems: filtersSets.bridgeAll.where((e) => e.isActive).toList(),
                             displayString: (item) => 'ID: ${item.id}-Num: ${item.orderNum}: ${item.labelName}',
                             itemId: (item) => item.orderNum,
                           ),
@@ -110,18 +111,19 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                       final curFilterSetRow = _selectedFilterSet.first;
                       final curFilters = _selectedFilterSet.first.filters;
                       debugPrint('$runtimeType:  _selectedFilterSet.first.filters $curFilters');
-                      debugPrint('$runtimeType: final selection = await IntentService.pickCollectionFilters(curFilters);');
+                      debugPrint(
+                          '$runtimeType: final selection = await IntentService.pickCollectionFilters(curFilters);');
                       final selection = await IntentService.pickCollectionFilters(curFilters);
                       debugPrint('$runtimeType: selection: $selection');
                       if (selection != null) {
-                        final newFilterSetRow =  FiltersSetRow(
+                        final newFilterSetRow = FiltersSetRow(
                           id: curFilterSetRow.id,
                           orderNum: curFilterSetRow.orderNum,
                           labelName: curFilterSetRow.labelName,
                           filters: selection,
                           isActive: curFilterSetRow.isActive,
                         );
-                        await filtersSets.setRows({newFilterSetRow});
+                        await filtersSets.setRows({newFilterSetRow}, type: PresentationRowType.bridgeAll);
                         setState(() {
                           widget.selectedFilterSet.removeWhere((item) => item.id == newFilterSetRow.id);
                           widget.selectedFilterSet.add(newFilterSetRow);
@@ -137,19 +139,20 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
                         MaterialPageRoute(
                           builder: (context) => FilterSetConfigPage(
                             item: null, // Pass null to create a new item
-                            allItems: filtersSets.all.toList(),
-                            activeItems: filtersSets.all.where((e) => e.isActive).toSet(),
+                            allItems: filtersSets.bridgeAll.toList(),
+                            activeItems: filtersSets.bridgeAll.where((e) => e.isActive).toSet(),
                           ),
                         ),
                       ).then((newItem) {
                         if (newItem != null) {
                           //final newRow = newItem as FilterSetRow;
                           setState(() {
-                            filtersSets.add({newItem});
-                            filtersSets.all.add(newItem);
+                            filtersSets.add({newItem}, type: PresentationRowType.bridgeAll);
                             _selectedFilterSet = {newItem};
                             widget.onSelection({newItem});
                           });
+                        } else {
+                          filtersSets.removeRows({newItem}, type: PresentationRowType.bridgeAll);
                         }
                       });
                     },
@@ -169,5 +172,3 @@ class _ScheduleCollectionTileState  extends State<ScheduleCollectionTile>
     );
   }
 }
-
-

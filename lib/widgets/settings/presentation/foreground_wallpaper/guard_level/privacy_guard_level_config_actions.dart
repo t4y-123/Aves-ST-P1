@@ -1,11 +1,11 @@
+import 'package:aves/model/fgw/fgw_schedule_group_helper.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/guard_level/guard_level_setting_page.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../../model/foreground_wallpaper/fgw_schedule_group_helper.dart';
-import '../../../../../model/foreground_wallpaper/privacy_guard_level.dart';
-import '../../../../../model/foreground_wallpaper/wallpaper_schedule.dart';
-import '../../../../common/action_mixins/feedback.dart';
-import 'guard_level_setting_page.dart';
 
 class PrivacyGuardLevelConfigActions with FeedbackMixin {
   final BuildContext context;
@@ -16,46 +16,35 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
     required this.setState,
   });
 
-  Color privacyItemColor(PrivacyGuardLevelRow? item){
+  Color privacyItemColor(FgwGuardLevelRow? item) {
     return item?.color ?? Theme.of(context).primaryColor;
   }
+
   // PrivacyGuardLevelConfig
-  void applyPrivacyGuardLevelReorder(BuildContext context, List<PrivacyGuardLevelRow?> allItems, Set<PrivacyGuardLevelRow?> activeItems) {
+  void applyChanges(BuildContext context, List<FgwGuardLevelRow?> allItems, Set<FgwGuardLevelRow?> activeItems) {
     setState(() {
       // First, remove items not exist.      // remove relate schedules too.
-      final currentItems = privacyGuardLevels.bridgeAll;
+      final currentItems = fgwGuardLevels.bridgeAll;
       final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
-      final removeLevelIds =itemsToRemove.map((e)=>e.privacyGuardLevelID).toSet();
-      privacyGuardLevels.removeEntries(itemsToRemove,type: LevelRowType.bridgeAll);
-      final removedSchedules = wallpaperSchedules.bridgeAll.where((e)=>removeLevelIds.contains(e.privacyGuardLevelId)).toSet();
-      wallpaperSchedules.removeEntries(removedSchedules,type: ScheduleRowType.bridgeAll);
+      final removeLevelIds = itemsToRemove.map((e) => e.id).toSet();
+      fgwGuardLevels.removeRows(itemsToRemove, type: PresentationRowType.bridgeAll);
+      final removedSchedules = fgwSchedules.bridgeAll.where((e) => removeLevelIds.contains(e.guardLevelId)).toSet();
+      fgwSchedules.removeRows(removedSchedules, type: PresentationRowType.bridgeAll);
 
       // according to order in allItems, reorder the data .active items first.
       int guardLevelIndex = 1;
       allItems.where((item) => activeItems.contains(item)).forEach((item) {
-        privacyGuardLevels.set(
-          privacyGuardLevelID: item!.privacyGuardLevelID,
-          guardLevel: guardLevelIndex++,
-          labelName: item.labelName,
-          color: item.color!,
-          isActive: true,
-          type: LevelRowType.bridgeAll,
-        );
+        final newRow = item?.copyWith(guardLevel: guardLevelIndex++, isActive: true);
+        fgwGuardLevels.set(newRow!, type: PresentationRowType.bridgeAll);
       });
       // Process reordered items that are not in active items
       allItems.where((item) => !activeItems.contains(item)).forEach((item) {
-        privacyGuardLevels.set(
-          privacyGuardLevelID: item!.privacyGuardLevelID,
-          guardLevel: guardLevelIndex++,
-          labelName: item.labelName,
-          color: item.color!,
-          isActive: false,
-          type: LevelRowType.bridgeAll,
-        );
+        final newRow = item?.copyWith(guardLevel: guardLevelIndex++, isActive: false);
+        fgwGuardLevels.set(newRow!, type: PresentationRowType.bridgeAll);
       });
       //sync bridgeRows to privacy
-      privacyGuardLevels.syncBridgeToRows();
-      wallpaperSchedules.syncBridgeToRows();
+      fgwGuardLevels.syncBridgeToRows();
+      fgwSchedules.syncBridgeToRows();
       allItems.sort();
       //
       showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
@@ -65,15 +54,17 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
   // when add a new level, temp add to bridge. in add process,
   // it should not effect the real value, but a bridge value.
   // the bridge value will be sync to real value after tap the apply button call above apply action.
-  Future<void> addPrivacyGuardLevel(BuildContext context, List<PrivacyGuardLevelRow?> allItems, Set<PrivacyGuardLevelRow?> activeItems) async {
+  Future<void> addNewItem(
+      BuildContext context, List<FgwGuardLevelRow?> allItems, Set<FgwGuardLevelRow?> activeItems) async {
     // add a new item to bridge.
-    final newLevel = await privacyGuardLevels.newRow(1,type: LevelRowType.bridgeAll);
+    final newLevel = await fgwGuardLevels.newRow(1, type: PresentationRowType.bridgeAll);
     debugPrint('addPrivacyGuardLevel newLevel $newLevel\n');
-    await privacyGuardLevels.add({newLevel},type:LevelRowType.bridgeAll);
+    await fgwGuardLevels.add({newLevel}, type: PresentationRowType.bridgeAll);
 
     // add a new group of schedule to schedules bridge.
-    final bridgeSchedules =  await foregroundWallpaperHelper.newSchedulesGroup(newLevel,rowsType: ScheduleRowType.bridgeAll);
-    await wallpaperSchedules.add(bridgeSchedules.toSet(),type: ScheduleRowType.bridgeAll);
+    final bridgeSchedules =
+        await foregroundWallpaperHelper.newSchedulesGroup(newLevel, rowsType: PresentationRowType.bridgeAll);
+    await fgwSchedules.add(bridgeSchedules.toSet(), type: PresentationRowType.bridgeAll);
 
     await Navigator.push(
       context,
@@ -90,56 +81,46 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
       ),
     ).then((newItem) {
       if (newItem != null) {
-        //final newRow = newItem as PrivacyGuardLevelRow;
+        //final newRow = newItem as FgwGuardLevelRow;
         setState(() {
           // not sync until tap apply button.
-          // privacyGuardLevels.syncBridgeToRows();
-          final updateItem = privacyGuardLevels.bridgeAll.firstWhere((e)=> e.privacyGuardLevelID == newLevel.privacyGuardLevelID);
+          // fgwGuardLevels.syncBridgeToRows();
+          final updateItem = fgwGuardLevels.bridgeAll.firstWhere((e) => e.id == newLevel.id);
           allItems.add(updateItem);
-          if(updateItem.isActive)activeItems.add(updateItem);
+          if (updateItem.isActive) activeItems.add(updateItem);
           allItems.sort();
-          // privacyGuardLevels.add({newItem});
+          // fgwGuardLevels.add({newItem});
           // allItems.add(newItem);
           // if (newItem.isActive) {
           //   activeItems.add(newItem);
           // }
           // allItems.sort();
         });
-      }else{
-        privacyGuardLevels.removeEntries({newLevel},type:LevelRowType.bridgeAll);
-        wallpaperSchedules.removeEntries(bridgeSchedules.toSet(),type: ScheduleRowType.bridgeAll);
+      } else {
+        fgwGuardLevels.removeRows({newLevel}, type: PresentationRowType.bridgeAll);
+        fgwSchedules.removeRows(bridgeSchedules.toSet(), type: PresentationRowType.bridgeAll);
       }
     });
   }
 
-  Future<void> editPrivacyGuardLevel(
-      BuildContext context,
-      PrivacyGuardLevelRow? item,
-      List<PrivacyGuardLevelRow?> allItems,
-      Set<PrivacyGuardLevelRow?> activeItems) async {
+  Future<void> editItem(BuildContext context, FgwGuardLevelRow? item, List<FgwGuardLevelRow?> allItems,
+      Set<FgwGuardLevelRow?> activeItems) async {
     //t4y: for the all items in Config page will not be the latest data.
-    final PrivacyGuardLevelRow currentLevel = privacyGuardLevels.all.firstWhere((i) => i.privacyGuardLevelID == item!.privacyGuardLevelID);
+    final FgwGuardLevelRow currentLevel = fgwGuardLevels.all.firstWhere((i) => i.id == item!.id);
     // add a new group of schedule to schedules bridge.
-    final bridgeSchedules =  wallpaperSchedules.bridgeAll.where((e)=>e.privacyGuardLevelId == currentLevel.privacyGuardLevelID);
+    final bridgeSchedules = fgwSchedules.bridgeAll.where((e) => e.guardLevelId == currentLevel.id);
     await Navigator.push(
       context,
-        MaterialPageRoute(
+      MaterialPageRoute(
         builder: (context) => GuardLevelSettingPage(
-      item: currentLevel,
-      schedules: bridgeSchedules.toSet(),
-    ),
-      // MaterialPageRoute(
-      //   builder: (context) => PrivacyGuardLevelWithScheduleConfigPage(
-      //     item: currentItem,
-      //     allItems: allItems,
-      //     activeItems: activeItems,
-      //   ),
+          item: currentLevel,
+          schedules: bridgeSchedules.toSet(),
+        ),
       ),
     ).then((updatedItem) async {
       if (updatedItem != null) {
         setState(() {
-          final index = allItems.indexWhere(
-                  (i) => i?.privacyGuardLevelID == updatedItem.privacyGuardLevelID);
+          final index = allItems.indexWhere((i) => i?.id == updatedItem.id);
           if (index != -1) {
             allItems[index] = updatedItem;
           } else {
@@ -147,10 +128,10 @@ class PrivacyGuardLevelConfigActions with FeedbackMixin {
           }
           if (updatedItem.isActive) {
             activeItems.add(updatedItem);
-          }else{
+          } else {
             activeItems.remove(updatedItem);
           }
-          privacyGuardLevels.setRows({updatedItem},type: LevelRowType.bridgeAll);
+          fgwGuardLevels.setRows({updatedItem}, type: PresentationRowType.bridgeAll);
         });
       }
     });

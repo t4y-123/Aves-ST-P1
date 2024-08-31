@@ -108,4 +108,13 @@ mixin ScenarioSettings on SettingsAccess {
   static const confirmRemoveAssignKey = 'confirm_remove_assign';
   set confirmRemoveAssign(bool newValue) => set(confirmRemoveAssignKey, newValue);
   bool get confirmRemoveAssign => getBool(confirmRemoveAssignKey) ?? SettingsDefaults.confirmRemoveAssign;
+
+  static const assignSortFactorKey = 'assign_sort_factor';
+  ChipSortFactor get assignSortFactor =>
+      getEnumOrDefault(assignSortFactorKey, SettingsDefaults.assignSortFactor, ChipSortFactor.values);
+  set assignSortFactor(ChipSortFactor newValue) => set(assignSortFactorKey, newValue.toString());
+
+  static const assignSortReverseKey = 'assign_sort_reverse';
+  bool get assignSortReverse => getBool(assignSortReverseKey) ?? false;
+  set assignSortReverse(bool newValue) => set(assignSortReverseKey, newValue);
 }

@@ -2,9 +2,9 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/basic/font_size_icon_theme.dart';
 import 'package:flutter/material.dart';
 
-class ForegroundWallpaperConfigBanner<T> extends StatelessWidget {
+class MultiTabEditPageBanner<T> extends StatelessWidget {
   String bannerString;
-  ForegroundWallpaperConfigBanner({super.key,required this.bannerString});
+  MultiTabEditPageBanner({super.key, required this.bannerString});
 
   @override
   Widget build(BuildContext context) {

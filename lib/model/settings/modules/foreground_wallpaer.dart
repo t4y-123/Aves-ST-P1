@@ -1,8 +1,7 @@
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/settings/defaults.dart';
+import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves_model/aves_model.dart';
-
-import '../../foreground_wallpaper/enum/fgw_schedule_item.dart';
-import '../enums/presentation.dart';
 
 mixin ForegroundWallpaperSettings on SettingsAccess {
   static const defaultNewUpdateIntervalKey = 'default_wallpaper_updateIntervalKey';
@@ -114,4 +113,8 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   set confirmEditAsCopiedFirst(bool newValue) => set(confirmEditAsCopiedFirstKey, newValue);
   bool get confirmEditAsCopiedFirst =>
       getBool(confirmEditAsCopiedFirstKey) ?? SettingsDefaults.confirmEditAsCopiedFirst;
+
+  static const showFgwChipButtonKey = 'show_chip_fgw_button';
+  set showFgwChipButton(bool newValue) => set(showFgwChipButtonKey, newValue);
+  bool get showFgwChipButton => getBool(showFgwChipButtonKey) ?? SettingsDefaults.showFgwChipButton;
 }

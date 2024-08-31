@@ -15,8 +15,8 @@ import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/scenario.dart';
-import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
-import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/model/query.dart';
@@ -405,6 +405,8 @@ class EntrySetActionDelegate
       if (settings.assignTemporaryFollowAction != AssignTemporaryFollowAction.none) {
         final newAssignScenario =
             await scenariosHelper.newScenarioByFilter({AssignFilter(newRecord.id, newRecord.labelName)});
+        // set the scenario id to be used as correspond remove with tmp scenario.
+        await assignRecords.setRows({newRecord.copyWith(scenarioId: newAssignScenario.id)});
         if ({AssignTemporaryFollowAction.activeExclude, AssignTemporaryFollowAction.activeExcludeAndLock}
             .contains(settings.assignTemporaryFollowAction)) {
           scenariosHelper

@@ -1,17 +1,16 @@
-import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/services/fgw_service_handler.dart';
 import 'package:aves/theme/icons.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/foreground_wallpaper_config_banner.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
-import '../../../../services/fgw_service_handler.dart';
-import '../../../common/action_mixins/feedback.dart';
-import '../../../common/identity/buttons/outlined_button.dart';
-import 'foreground_wallpaper_config_banner.dart';
 
 typedef ItemWidgetBuilder<T> = Widget Function(T item);
 
@@ -31,7 +30,7 @@ class MultiOpFixedListTab<T> extends StatefulWidget {
   final bool canRemove;
   final bool useSyncScheduleButton;
   final bool canBeEmpty, canBeActiveEmpty;
-  final bannerString;
+  final String bannerString;
 
   const MultiOpFixedListTab({
     super.key,
@@ -86,7 +85,7 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
     return Column(
       children: [
         if (!settings.useTvLayout) ...[
-          ForegroundWallpaperConfigBanner(bannerString: widget.bannerString),
+          MultiTabEditPageBanner(bannerString: widget.bannerString),
           const Divider(height: 0),
         ],
         Flexible(
@@ -96,12 +95,12 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
               bool _canRemove = widget.canRemove;
               // only none schedules used filtersSet can be remove.
               if (item is FiltersSetRow) {
-                _canRemove = !wallpaperSchedules.bridgeAll.any((e) => e.filtersSetId == item.id) &&
-                    !wallpaperSchedules.all.any((e) => e.filtersSetId == item.id);
+                _canRemove = !fgwSchedules.bridgeAll.any((e) => e.filtersSetId == item.id) &&
+                    !fgwSchedules.all.any((e) => e.filtersSetId == item.id);
               }
 
               final isActive = _activeItems.contains(item);
-              debugPrint('$runtimeType ReorderableListView.builder localItems ${widget.items} load');
+              debugPrint('$runtimeType Reorderable ListView.builder localItems ${widget.items} load');
               void onToggleVisibility() {
                 if (isActive && _activeItems.length <= 1 && !widget.canBeActiveEmpty) {
                   // Show a message that at least one item must remain active
@@ -123,20 +122,20 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
                   if (isActive) {
                     _activeItems.remove(item);
                   } else {
-                    if (item is WallpaperScheduleRow) {
+                    if (item is FgwScheduleRow) {
                       // Handle WallpaperScheduleRow specific logic
-                      final row = item as WallpaperScheduleRow;
+                      final row = item as FgwScheduleRow;
                       if (row.updateType == WallpaperUpdateType.home || row.updateType == WallpaperUpdateType.lock) {
                         // Remove items with the same privacyGuardLevelId
                         _activeItems.removeWhere((element) =>
-                            element is WallpaperScheduleRow &&
-                            element.privacyGuardLevelId == row.privacyGuardLevelId &&
+                            element is FgwScheduleRow &&
+                            element.guardLevelId == row.guardLevelId &&
                             (element.updateType == WallpaperUpdateType.both));
                       } else if (row.updateType == WallpaperUpdateType.both) {
                         // Remove items with the same privacyGuardLevelId and updateType is home or lock
                         _activeItems.removeWhere((element) =>
-                            element is WallpaperScheduleRow &&
-                            element.privacyGuardLevelId == row.privacyGuardLevelId &&
+                            element is FgwScheduleRow &&
+                            element.guardLevelId == row.guardLevelId &&
                             (element.updateType == WallpaperUpdateType.home ||
                                 element.updateType == WallpaperUpdateType.lock));
                       }
@@ -234,7 +233,7 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
             shrinkWrap: true,
           ),
         ),
-        if (widget.useSyncScheduleButton) const Divider(height: 8),
+        const Divider(height: 8),
         if (widget.useSyncScheduleButton)
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -264,7 +263,7 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
               )
             ],
           ),
-        const Divider(height: 8),
+        if (widget.useSyncScheduleButton) const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -287,7 +286,7 @@ class _MultiOpFixedListTabState<T> extends State<MultiOpFixedListTab<T>> with Fe
                   }
                 },
               ),
-            const SizedBox(width: 8),
+            if (widget.addItemAction != null) const SizedBox(width: 8),
             if (widget.addItemAction != null)
               AvesOutlinedButton(
                 icon: const Icon(AIcons.add),

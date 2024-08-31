@@ -1,4 +1,5 @@
 import 'package:aves/model/assign/enum/assign_item.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/filters/recent.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/ref/mime_types.dart';
@@ -9,7 +10,6 @@ import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 
-import '../foreground_wallpaper/enum/fgw_schedule_item.dart';
 import '../scenario/enum/scenario_item.dart';
 import 'enums/presentation.dart';
 
@@ -175,6 +175,9 @@ class SettingsDefaults {
   // set to type333 in release for some os,like miui,
   //  third part app will not be able to set the lock screen wallpaper for having strict limit.
   static const fgwScheduleSet = FgwScheduleSetType.type346;
+
+  static const showFgwChipButton = false;
+
   //
   static const int maxFgwUsedEntryRecord = 10;
   static const int resetPrivacyGuardLevelDuration = 15; // seconds
@@ -207,6 +210,7 @@ class SettingsDefaults {
   static const scenarioChipListSortFactor = ChipSortFactor.name;
 
   // t4y: assign:
+  static const assignSortFactor = ChipSortFactor.name;
   static const assignTemporaryFollowAction = AssignTemporaryFollowAction.activeExcludeAndLock;
   static const assignTemporaryExpiredInterval = 10;
   static const canAutoRemoveExpiredTempAssign = true; // seconds

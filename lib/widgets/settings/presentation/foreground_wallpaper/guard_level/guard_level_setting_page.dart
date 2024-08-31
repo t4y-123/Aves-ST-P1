@@ -1,11 +1,14 @@
 import 'dart:math';
-import 'package:aves/model/foreground_wallpaper/enum/fgw_schedule_item.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
+
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-
 import 'package:aves/widgets/common/extensions/media_query.dart';
+import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:aves/widgets/settings/settings_tv_page.dart';
 import 'package:collection/collection.dart';
@@ -14,17 +17,14 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-import '../../../../../model/foreground_wallpaper/privacy_guard_level.dart';
-import '../../../../common/identity/buttons/outlined_button.dart';
 import 'guard_level_section_base.dart';
 import 'guard_level_settings_mobile_page.dart';
 
 class GuardLevelSettingPage extends StatelessWidget {
   static const routeName = '/settings/presentation/guard_level_setting_page';
 
-  final PrivacyGuardLevelRow item;
-  final Set<WallpaperScheduleRow> schedules;
+  final FgwGuardLevelRow item;
+  final Set<FgwScheduleRow> schedules;
 
   const GuardLevelSettingPage({
     super.key,
@@ -38,14 +38,14 @@ class GuardLevelSettingPage extends StatelessWidget {
       //t4y: for I have none AndroidTV,there only have the mobile version of guard level settings.
       return const SettingsTvPage();
     } else {
-      final homeSchedule = schedules.firstWhereOrNull(
-          (e) => e.privacyGuardLevelId == item.privacyGuardLevelID && e.updateType == WallpaperUpdateType.home);
-      final lockSchedule = schedules.firstWhereOrNull(
-          (e) => e.privacyGuardLevelId == item.privacyGuardLevelID && e.updateType == WallpaperUpdateType.lock);
-      final bothSchedule = schedules.firstWhereOrNull(
-          (e) => e.privacyGuardLevelId == item.privacyGuardLevelID && e.updateType == WallpaperUpdateType.both);
-      final widgetSchedulesList = schedules.where(
-          (e) => e.privacyGuardLevelId == item.privacyGuardLevelID && e.updateType == WallpaperUpdateType.widget);
+      final homeSchedule =
+          schedules.firstWhereOrNull((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.home);
+      final lockSchedule =
+          schedules.firstWhereOrNull((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.lock);
+      final bothSchedule =
+          schedules.firstWhereOrNull((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.both);
+      final widgetSchedulesList =
+          schedules.where((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.widget);
 
       final List<SettingsTile> preTiles = [
         GuardLevelTitleTile(item: item),
@@ -85,9 +85,8 @@ class GuardLevelSettingPage extends StatelessWidget {
     }
   }
 
-  void _applyChanges(BuildContext context, PrivacyGuardLevelRow item) {
-    final updateItem =
-        privacyGuardLevels.bridgeAll.firstWhereOrNull((e) => e.privacyGuardLevelID == item.privacyGuardLevelID);
+  void _applyChanges(BuildContext context, FgwGuardLevelRow item) {
+    final updateItem = fgwGuardLevels.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
     Navigator.pop(context, updateItem); // Return the updated item
   }
 }
@@ -106,9 +105,9 @@ class FgwSettingsListView extends StatelessWidget {
     debugPrint('$runtimeType FgwSettingsListView theme  $theme');
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<PrivacyGuardLevel>.value(value: privacyGuardLevels),
-        ChangeNotifierProvider<WallpaperSchedules>.value(value: wallpaperSchedules),
-        ChangeNotifierProvider<FilterSet>.value(value: filtersSets),
+        ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
+        ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
+        ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
       ],
       child: Theme(
         data: theme.copyWith(

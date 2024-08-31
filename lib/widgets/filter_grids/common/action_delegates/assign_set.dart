@@ -2,9 +2,11 @@ import 'package:aves/app_mode.dart';
 import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/scenario_aware.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/filter_editors/rename_album_dialog.dart';
@@ -13,7 +15,7 @@ import 'package:aves/widgets/filter_grids/common/action_delegates/chip_set.dart'
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 
-class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
+class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> with ScenarioAwareMixin {
   final Iterable<FilterGridItem<AssignFilter>> _items;
 
   AssignChipSetActionDelegate(Iterable<FilterGridItem<AssignFilter>> items) : _items = items;
@@ -83,9 +85,8 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
   }
 
   Future<void> _delete(BuildContext context) async {
+    if (settings.scenarioLock && !await unlockScenarios(context)) return;
     final filters = getSelectedFilters(context);
-    final todoAssignIds = filters.map((v) => v.assignId).toSet();
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AvesDialog(
@@ -101,8 +102,10 @@ class AssignChipSetActionDelegate extends ChipSetActionDelegate<AssignFilter> {
       routeSettings: const RouteSettings(name: AvesDialog.warningRouteName),
     );
     if (confirmed == null || !confirmed) return;
+    final todoAssigns = filters.map((v) => v.assignRecord!).toSet();
 
-    await assignRecords.removeIds(todoAssignIds);
+    //await assignRecords.removeIds(todoAssignIds);
+    await scenariosHelper.removeTemporaryAssignRows(todoAssigns);
 
     browse(context);
   }

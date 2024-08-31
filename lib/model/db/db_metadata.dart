@@ -3,20 +3,19 @@ import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
+import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
-
-import '../foreground_wallpaper/fgw_used_entry_record.dart';
-import '../foreground_wallpaper/filtersSet.dart';
-import '../foreground_wallpaper/privacy_guard_level.dart';
-import '../foreground_wallpaper/share_copied_entry.dart';
-import '../foreground_wallpaper/wallpaper_schedule.dart';
-import '../scenario/scenario.dart';
-import '../scenario/scenario_step.dart';
 
 abstract class MetadataDb {
   int get nextId;
@@ -132,15 +131,15 @@ abstract class MetadataDb {
   //
   // Privacy Guard Level,
 
-  Future<void> clearPrivacyGuardLevel();
+  Future<void> clearFgwGuardLevel();
 
-  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels();
+  Future<Set<FgwGuardLevelRow>> loadAllFgwGuardLevels();
 
-  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+  Future<void> addFgwGuardLevels(Set<FgwGuardLevelRow> rows);
 
-  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row);
+  Future<void> updateFgwGuardLevelId(int id, FgwGuardLevelRow row);
 
-  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows);
+  Future<void> removeFgwGuardLevels(Set<FgwGuardLevelRow> rows);
 
   // Filter Set for wallpaper,
 
@@ -156,15 +155,15 @@ abstract class MetadataDb {
 
   // wallpaperScheduleTable
 
-  Future<void> clearWallpaperSchedules();
+  Future<void> clearFgwSchedules();
 
-  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules();
+  Future<Set<FgwScheduleRow>> loadAllFgwSchedules();
 
-  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+  Future<void> addFgwSchedules(Set<FgwScheduleRow> rows);
 
-  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row);
+  Future<void> updateFgwSchedules(int id, FgwScheduleRow row);
 
-  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows);
+  Future<void> removeFgwSchedules(Set<FgwScheduleRow> rows);
 
   // wallpaperScheduleTable
 

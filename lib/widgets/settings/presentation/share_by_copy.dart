@@ -1,14 +1,13 @@
-import 'package:aves/model/foreground_wallpaper/share_copied_entry.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/utils/android_file_utils.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:flutter/material.dart';
-
-import '../../../model/filters/album.dart';
-import '../../../model/settings/enums/presentation.dart';
-import '../../../utils/android_file_utils.dart';
-import '../../common/action_mixins/feedback.dart';
 
 class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
   static const routeName = '/settings/classify/share_by_copy';

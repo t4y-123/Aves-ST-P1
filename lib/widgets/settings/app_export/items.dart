@@ -1,13 +1,12 @@
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_schedule_group_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/widgets.dart';
 
-import '../../../model/foreground_wallpaper/fgw_schedule_group_helper.dart';
-
-enum AppExportItem { covers, favourites, settings,foregroundWallpaper }
+enum AppExportItem { covers, favourites, settings, foregroundWallpaper }
 
 extension ExtraAppExportItem on AppExportItem {
   String getText(BuildContext context) {
@@ -16,7 +15,7 @@ extension ExtraAppExportItem on AppExportItem {
       AppExportItem.covers => l10n.appExportCovers,
       AppExportItem.favourites => l10n.appExportFavourites,
       AppExportItem.settings => l10n.appExportSettings,
-    AppExportItem.foregroundWallpaper => l10n.appExportForegroundWallpaper,
+      AppExportItem.foregroundWallpaper => l10n.appExportForegroundWallpaper,
     };
   }
 

@@ -76,8 +76,8 @@ class ScenarioListPage extends StatelessWidget {
                 newFilters: source.getNewScenarioFilters(context),
                 applyQuery: applyQuery,
                 emptyBuilder: () => EmptyContent(
-                  icon: AIcons.album,
-                  text: context.l10n.albumEmpty,
+                  icon: AIcons.scenario,
+                  text: context.l10n.scenarioEmpty,
                 ),
               ),
             );

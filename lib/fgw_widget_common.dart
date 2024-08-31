@@ -3,6 +3,11 @@ import 'dart:async';
 import 'package:aves/app_flavor.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/sort.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/enums/widget_outline.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -79,7 +84,7 @@ Future<Map<String, dynamic>> _drawWidget(dynamic args) async {
 
 Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   final uri = reuseEntry ? settings.getWidgetUri(widgetId) : null;
-  debugPrint('uri in foregroundWallpaperWidgetMainCommon _getWidgetEntry $uri');
+  debugPrint('widgetId $widgetId foregroundWallpaperWidgetMainCommon _getWidgetEntry $uri');
   if (uri != null) {
     final entry = await mediaFetchService.getEntry(uri, null);
     if (entry != null) return entry;
@@ -87,6 +92,9 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
 
   await androidFileUtils.init();
   final filters = settings.getWidgetCollectionFilters(widgetId);
+  debugPrint('foregroundWallpaperWidgetMainCommon filters ${filters}');
+  debugPrint(
+      'foregroundWallpaperWidgetMainCommon widgetId $widgetId settings.getWidgetCollectionFilters(widgetId) ${settings.getWidgetOpenPage(widgetId)}');
   final source = MediaStoreSource();
   final readyCompleter = Completer();
   source.stateNotifier.addListener(() {
@@ -97,19 +105,64 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   await source.init(canAnalyze: false);
   await readyCompleter.future;
 
-  final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+  final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
+  AvesEntry? fgwEntry;
+  List<AvesEntry>? fgwEntries;
+  if (activeLevelIds.contains(settings.curPrivacyGuardLevel)) {
+    final curLevel = await fgwScheduleHelper.getCurGuardLevel();
 
-  switch (settings.getWidgetDisplayedItem(widgetId)) {
-    case WidgetDisplayedItem.random:
-      entries.shuffle();
-    case WidgetDisplayedItem.mostRecent:
-      entries.sort(AvesEntrySort.compareByDate);
+    fgwEntries = await fgwScheduleHelper.getScheduleEntries(source, WallpaperUpdateType.widget,
+        widgetId: widgetId, curPrivacyGuardLevel: curLevel);
   }
-  final entry = entries.firstOrNull;
 
-  if (entry != null) {
-    settings.setWidgetUri(widgetId, entry.uri);
+  if (fgwEntries != null && fgwEntries.isNotEmpty) {
+    debugPrint(' foregroundWallpaperWidgetMainCommon Widget $widgetId entries length [${fgwEntries?.length}]\n');
+    final recentUsedEntryRecord =
+        await fgwScheduleHelper.getRecentEntryRecord(WallpaperUpdateType.widget, widgetId: widgetId);
+    final curDisplayType = fgwSchedules.all
+        .firstWhereOrNull((e) =>
+            e.guardLevelId == settings.curPrivacyGuardLevel &&
+            e.updateType == WallpaperUpdateType.widget &&
+            e.widgetId == widgetId)
+        ?.displayType;
+    if (curDisplayType != null) {
+      switch (curDisplayType) {
+        case FgwDisplayedType.random:
+          fgwEntries.shuffle();
+        case FgwDisplayedType.mostRecent:
+          fgwEntries.sort(AvesEntrySort.compareByDate);
+      }
+    }
+    fgwEntry = fgwEntries.firstWhereOrNull(
+      (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
+    );
+    debugPrint('Widget $widgetId recentUsedEntryRecord  fgwEntry length [${recentUsedEntryRecord.length}]\n');
+    if (fgwEntry != null) {
+      await fgwUsedEntryRecord.addAvesEntry(fgwEntry, WallpaperUpdateType.widget, widgetId: widgetId);
+    }
+
+    debugPrint('Widget $widgetId fgwEntry entries length [${fgwEntries.length}]\n'
+        'fgwEntry: $fgwEntry');
   }
-  source.dispose();
-  return entry;
+  if (fgwEntry == null) {
+    final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+    debugPrint('fgwEntry == null in foregroundWallpaperWidgetMainCommon entries ${entries.length} '
+        'settings.getWidgetDisplayedItem(widgetId) ${settings.getWidgetDisplayedItem(widgetId)}');
+    switch (settings.getWidgetDisplayedItem(widgetId)) {
+      case WidgetDisplayedItem.random:
+        entries.shuffle();
+      case WidgetDisplayedItem.mostRecent:
+        entries.sort(AvesEntrySort.compareByDate);
+    }
+    final entry = entries.firstOrNull;
+    if (entry != null) {
+      settings.setWidgetUri(widgetId, entry.uri);
+    }
+    source.dispose();
+    debugPrint('return in foregroundWallpaperWidgetMainCommon entry $entry');
+    return entry;
+  } else {
+    debugPrint('return in foregroundWallpaperWidgetMainCommon entry $fgwEntry');
+    return fgwEntry;
+  }
 }

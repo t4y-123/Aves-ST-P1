@@ -1,31 +1,29 @@
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/cupertino.dart';
-
-import '../filtersSet.dart';
-import '../privacy_guard_level.dart';
-import '../wallpaper_schedule.dart';
 
 // export and import
 enum FgwExportItem { privacyGuardLevel, filtersSet, schedule }
 
 extension ExtraFgwExportItem on FgwExportItem {
-
   dynamic export() {
     return switch (this) {
-      FgwExportItem.privacyGuardLevel => privacyGuardLevels.export(),
+      FgwExportItem.privacyGuardLevel => fgwGuardLevels.export(),
       FgwExportItem.filtersSet => filtersSets.export(),
-      FgwExportItem.schedule => wallpaperSchedules.export(),
+      FgwExportItem.schedule => fgwSchedules.export(),
     };
   }
 
   Future<void> import(dynamic jsonMap) async {
     switch (this) {
       case FgwExportItem.privacyGuardLevel:
-        await privacyGuardLevels.import(jsonMap);
+        await fgwGuardLevels.import(jsonMap);
       case FgwExportItem.filtersSet:
         await filtersSets.import(jsonMap);
       case FgwExportItem.schedule:
-        await wallpaperSchedules.import(jsonMap);
+        await fgwSchedules.import(jsonMap);
     }
   }
 }
@@ -44,7 +42,7 @@ extension ExtraFgwDisplayedTypeView on FgwDisplayedType {
 }
 
 // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
-enum FgwScheduleSetType{type346,type333}
+enum FgwScheduleSetType { type346, type333 }
 
 extension ExtraFgwScheduleSetType on FgwScheduleSetType {
   String getName(BuildContext context) {

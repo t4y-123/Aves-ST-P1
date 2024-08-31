@@ -1,8 +1,14 @@
 import 'package:aves/model/device.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/settings/enums/widget_outline.dart';
 import 'package:aves/model/settings/enums/widget_shape.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/services/fgw_widget_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/view/view.dart';
@@ -18,23 +24,21 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/foreground_wallpaper_widget_service.dart';
-
-class ForegroundWallpaperWidgetSettings extends StatefulWidget {
+class FgwWidgetSettings extends StatefulWidget {
   static const routeName = '/settings/foreground_wallpaper_widget';
 
   final int widgetId;
 
-  const ForegroundWallpaperWidgetSettings({
+  const FgwWidgetSettings({
     super.key,
     required this.widgetId,
   });
 
   @override
-  State<ForegroundWallpaperWidgetSettings> createState() => _ForegroundWallpaperWidgetSettingsState();
+  State<FgwWidgetSettings> createState() => _FgwWidgetSettingsState();
 }
 
-class _ForegroundWallpaperWidgetSettingsState extends State<ForegroundWallpaperWidgetSettings> {
+class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
   late WidgetShape _shape;
   late WidgetOutline _outline;
   late WidgetOpenPage _openPage;
@@ -88,69 +92,94 @@ class _ForegroundWallpaperWidgetSettingsState extends State<ForegroundWallpaperW
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return AvesScaffold(
-      appBar: AppBar(
-        title: Text(l10n.settingsForegroundWallpaperWidgetPageTitle),
-      ),
-      body: SafeArea(
-        child: FutureBuilder<Map<Brightness, Map<WidgetOutline, Color?>>>(
-          future: _outlineColorsByBrightness,
-          builder: (context, snapshot) {
-            final outlineColorsByBrightness = snapshot.data;
-            if (outlineColorsByBrightness == null) return const SizedBox();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
+        ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
+        ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
+      ],
+      child: AvesScaffold(
+        appBar: AppBar(
+          title: Text(l10n.settingsForegroundWallpaperWidgetPageTitle),
+        ),
+        body: SafeArea(
+          child: FutureBuilder<Map<Brightness, Map<WidgetOutline, Color?>>>(
+            future: _outlineColorsByBrightness,
+            builder: (context, snapshot) {
+              final outlineColorsByBrightness = snapshot.data;
+              if (outlineColorsByBrightness == null) return const SizedBox();
 
-            final effectiveOutlineColors = outlineColorsByBrightness[Theme.of(context).brightness];
-            if (effectiveOutlineColors == null) return const SizedBox();
+              final effectiveOutlineColors = outlineColorsByBrightness[Theme.of(context).brightness];
+              if (effectiveOutlineColors == null) return const SizedBox();
 
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildShapeSelector(effectiveOutlineColors),
-                      ListTile(
-                        title: Text(l10n.settingsWidgetShowOutline),
-                        trailing: HomeWidgetOutlineSelector(
-                          getter: () => _outline,
-                          setter: (v) => setState(() => _outline = v),
-                          outlineColorsByBrightness: outlineColorsByBrightness,
+              // Get active levels from privacyGuardLevels
+              final activeLevels = fgwGuardLevels.bridgeAll.where((level) => level.isActive);
+              final activeLevelsIds = activeLevels.map((e) => e.id);
+              // Create a new widget wallpaper schedule for each active level
+              int orderNumOffset = 1;
+              final newSchedules = activeLevels.map((level) {
+                return fgwSchedules.newRow(
+                  existMaxOrderNumOffset: orderNumOffset++,
+                  privacyGuardLevelId: level.id,
+                  filtersSetId: filtersSets.all.first.id,
+                  updateType: WallpaperUpdateType.widget,
+                  widgetId: widgetId,
+                );
+              }).toList();
+
+              // Add new schedules to the existing schedules list
+              fgwSchedules.add(newSchedules.toSet(), type: PresentationRowType.bridgeAll);
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _buildShapeSelector(effectiveOutlineColors),
+                        ListTile(
+                          title: Text(l10n.settingsWidgetShowOutline),
+                          trailing: HomeWidgetOutlineSelector(
+                            getter: () => _outline,
+                            setter: (v) => setState(() => _outline = v),
+                            outlineColorsByBrightness: outlineColorsByBrightness,
+                          ),
                         ),
-                      ),
-                      SettingsSelectionListTile<WidgetOpenPage>(
-                        values: WidgetOpenPage.values,
-                        getName: (context, v) => v.getName(context),
-                        selector: (context, s) => _openPage,
-                        onSelection: (v) => setState(() => _openPage = v),
-                        tileTitle: l10n.settingsWidgetOpenPage,
-                      ),
-                      SettingsSelectionListTile<WidgetDisplayedItem>(
-                        values: WidgetDisplayedItem.values,
-                        getName: (context, v) => v.getName(context),
-                        selector: (context, s) => _displayedItem,
-                        onSelection: (v) => setState(() => _displayedItem = v),
-                        tileTitle: l10n.settingsWidgetDisplayedItem,
-                      ),
-                      SettingsCollectionTile(
-                        filters: _collectionFilters,
-                        onSelection: (v) => setState(() => _collectionFilters = v),
-                      ),
-                    ],
+                        SettingsSelectionListTile<WidgetOpenPage>(
+                          values: WidgetOpenPage.values,
+                          getName: (context, v) => v.getName(context),
+                          selector: (context, s) => _openPage,
+                          onSelection: (v) => setState(() => _openPage = v),
+                          tileTitle: l10n.settingsWidgetOpenPage,
+                        ),
+                        SettingsSelectionListTile<WidgetDisplayedItem>(
+                          values: WidgetDisplayedItem.values,
+                          getName: (context, v) => v.getName(context),
+                          selector: (context, s) => _displayedItem,
+                          onSelection: (v) => setState(() => _displayedItem = v),
+                          tileTitle: l10n.settingsWidgetDisplayedItem,
+                        ),
+                        SettingsCollectionTile(
+                          filters: _collectionFilters,
+                          onSelection: (v) => setState(() => _collectionFilters = v),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Divider(height: 0),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: AvesOutlinedButton(
-                    label: l10n.saveTooltip,
-                    onPressed: () {
-                      _saveSettings();
-                      ForegroundWallpaperWidgetService.configure();
-                    },
+                  const Divider(height: 0),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: AvesOutlinedButton(
+                      label: l10n.saveTooltip,
+                      onPressed: () {
+                        _saveSettings();
+                        ForegroundWallpaperWidgetService.configure();
+                      },
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -188,13 +217,16 @@ class _ForegroundWallpaperWidgetSettingsState extends State<ForegroundWallpaperW
   }
 
   void _saveSettings() {
-    final invalidateUri = _displayedItem != settings.getWidgetDisplayedItem(widgetId) || !const SetEquality().equals(_collectionFilters, settings.getWidgetCollectionFilters(widgetId));
+    final invalidateUri = _displayedItem != settings.getWidgetDisplayedItem(widgetId) ||
+        !const SetEquality().equals(_collectionFilters, settings.getWidgetCollectionFilters(widgetId));
 
     settings.setWidgetShape(widgetId, _shape);
     settings.setWidgetOutline(widgetId, _outline);
     settings.setWidgetOpenPage(widgetId, _openPage);
     settings.setWidgetDisplayedItem(widgetId, _displayedItem);
     settings.setWidgetCollectionFilters(widgetId, _collectionFilters);
+    // t4y: sync bridge to all to save settings.
+    fgwSchedules.syncBridgeToRows();
 
     if (invalidateUri) {
       settings.setWidgetUri(widgetId, null);

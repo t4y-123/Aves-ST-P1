@@ -1,7 +1,9 @@
 import 'package:aves/app_mode.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/theme/durations.dart';
@@ -21,8 +23,6 @@ import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../model/filters/scenario.dart';
 
 class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter>
     with EntryStorageMixin, ScenarioAwareMixin {
@@ -220,8 +220,8 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
       confirmationButtonLabel: l10n.deleteButtonLabel,
     )) return;
 
-    final scenarioIds = filters.map((e) => e.scenarioId).toSet();
-    await scenarios.removeIds(scenarioIds);
+    final toDoRows = filters.map((e) => e.scenario!).toSet();
+    await scenariosHelper.removeTemporaryAssignScenarioRows(toDoRows);
 
     browse(context);
   }

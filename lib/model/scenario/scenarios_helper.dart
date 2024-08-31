@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:aves/l10n/l10n.dart';
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/assign_record.dart';
+import 'package:aves/model/assign/enum/assign_item.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/model/settings/settings.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
-
-import '../../l10n/l10n.dart';
-import '../filters/filters.dart';
-import '../filters/mime.dart';
-import '../settings/settings.dart';
-import 'enum/scenario_item.dart';
 
 final ScenariosHelper scenariosHelper = ScenariosHelper._private();
 
@@ -205,6 +205,45 @@ class ScenariosHelper {
     ];
     await scenarioSteps.add(newScenarioSteps.toSet(), type: stepRowsType);
     return newScenario;
+  }
+
+  Future<void> removeTemporaryAssignRows(Set<AssignRecordRow> rows,
+      {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
+    // remove auto generate scenario of temporary assign.
+    if (settings.autoRemoveCorrespondScenarioAsTempAssignRemove) {
+      final removeScenarioIds = rows.where((e) => e.assignType == AssignRecordType.temporary).map((e) => e.scenarioId);
+      switch (type) {
+        case AssignRecordRowsType.all:
+          final todoScenarios = scenarios.all.where((e) => removeScenarioIds.contains(e.id)).toSet();
+          await scenarios.removeRows(todoScenarios, type: ScenarioRowsType.all);
+        case AssignRecordRowsType.bridgeAll:
+          final todoScenarios = scenarios.bridgeAll.where((e) => removeScenarioIds.contains(e.id)).toSet();
+          await scenarios.removeRows(todoScenarios, type: ScenarioRowsType.bridgeAll);
+      }
+    }
+    await assignRecords.removeRows(rows, type: type);
+  }
+
+  Future<void> removeTemporaryAssignScenarioRows(Set<ScenarioRow> rows,
+      {ScenarioRowsType type = ScenarioRowsType.all}) async {
+    // remove auto generate scenario of temporary assign.
+    if (settings.autoRemoveTempAssignAsCorrespondScenarioRemove) {
+      final candidateScenarioIds = rows.map((e) => e.id);
+
+      switch (type) {
+        case ScenarioRowsType.all:
+          final toDoItems = assignRecords.all
+              .where((e) => e.assignType == AssignRecordType.temporary && candidateScenarioIds.contains(e.scenarioId))
+              .toSet();
+          await assignRecords.removeRows(toDoItems, type: AssignRecordRowsType.all);
+        case ScenarioRowsType.bridgeAll:
+          final toDoItems = assignRecords.bridgeAll
+              .where((e) => e.assignType == AssignRecordType.temporary && candidateScenarioIds.contains(e.scenarioId))
+              .toSet();
+          await assignRecords.removeRows(toDoItems, type: AssignRecordRowsType.bridgeAll);
+      }
+    }
+    await scenarios.removeRows(rows, type: type);
   }
 
   // import/export

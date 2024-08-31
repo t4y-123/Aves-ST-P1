@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:aves/model/foreground_wallpaper/fgw_schedule_helper.dart';
-import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
@@ -174,10 +174,10 @@ class FgwUsedEntryRecord with ChangeNotifier {
   }
 
   Future<void> addAvesEntry(AvesEntry entry, WallpaperUpdateType updateType,
-      {int widgetId = 0, PrivacyGuardLevelRow? curLevel}) async {
+      {int widgetId = 0, FgwGuardLevelRow? curLevel}) async {
     curLevel ??= await fgwScheduleHelper.getCurGuardLevel();
     final FgwUsedEntryRecordRow newRecord = await newRow(
-      curLevel!.privacyGuardLevelID,
+      curLevel!.id,
       updateType,
       entry.id,
     );

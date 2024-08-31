@@ -1,19 +1,18 @@
+import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
 import 'package:aves/widgets/settings/common/collection_tile.dart';
+import 'package:aves/widgets/settings/common/item_tiles.dart';
+import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-import '../../../../common/action_mixins/feedback.dart';
-import '../../../common/item_tiles.dart';
-import '../../../settings_definition.dart';
 
 class ScenarioStepSubPage extends StatefulWidget {
   static const routeName = '/settings/presentation/scenario/step_sub_page';
@@ -50,7 +49,7 @@ class _ScenarioStepSubPageState extends State<ScenarioStepSubPage> with Feedback
           providers: [
             ChangeNotifierProvider<Scenario>.value(value: scenarios),
             ChangeNotifierProvider<ScenarioSteps>.value(value: scenarioSteps),
-            ChangeNotifierProvider<FilterSet>.value(value: filtersSets),
+            ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
           ],
           child: SafeArea(
             child: ListView(

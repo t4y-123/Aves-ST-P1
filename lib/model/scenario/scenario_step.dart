@@ -175,7 +175,7 @@ class ScenarioSteps with ChangeNotifier {
   Future<void> clear({ScenarioStepRowsType type = ScenarioStepRowsType.all}) async {
     final targetSet = _getTarget(type);
 
-    await metadataDb.clearScenarioSteps();
+    if (type == ScenarioStepRowsType.all) await metadataDb.clearScenarioSteps();
     targetSet.clear();
     notifyListeners();
   }

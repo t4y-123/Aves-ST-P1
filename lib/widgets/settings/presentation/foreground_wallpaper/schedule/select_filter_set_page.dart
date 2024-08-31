@@ -1,10 +1,9 @@
+import 'dart:collection';
+
+import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-
-
-import 'dart:collection';
 
 class FilterSetSelectionPage extends StatefulWidget {
   static const routeName = '/settings/classified/wallpaper_schedule_config/select_filter_set';
@@ -41,7 +40,9 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
       if (_selectedFilterSet.contains(num)) {
         _selectedFilterSet.remove(num);
         _selectionOrder.remove(num);
-      } else if (widget.maxSelection == null || widget.maxSelection! <= 0 || _selectedFilterSet.length < widget.maxSelection!) {
+      } else if (widget.maxSelection == null ||
+          widget.maxSelection! <= 0 ||
+          _selectedFilterSet.length < widget.maxSelection!) {
         _selectedFilterSet.add(num);
         _selectionOrder.addLast(num);
       } else {
@@ -63,7 +64,7 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
       ),
       body: SafeArea(
         child: ListView(
-          children: filtersSets.all.where((e) => e.isActive).map((filterSet) {
+          children: filtersSets.bridgeAll.where((e) => e.isActive).map((filterSet) {
             return ListTile(
               title: Text('ID: ${filterSet.id}-Num: ${filterSet.orderNum}: ${filterSet.labelName}'),
               trailing: Radio(
@@ -79,7 +80,8 @@ class _FilterSetSelectionPageState extends State<FilterSetSelectionPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Set<FiltersSetRow> resultFilterSet = filtersSets.all.where((item) => _selectedFilterSet.contains(item.orderNum)).toSet();
+          Set<FiltersSetRow> resultFilterSet =
+              filtersSets.bridgeAll.where((item) => _selectedFilterSet.contains(item.orderNum)).toSet();
           Navigator.pop(context, resultFilterSet);
         },
         child: const Icon(Icons.check),

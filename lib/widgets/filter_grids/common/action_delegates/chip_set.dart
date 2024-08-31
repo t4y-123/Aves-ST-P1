@@ -81,7 +81,7 @@ abstract class ChipSetActionDelegate<T extends CollectionFilter>
       case ChipSetAction.configureView:
         return true;
       case ChipSetAction.foregroundWallpaperService:
-        return true;
+        return settings.showFgwChipButton;
       case ChipSetAction.select:
         return appMode.canSelectFilter && !isSelecting;
       case ChipSetAction.selectAll:

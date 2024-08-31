@@ -5,6 +5,10 @@ import 'package:aves/model/app/permissions.dart';
 import 'package:aves/model/apps.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/enum/fgw_service_item.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
@@ -14,13 +18,14 @@ import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/common/services.dart';
-import 'package:aves/services/foreground_wallpaper_widget_service.dart';
+import 'package:aves/services/fgw_widget_service.dart';
 import 'package:aves/services/global_search.dart';
 import 'package:aves/services/intent_service.dart';
 import 'package:aves/services/widget_service.dart';
 import 'package:aves/theme/themes.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/widgets/collection/collection_page.dart';
+import 'package:aves/widgets/collection/entry_set_action_delegate.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/behaviour/routes.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -34,7 +39,7 @@ import 'package:aves/widgets/filter_grids/scenario_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/intent.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
-import 'package:aves/widgets/settings/foreground_wallpaper_widget_settings_page.dart';
+import 'package:aves/widgets/settings/fgw_widget_settings_page.dart';
 import 'package:aves/widgets/settings/home_widget_settings_page.dart';
 import 'package:aves/widgets/settings/screen_saver_settings_page.dart';
 import 'package:aves/widgets/viewer/entry_viewer_page.dart';
@@ -45,12 +50,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-
-import '../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
-import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
-import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
-import '../model/foreground_wallpaper/share_copied_entry.dart';
-import 'collection/entry_set_action_delegate.dart';
 
 class HomePage extends StatefulWidget {
   static const routeName = '/';
@@ -81,6 +80,7 @@ class _HomePageState extends State<HomePage> {
     CollectionPage.routeName,
     ExplorerPage.routeName,
     SearchPage.routeName,
+    AssignListPage.routeName,
   ];
 
   @override
@@ -224,7 +224,7 @@ class _HomePageState extends State<HomePage> {
           _initialRouteName = HomeWidgetSettingsPage.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         case IntentActions.foregroundWallpaperWidgetSettings:
-          _initialRouteName = ForegroundWallpaperWidgetSettings.routeName;
+          _initialRouteName = FgwWidgetSettings.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
@@ -471,8 +471,8 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:
         return buildRoute((context) => const ScreenSaverSettingsPage());
-      case ForegroundWallpaperWidgetSettings.routeName:
-        return buildRoute((context) => ForegroundWallpaperWidgetSettings(widgetId: _widgetId!));
+      case FgwWidgetSettings.routeName:
+        return buildRoute((context) => FgwWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
         return SearchPageRoute(
           delegate: CollectionSearchDelegate(

@@ -9,15 +9,14 @@ import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:aves/widgets/settings/navigation/drawer.dart';
 import 'package:aves/widgets/settings/presentation/assign/assign_edit_config_page.dart';
 import 'package:aves/widgets/settings/presentation/assign/assign_operation_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/default_schedules_manage_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/fgw_edit_setting_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
 import 'package:aves/widgets/settings/presentation/share_by_copy.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'foreground_wallpaper/default_schedules_manage_page.dart';
-import 'foreground_wallpaper/foreground_wallpaper_config_page.dart';
 
 class PresentationSection extends SettingsSection {
   @override
@@ -36,11 +35,11 @@ class PresentationSection extends SettingsSection {
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
         SettingsTileForegroundWallpaperDrawer(),
         SettingsTileAddDefaultGroupsSchedules(),
-        SettingsTileShareByCopy(),
         if (!settings.scenarioLock) SettingsTileScenariosConfigPage(),
         if (!settings.scenarioLock) SettingsScenariosOperationPage(),
         SettingsAssignEditConfigPage(),
         SettingsAssignOperationPage(),
+        SettingsTileShareByCopy(),
       ];
 }
 
@@ -52,7 +51,7 @@ class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
   Widget build(BuildContext context) => SettingsSubPageTile(
         title: title(context),
         routeName: NavigationDrawerEditorPage.routeName,
-        builder: (context) => const ForegroundWallpaperConfigPage(),
+        builder: (context) => const FgwEditSettingPage(),
       );
 }
 

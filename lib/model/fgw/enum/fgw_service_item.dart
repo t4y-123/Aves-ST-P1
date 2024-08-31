@@ -1,19 +1,16 @@
-import 'dart:convert';
-
-import '../../source/collection_source.dart';
-import '../fgw_schedule_helper.dart';
-import '../privacy_guard_level.dart';
-import 'fgw_schedule_item.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/source/collection_source.dart';
 
 enum FgwSyncItem { curLevel, activeLevels, schedules, curEntryName }
-
 
 extension ExtraFgwSyncItem on FgwSyncItem {
   Future<dynamic> syncData(
       {CollectionSource? source,
       WallpaperUpdateType? updateType,
       int widgetId = 0,
-      PrivacyGuardLevelRow? curPrivacyGuardLevel}) async {
+      FgwGuardLevelRow? curPrivacyGuardLevel}) async {
     return switch (this) {
       // t4y: must!!!,not simply use toString, explicit use toJson or to map of each item will be better,
       // or else it will work fine in debug , but only return the name of the class in release apk ,not any props.
@@ -22,14 +19,13 @@ extension ExtraFgwSyncItem on FgwSyncItem {
       // [WallpaperScheduleRow, WallpaperScheduleRow]
       // so annoyance.
       FgwSyncItem.curLevel => (await fgwScheduleHelper.getCurGuardLevel()).guardLevel.toString(),
-      FgwSyncItem.activeLevels =>
-        privacyGuardLevels.all.where((e) => e.isActive).map((e) => e.toJson()).toList()
-      ,
+      FgwSyncItem.activeLevels => fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.toJson()).toList(),
       FgwSyncItem.schedules =>
         (await fgwScheduleHelper.getCurActiveSchedules(curPrivacyGuardLevel: curPrivacyGuardLevel))
-            .map((e) => e.toJson()).toList(),
-      FgwSyncItem.curEntryName => (await fgwScheduleHelper.getCurEntry(
-              source!, updateType!, widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel))
+            .map((e) => e.toJson())
+            .toList(),
+      FgwSyncItem.curEntryName => (await fgwScheduleHelper.getCurEntry(source!, updateType!,
+              widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel))
           .filenameWithoutExtension
           .toString(),
     };

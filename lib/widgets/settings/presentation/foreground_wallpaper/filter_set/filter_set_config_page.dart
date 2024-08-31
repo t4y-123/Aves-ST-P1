@@ -1,13 +1,13 @@
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/mime.dart';
+import 'package:aves/services/common/services.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
+import 'package:aves/widgets/settings/common/collection_tile.dart';
 import 'package:flutter/material.dart';
-import '../../../../../model/foreground_wallpaper/filtersSet.dart';
-import '../../../../../model/filters/aspect_ratio.dart';
-import '../../../../../model/filters/filters.dart';
-import '../../../../../model/filters/mime.dart';
-import '../../../../../services/common/services.dart';
-import '../../../../common/identity/buttons/outlined_button.dart';
-import '../../../common/collection_tile.dart';
 
 class FilterSetConfigPage extends StatefulWidget {
   static const routeName = '/settings/presentation/filter_set_config';
@@ -25,6 +25,7 @@ class FilterSetConfigPage extends StatefulWidget {
   @override
   State<FilterSetConfigPage> createState() => _FilterSetConfigPageState();
 }
+
 class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _aliasNameController;
@@ -37,13 +38,14 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
     super.initState();
     final int newFilterSetNum = _generateFilterSetNum();
     final int newId = metadataDb.nextId;
-    _currentItem = widget.item ?? FiltersSetRow(
-      id: newId,
-      orderNum: newFilterSetNum,
-      labelName: 'N$newFilterSetNum id:$newId',
-      filters: {AspectRatioFilter.portrait, MimeFilter.image},
-      isActive: true,
-    );
+    _currentItem = widget.item ??
+        FiltersSetRow(
+          id: newId,
+          orderNum: newFilterSetNum,
+          labelName: 'N$newFilterSetNum id:$newId',
+          filters: {AspectRatioFilter.portrait, MimeFilter.image},
+          isActive: true,
+        );
     _aliasNameController = TextEditingController(text: _currentItem!.labelName);
     _collectionFilters = _currentItem?.filters ?? {};
     _isActive = _currentItem!.isActive;
@@ -61,7 +63,7 @@ class _FilterSetConfigPageState extends State<FilterSetConfigPage> {
         id: _currentItem!.id,
         orderNum: _currentItem!.orderNum,
         labelName: _aliasNameController.text,
-        filters:_collectionFilters,
+        filters: _collectionFilters,
         isActive: _isActive,
       );
       Navigator.pop(context, updatedItem); // Return the updated item

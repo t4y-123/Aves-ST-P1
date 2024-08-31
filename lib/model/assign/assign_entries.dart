@@ -163,7 +163,7 @@ class AssignEntries with ChangeNotifier {
   Future<void> clear({AssignEntryRowsType type = AssignEntryRowsType.all}) async {
     final targetSet = _getTarget(type);
 
-    await metadataDb.clearAssignEntries();
+    if (type == AssignEntryRowsType.all) await metadataDb.clearAssignEntries();
     targetSet.clear();
     notifyListeners();
   }

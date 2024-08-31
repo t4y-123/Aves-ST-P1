@@ -72,31 +72,31 @@ class ItemSettingsSwitchListTile<S> extends StatelessWidget {
     return Selector<S, bool>(
       selector: selector,
       builder: (context, current, child) {
-    Widget titleWidget = Text(title);
-    if (trailing != null) {
-      titleWidget = Row(
-        children: [
-          Expanded(child: titleWidget),
-          AnimatedOpacity(
+        Widget titleWidget = Text(title);
+        if (trailing != null) {
+          titleWidget = Row(
+            children: [
+              Expanded(child: titleWidget),
+              AnimatedOpacity(
                 opacity: current ? 1 : disabledOpacity,
-            duration: ADurations.toggleableTransitionAnimation,
-            child: trailing,
-          ),
-        ],
-      );
-    }
-    return SwitchListTile(
+                duration: ADurations.toggleableTransitionAnimation,
+                child: trailing,
+              ),
+            ],
+          );
+        }
+        return SwitchListTile(
           value: current,
-      onChanged: onChanged,
-      title: titleWidget,
-      subtitle: subtitle != null ? Text(subtitle!) : null,
+          onChanged: onChanged,
+          title: titleWidget,
+          subtitle: subtitle != null ? Text(subtitle!) : null,
         );
       },
     );
   }
 }
 
-class ItemSettingsSelectionListTile<S,T> extends StatelessWidget {
+class ItemSettingsSelectionListTile<S, T> extends StatelessWidget {
   final List<T> values;
   final String Function(BuildContext, T) getName;
   final T Function(BuildContext, S) selector;
@@ -125,35 +125,35 @@ class ItemSettingsSelectionListTile<S,T> extends StatelessWidget {
     return Selector<S, T>(
       selector: selector,
       builder: (context, current, child) {
-    Widget titleWidget = Text(tileTitle);
-    if (trailingBuilder != null) {
-      titleWidget = Row(
-        children: [
-          Expanded(child: titleWidget),
-          trailingBuilder!(context),
-        ],
-      );
-    }
-    return ListTile(
-      title: titleWidget,
-        subtitle: showSubTitle?AvesCaption(getName(context, current)):null,
-      onTap: () => showSelectionDialog<T>(
-        context: context,
-        builder: (context) => AvesSingleSelectionDialog<T>(
+        Widget titleWidget = Text(tileTitle);
+        if (trailingBuilder != null) {
+          titleWidget = Row(
+            children: [
+              Expanded(child: titleWidget),
+              trailingBuilder!(context),
+            ],
+          );
+        }
+        return ListTile(
+          title: titleWidget,
+          subtitle: showSubTitle ? AvesCaption(getName(context, current)) : null,
+          onTap: () => showSelectionDialog<T>(
+            context: context,
+            builder: (context) => AvesSingleSelectionDialog<T>(
               initialValue: current,
-          options: Map.fromEntries(values.map((v) => MapEntry(v, getName(context, v)))),
-          optionSubtitleBuilder: optionSubtitleBuilder,
-          title: dialogTitle,
-        ),
-        onSelection: onSelection,
-      ),
-    );
+              options: Map.fromEntries(values.map((v) => MapEntry(v, getName(context, v)))),
+              optionSubtitleBuilder: optionSubtitleBuilder,
+              title: dialogTitle,
+            ),
+            onSelection: onSelection,
+          ),
+        );
       },
     );
   }
 }
 
-class ItemSettingsMultiSelectionListTile<S,T>  extends StatelessWidget {
+class ItemSettingsMultiSelectionListTile<S, T> extends StatelessWidget {
   final List<T> values;
   final String Function(BuildContext, T) getName;
   final List<T> Function(BuildContext, S) selector;
@@ -192,7 +192,8 @@ class ItemSettingsMultiSelectionListTile<S,T>  extends StatelessWidget {
         }
         return ListTile(
           title: titleWidget,
-          subtitle: AvesCaption(current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
+          subtitle: AvesCaption(
+              current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
           onTap: () => showSelectionDialog<List<T>>(
             context: context,
             builder: (context) => AvesMultiSelectionDialog<T>(
@@ -252,7 +253,8 @@ class ItemSettingsMultiSelectionWithExcludeSetListTile<S, T> extends StatelessWi
         }
         return ListTile(
           title: titleWidget,
-          subtitle: AvesCaption(current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
+          subtitle: AvesCaption(
+              current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
           onTap: () => showSelectionDialog<List<T>>(
             context: context,
             builder: (context) => AvesMultiSelectionWithConflictGroupDialog<T>(
@@ -269,7 +271,6 @@ class ItemSettingsMultiSelectionWithExcludeSetListTile<S, T> extends StatelessWi
     );
   }
 }
-
 
 class ItemSettingsDurationListTile extends StatelessWidget {
   final int Function(BuildContext, Settings) selector;
@@ -315,7 +316,6 @@ class ItemSettingsDurationListTile extends StatelessWidget {
   }
 }
 
-
 // for only show some info , tap will do nothing.
 class ItemInfoListTile<S> extends StatelessWidget {
   final String Function(BuildContext, S) selector;
@@ -338,11 +338,11 @@ class ItemInfoListTile<S> extends StatelessWidget {
           onTap: () async {
             await showDialog<String>(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (context) => AvesDialog(
                 content: Text('$tileTitle\n$current'),
                 actions: <Widget>[
                   FilledButton(
-                    child:Text(context.l10n.cancelTooltip),
+                    child: Text(context.l10n.cancelTooltip),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -354,7 +354,6 @@ class ItemInfoListTile<S> extends StatelessWidget {
     );
   }
 }
-
 
 class ItemSettingsLabelNameListTile<S> extends StatelessWidget {
   final String Function(BuildContext, S) selector;
@@ -371,8 +370,8 @@ class ItemSettingsLabelNameListTile<S> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<S, String>(
-        selector: selector,
-        builder: (context, current, child) {
+      selector: selector,
+      builder: (context, current, child) {
         return ListTile(
           title: Text(tileTitle),
           subtitle: AvesCaption(current),
@@ -471,7 +470,3 @@ class _RenameLabelDialogState extends State<LabelNameDialog> {
     }
   }
 }
-
-
-
-

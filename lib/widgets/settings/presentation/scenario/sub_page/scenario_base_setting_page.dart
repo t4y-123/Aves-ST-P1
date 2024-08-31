@@ -9,6 +9,7 @@ import 'package:aves/widgets/common/basic/insets.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/extensions/media_query.dart';
+import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
 import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_section.dart';
 import 'package:aves/widgets/settings/presentation/scenario/sub_page/steps_config_page.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
@@ -16,8 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
-
-import '../../../../common/identity/buttons/outlined_button.dart';
 
 class ScenarioBaseSettingPage extends StatefulWidget {
   static const routeName = '/settings/presentation/scenario_base_settings_page';

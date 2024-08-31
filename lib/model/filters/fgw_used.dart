@@ -1,5 +1,5 @@
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
 import 'package:aves/model/filters/filters.dart';
-import 'package:aves/model/foreground_wallpaper/fgw_used_entry_record.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/widgets.dart';
@@ -16,7 +16,7 @@ class FgwUsedFilter extends CollectionFilter {
 
   static void updateNow() {
     Set<int> usedIds = fgwUsedEntryRecord.all.map((item) => (item.entryId)).toSet();
-    _test = (entry) =>  (usedIds.any((item) => item == entry.id ));
+    _test = (entry) => (usedIds.any((item) => item == entry.id));
   }
 
   @override
@@ -50,7 +50,8 @@ class FgwUsedFilter extends CollectionFilter {
   String getLabel(BuildContext context) => context.l10n.filterFgwUsedLabel;
 
   @override
-  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) => Icon(AIcons.fgwUsed, size: size);
+  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) =>
+      Icon(AIcons.fgwUsed, size: size);
 
   @override
   String get category => type;

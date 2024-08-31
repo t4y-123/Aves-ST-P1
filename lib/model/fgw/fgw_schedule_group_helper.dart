@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
-import 'package:aves/model/foreground_wallpaper/privacy_guard_level.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
+import 'package:aves/l10n/l10n.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/model/settings/settings.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
-
-import '../../l10n/l10n.dart';
-import '../settings/settings.dart';
-import 'enum/fgw_schedule_item.dart';
-import 'fgw_used_entry_record.dart';
 
 final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();
 
@@ -21,33 +21,31 @@ class ForegroundWallpaperHelper {
   Future<void> initWallpaperSchedules({FgwScheduleSetType? fgwScheduleSetType}) async {
     _l10n = await AppLocalizations.delegate.load(settings.appliedLocale);
     fgwScheduleSetType ??= settings.fgwScheduleSet;
-    await privacyGuardLevels.init();
+    await fgwGuardLevels.init();
     await filtersSets.init();
-    await wallpaperSchedules.init();
-    if (wallpaperSchedules.all.isEmpty && privacyGuardLevels.all.isEmpty && filtersSets.all.isEmpty) {
+    await fgwSchedules.init();
+    if (fgwSchedules.all.isEmpty && fgwGuardLevels.all.isEmpty && filtersSets.all.isEmpty) {
       await addDefaultScheduleSet(fgwScheduleSetType: fgwScheduleSetType);
+      settings.curPrivacyGuardLevel = fgwGuardLevels.all.first.id;
     }
     await fgwUsedEntryRecord.init();
   }
 
   Future<void> clearWallpaperSchedules() async {
-    await privacyGuardLevels.clear();
+    await fgwGuardLevels.clear();
     await filtersSets.clear();
-    await wallpaperSchedules.clear();
+    await fgwSchedules.clear();
     await fgwUsedEntryRecord.clear();
   }
 
-  Future<Set<PrivacyGuardLevelRow>> commonType3GuardLevels(AppLocalizations _l10n) async {
+  Future<Set<FgwGuardLevelRow>> commonType3GuardLevels(AppLocalizations _l10n) async {
     return {
-      await privacyGuardLevels.newRow(1,
-          labelName: _l10n.initGuardLevelName01,
-          newColor: privacyGuardLevels.all.isEmpty ? const Color(0xFF808080) : null),
-      await privacyGuardLevels.newRow(2,
-          labelName: _l10n.initGuardLevelName02,
-          newColor: privacyGuardLevels.all.isEmpty ? const Color(0xFF8D4FF8) : null),
-      await privacyGuardLevels.newRow(3,
-          labelName: _l10n.initGuardLevelName03,
-          newColor: privacyGuardLevels.all.isEmpty ? const Color(0xFF2986cc) : null),
+      await fgwGuardLevels.newRow(1,
+          labelName: _l10n.initGuardLevelName01, newColor: fgwGuardLevels.all.isEmpty ? const Color(0xFF808080) : null),
+      await fgwGuardLevels.newRow(2,
+          labelName: _l10n.initGuardLevelName02, newColor: fgwGuardLevels.all.isEmpty ? const Color(0xFF8D4FF8) : null),
+      await fgwGuardLevels.newRow(3,
+          labelName: _l10n.initGuardLevelName03, newColor: fgwGuardLevels.all.isEmpty ? const Color(0xFF2986cc) : null),
     };
   }
 
@@ -71,15 +69,15 @@ class ForegroundWallpaperHelper {
     };
 
     // must add first, for wallpaperSchedules.newRow will try to get item form them.
-    await privacyGuardLevels.add(newLevels);
+    await fgwGuardLevels.add(newLevels);
     await filtersSets.add(initFiltersSets);
 
-    final glIds = privacyGuardLevels.all.map((e) => e.privacyGuardLevelID).toList();
+    final glIds = fgwGuardLevels.all.map((e) => e.id).toList();
     final fsIds = initFiltersSets.map((e) => e.id).toList();
     int homeExposureSeconds = 15;
     int homeModerateSeconds = 3 * 60;
     int homeSafeSeconds = 30 * 60;
-    List<WallpaperScheduleRow> type346Schedules = switch (fgwScheduleSetType) {
+    List<FgwScheduleRow> type346Schedules = switch (fgwScheduleSetType) {
       FgwScheduleSetType.type346 => [
           // in type 346, only make the home lock screen wallpaper active.
           // home screen: 0-3 :lock screen.
@@ -114,18 +112,18 @@ class ForegroundWallpaperHelper {
           newSchedule(9, glIds[2], fsIds[2], WallpaperUpdateType.both, 0, false),
         ],
     };
-    await wallpaperSchedules.add(type346Schedules.toSet());
+    await fgwSchedules.add(type346Schedules.toSet());
   }
 
-  Future<List<WallpaperScheduleRow>> newSchedulesGroup(PrivacyGuardLevelRow levelRow,
-      {ScheduleRowType rowsType = ScheduleRowType.all, FiltersSetRow? filtersRow}) async {
+  Future<List<FgwScheduleRow>> newSchedulesGroup(FgwGuardLevelRow levelRow,
+      {PresentationRowType rowsType = PresentationRowType.all, FiltersSetRow? filtersRow}) async {
     debugPrint('$runtimeType newSchedulesGroup start:\n$levelRow \n $rowsType \n $filtersRow ');
     filtersRow ??= filtersSets.all.first;
     if (filtersRow != null) {
-      List<WallpaperScheduleRow> newSchedules = [
-        newSchedule(1, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.home, 30, false, rowsType),
-        newSchedule(2, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.lock, 0, false, rowsType),
-        newSchedule(3, levelRow.privacyGuardLevelID, filtersRow.id, WallpaperUpdateType.both, 0, false, rowsType),
+      List<FgwScheduleRow> newSchedules = [
+        newSchedule(1, levelRow.id, filtersRow.id, WallpaperUpdateType.home, 30, false, rowsType),
+        newSchedule(2, levelRow.id, filtersRow.id, WallpaperUpdateType.lock, 0, false, rowsType),
+        newSchedule(3, levelRow.id, filtersRow.id, WallpaperUpdateType.both, 0, false, rowsType),
       ];
       debugPrint('newSchedulesGroup =\n $newSchedules');
       return newSchedules;
@@ -133,9 +131,10 @@ class ForegroundWallpaperHelper {
     return [];
   }
 
-  WallpaperScheduleRow newSchedule(int offset, int levelId, int filtersSetId, updateType,
-      [int? interval, bool isActive = true, ScheduleRowType type = ScheduleRowType.all]) {
-    return wallpaperSchedules.newRow(
+  FgwScheduleRow newSchedule(int offset, int levelId, int filtersSetId, updateType,
+      [int? interval, bool isActive = true, PresentationRowType type = PresentationRowType.all]) {
+    debugPrint('$runtimeType newSchedule start:\n$updateType \n $interval \n $type ');
+    return fgwSchedules.newRow(
       existMaxOrderNumOffset: offset,
       privacyGuardLevelId: levelId,
       filtersSetId: filtersSetId,

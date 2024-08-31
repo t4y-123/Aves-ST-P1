@@ -7,24 +7,23 @@ import 'package:aves/model/db/db_metadata.dart';
 import 'package:aves/model/db/db_metadata_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/filters.dart';
-import 'package:aves/model/foreground_wallpaper/filtersSet.dart';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
+import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/video_playback.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../foreground_wallpaper/fgw_used_entry_record.dart';
-import '../foreground_wallpaper/privacy_guard_level.dart';
-import '../foreground_wallpaper/share_copied_entry.dart';
-import '../scenario/scenario.dart';
-import '../scenario/scenario_step.dart';
 
 class SqfliteMetadataDb implements MetadataDb {
   late Database _db;
@@ -42,12 +41,10 @@ class SqfliteMetadataDb implements MetadataDb {
   static const videoPlaybackTable = 'videoPlayback';
 
   // t4y for foreground Wallpaper
-  static const privacyGuardLevelTable = 'privacyGuardLevel';
+  static const fgwGuardLevelTable = 'fgwGuardLevel';
   static const filtersSetTable = 'filtersSet';
-  static const wallpaperScheduleTable = 'wallpaperSchedule';
-  static const wallpaperScheduleDetailsTable = 'wallpaperScheduleDetails';
-  static const wallpaperScheduleBaseGuardLevelTable = 'wallpaperScheduleBaseGuardLevel';
-  static const fgwUsedEntryTable = 'foregroundWallpaperUsedEntry';
+  static const fgwScheduleTable = 'fgwSchedule';
+  static const fgwUsedEntryTable = 'fgwUsedEntry';
 
   //t4y share by copy:
   static const shareCopiedEntryTable = 'shareCopiedEntry';
@@ -55,7 +52,7 @@ class SqfliteMetadataDb implements MetadataDb {
   // t4y: presentation: scenario presentation
   static const scenarioTable = 'scenarioPresent';
   static const scenarioStepTable = 'scenarioStep';
-  static const assignRecordTable = 'assignFilter';
+  static const assignRecordTable = 'assignRecord';
   static const assignEntryTable = 'assignEntry';
   //End
 
@@ -142,7 +139,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', resumeTimeMillis INTEGER'
             ')');
         //T4y: Foreground Wallpaper tables
-        await db.execute('CREATE TABLE $privacyGuardLevelTable('
+        await db.execute('CREATE TABLE $fgwGuardLevelTable('
             'id INTEGER PRIMARY KEY'
             ', guardLevel INTEGER'
             ', labelName TEXT'
@@ -156,7 +153,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', filters TEXT'
             ', isActive INTEGER DEFAULT 0'
             ')');
-        await db.execute('CREATE TABLE $wallpaperScheduleTable('
+        await db.execute('CREATE TABLE $fgwScheduleTable('
             'id INTEGER PRIMARY KEY'
             ', orderNum INTEGER'
             ', labelName TEXT'
@@ -209,6 +206,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ', assignType TEXT'
             ', color INTEGER'
             ', dateMillis INTEGER'
+            ', scenarioId INTEGER DEFAULT 0'
             ', isActive INTEGER DEFAULT 0'
             ')');
         await db.execute('CREATE TABLE $assignEntryTable('
@@ -734,19 +732,19 @@ class SqfliteMetadataDb implements MetadataDb {
 
   // Privacy Guard LevelS
   @override
-  Future<void> clearPrivacyGuardLevel() async {
-    final count = await _db.delete(privacyGuardLevelTable, where: '1');
+  Future<void> clearFgwGuardLevel() async {
+    final count = await _db.delete(fgwGuardLevelTable, where: '1');
     debugPrint('clearPrivacyGuardLevel deleted $count rows');
   }
 
   @override
-  Future<Set<PrivacyGuardLevelRow>> loadAllPrivacyGuardLevels() async {
-    final rows = await _db.query(privacyGuardLevelTable);
-    return rows.map(PrivacyGuardLevelRow.fromMap).where((row) => row != null).toSet();
+  Future<Set<FgwGuardLevelRow>> loadAllFgwGuardLevels() async {
+    final rows = await _db.query(fgwGuardLevelTable);
+    return rows.map(FgwGuardLevelRow.fromMap).where((row) => row != null).toSet();
   }
 
   @override
-  Future<void> addPrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+  Future<void> addFgwGuardLevels(Set<FgwGuardLevelRow> rows) async {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
@@ -755,27 +753,27 @@ class SqfliteMetadataDb implements MetadataDb {
   }
 
   @override
-  Future<void> updatePrivacyGuardLevelId(int id, PrivacyGuardLevelRow row) async {
+  Future<void> updateFgwGuardLevelId(int id, FgwGuardLevelRow row) async {
     final batch = _db.batch();
-    batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [id]);
+    batch.delete(fgwGuardLevelTable, where: 'id = ?', whereArgs: [id]);
     _batchInsertPrivacyGuardLevel(batch, row);
     await batch.commit(noResult: true);
   }
 
   @override
-  Future<void> removePrivacyGuardLevels(Set<PrivacyGuardLevelRow> rows) async {
+  Future<void> removeFgwGuardLevels(Set<FgwGuardLevelRow> rows) async {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
     rows.forEach((row) {
-      batch.delete(privacyGuardLevelTable, where: 'id = ?', whereArgs: [row.privacyGuardLevelID]);
+      batch.delete(fgwGuardLevelTable, where: 'id = ?', whereArgs: [row.id]);
     });
     await batch.commit(noResult: true);
   }
 
-  void _batchInsertPrivacyGuardLevel(Batch batch, PrivacyGuardLevelRow row) {
+  void _batchInsertPrivacyGuardLevel(Batch batch, FgwGuardLevelRow row) {
     batch.insert(
-      privacyGuardLevelTable,
+      fgwGuardLevelTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -832,19 +830,19 @@ class SqfliteMetadataDb implements MetadataDb {
 
   // wallpaper Schedule Table
   @override
-  Future<void> clearWallpaperSchedules() async {
-    final count = await _db.delete(wallpaperScheduleTable, where: '1');
+  Future<void> clearFgwSchedules() async {
+    final count = await _db.delete(fgwScheduleTable, where: '1');
     debugPrint('clearFilterSet deleted $count rows');
   }
 
   @override
-  Future<Set<WallpaperScheduleRow>> loadAllWallpaperSchedules() async {
-    final rows = await _db.query(wallpaperScheduleTable);
-    return rows.map(WallpaperScheduleRow.fromMap).where((row) => row != null).toSet();
+  Future<Set<FgwScheduleRow>> loadAllFgwSchedules() async {
+    final rows = await _db.query(fgwScheduleTable);
+    return rows.map(FgwScheduleRow.fromMap).where((row) => row != null).toSet();
   }
 
   @override
-  Future<void> addWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+  Future<void> addFgwSchedules(Set<FgwScheduleRow> rows) async {
     if (rows.isEmpty) return;
     final batch = _db.batch();
     rows.forEach((row) => _batchInsertWallpaperSchedule(batch, row));
@@ -852,27 +850,27 @@ class SqfliteMetadataDb implements MetadataDb {
   }
 
   @override
-  Future<void> updateWallpaperSchedules(int id, WallpaperScheduleRow row) async {
+  Future<void> updateFgwSchedules(int id, FgwScheduleRow row) async {
     final batch = _db.batch();
-    batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [id]);
+    batch.delete(fgwScheduleTable, where: 'id = ?', whereArgs: [id]);
     _batchInsertWallpaperSchedule(batch, row);
     await batch.commit(noResult: true);
   }
 
   @override
-  Future<void> removeWallpaperSchedules(Set<WallpaperScheduleRow> rows) async {
+  Future<void> removeFgwSchedules(Set<FgwScheduleRow> rows) async {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
     rows.forEach((row) {
-      batch.delete(wallpaperScheduleTable, where: 'id = ?', whereArgs: [row.id]);
+      batch.delete(fgwScheduleTable, where: 'id = ?', whereArgs: [row.id]);
     });
     await batch.commit(noResult: true);
   }
 
-  void _batchInsertWallpaperSchedule(Batch batch, WallpaperScheduleRow row) {
+  void _batchInsertWallpaperSchedule(Batch batch, FgwScheduleRow row) {
     batch.insert(
-      wallpaperScheduleTable,
+      fgwScheduleTable,
       row.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );

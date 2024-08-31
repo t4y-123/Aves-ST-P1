@@ -1,26 +1,27 @@
 import 'dart:async';
-import 'package:aves/model/foreground_wallpaper/wallpaper_schedule.dart';
+
+import 'package:aves/l10n/l10n.dart';
+import 'package:aves/model/entry/entry.dart';
+import 'package:aves/model/entry/sort.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/enum/fgw_service_item.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/media_store_source.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/utils/collection_utils.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import '../l10n/l10n.dart';
-import '../model/entry/entry.dart';
-import '../model/entry/sort.dart';
-import '../model/foreground_wallpaper/enum/fgw_schedule_item.dart';
-import '../model/foreground_wallpaper/enum/fgw_service_item.dart';
-import '../model/foreground_wallpaper/fgw_schedule_helper.dart';
-import '../model/foreground_wallpaper/fgw_used_entry_record.dart';
-import '../widgets/common/action_mixins/feedback.dart';
 
 const _opChannel = MethodChannel('deckers.thibault/aves/fgw_service_notification_op');
 const _syncDataChannel = MethodChannel('deckers.thibault/aves/fgw_service_notification_sync');
 
-enum FgwServiceWallpaperType {next, pre}
+enum FgwServiceWallpaperType { next, pre }
 
 Future<void> fgwNotificationServiceAsync() async {
   // WidgetsFlutterBinding.ensureInitialized();
@@ -58,13 +59,12 @@ Future<void> fgwNotificationServiceAsync() async {
       default:
         throw PlatformException(code: 'not-implemented', message: 'failed to handle method=${call.method}');
     }
-
   });
 }
 
 final FgwServiceHelper fgwServiceHelper = FgwServiceHelper._private();
 
-class FgwServiceHelper with FeedbackMixin{
+class FgwServiceHelper with FeedbackMixin {
   late AppLocalizations _l10n;
   final _source = MediaStoreSource();
 
@@ -95,13 +95,13 @@ class FgwServiceHelper with FeedbackMixin{
   Future<void> start() async {
     await reportService.log('FgwServiceHelper in start');
     await _initDependencies();
-    await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
-    unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+    await syncDataToNative({FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules});
+    unawaited(handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
         FgwServiceWallpaperType.next));
   }
 
   Future<void> syncDataToNative(Set<FgwSyncItem> syncItems,
-      { WallpaperUpdateType updateType = WallpaperUpdateType.home, int widgetId = 0}) async {
+      {WallpaperUpdateType updateType = WallpaperUpdateType.home, int widgetId = 0}) async {
     await reportService.log('syncDataToNative in start');
     await _initDependencies();
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
@@ -115,7 +115,9 @@ class FgwServiceHelper with FeedbackMixin{
       );
       debugPrint('$runtimeType syncDataToKotlin data: $data');
       return data != null ? MapEntry(v.name, data) : null;
-    }))).where((entry) => entry != null).cast<MapEntry<String, dynamic>>());
+    })))
+        .where((entry) => entry != null)
+        .cast<MapEntry<String, dynamic>>());
 
     final syncData = syncDataMap.map((key, value) => MapEntry(key, (value)));
 
@@ -133,8 +135,8 @@ class FgwServiceHelper with FeedbackMixin{
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
-    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType,curPrivacyGuardLevel: curLevel);
-    if(entries.isEmpty){
+    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType, curPrivacyGuardLevel: curLevel);
+    if (entries.isEmpty) {
       final guardLevel = await fgwScheduleHelper.getCurGuardLevel();
       final emptyMessage = _l10n.fgwScheduleEntryEmptyMessage('Level[${guardLevel.guardLevel}][$updateType]');
       await showToast(emptyMessage);
@@ -142,9 +144,11 @@ class FgwServiceHelper with FeedbackMixin{
     }
     final recentUsedEntryRecord = await fgwScheduleHelper.getRecentEntryRecord(updateType);
 
-    final curDisplayType = wallpaperSchedules.all.firstWhereOrNull((e)=>e.privacyGuardLevelId ==curLevel.privacyGuardLevelID)?.displayType;
-    if(curDisplayType!= null){
-      switch(curDisplayType){
+    final curDisplayType = fgwSchedules.all
+        .firstWhereOrNull((e) => e.guardLevelId == curLevel.id && e.updateType == updateType && e.widgetId == widgetId)
+        ?.displayType;
+    if (curDisplayType != null) {
+      switch (curDisplayType) {
         case FgwDisplayedType.random:
           entries.shuffle();
         case FgwDisplayedType.mostRecent:
@@ -154,23 +158,26 @@ class FgwServiceHelper with FeedbackMixin{
     debugPrint('$runtimeType entries [$entries]');
 
     AvesEntry? targetEntry;
-    switch(fgwWallpaperType){
+    switch (fgwWallpaperType) {
       case FgwServiceWallpaperType.next:
         targetEntry = entries.firstWhereOrNull(
-              (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
+          (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
         );
         targetEntry ??= entries.first;
       case FgwServiceWallpaperType.pre:
-        targetEntry = await fgwScheduleHelper.getPreviousEntry(_source,updateType,entries: entries,recentUsedEntryRecord:recentUsedEntryRecord);
+        targetEntry = await fgwScheduleHelper.getPreviousEntry(_source, updateType,
+            entries: entries, recentUsedEntryRecord: recentUsedEntryRecord);
     }
     debugPrint('$runtimeType targetEntry: $targetEntry');
     await fgwScheduleHelper.setFgWallpaper(targetEntry!, updateType: updateType, widgetId: widgetId);
 
     fgwScheduleHelper.updateCurEntrySettings(updateType, widgetId, targetEntry);
 
-    if (fgwWallpaperType == FgwServiceWallpaperType.next) await fgwUsedEntryRecord.addAvesEntry(targetEntry, updateType);
+    if (fgwWallpaperType == FgwServiceWallpaperType.next) {
+      await fgwUsedEntryRecord.addAvesEntry(targetEntry, updateType);
+    }
     //await syncDataToKotlin(updateType,widgetId);
-    unawaited(syncDataToNative({FgwSyncItem.curEntryName},updateType: updateType,widgetId:  widgetId));
+    unawaited(syncDataToNative({FgwSyncItem.curEntryName}, updateType: updateType, widgetId: widgetId));
     //unawaited(syncDataToNative(FgwSyncItem.values.toSet(),updateType: updateType,widgetId:  widgetId));
     return Future.value(true);
   }
@@ -188,14 +195,14 @@ class FgwServiceHelper with FeedbackMixin{
     debugPrint('$runtimeType changeGuardLevel newGuardLevel $newGuardLevel');
     final activeLevels = await fgwScheduleHelper.getActiveLevels();
 
-    if(activeLevels.any((item) => item.guardLevel == newGuardLevel)){
+    if (activeLevels.any((item) => item.guardLevel == newGuardLevel)) {
       settings.curPrivacyGuardLevel = newGuardLevel;
-      await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
-      await (handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+      await syncDataToNative({FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules});
+      await (handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
           FgwServiceWallpaperType.next));
       return Future.value(true);
-    }else{
-      throw  Exception('Invalid guard level [$newGuardLevel] for \n$activeLevels');
+    } else {
+      throw Exception('Invalid guard level [$newGuardLevel] for \n$activeLevels');
     }
   }
 
@@ -203,8 +210,8 @@ class FgwServiceHelper with FeedbackMixin{
     debugPrint('$runtimeType flutter syncFgwScheduleChanges start');
     await fgwScheduleHelper.refreshSchedules();
     await _initDependencies();
-    await syncDataToNative({FgwSyncItem.curLevel,FgwSyncItem.activeLevels,FgwSyncItem.schedules});
-    unawaited(handleWallpaper(<String,dynamic>{ 'updateType' : WallpaperUpdateType.home.toString(), 'widgetId': 0},
+    await syncDataToNative({FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules});
+    unawaited(handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
         FgwServiceWallpaperType.next));
     return Future.value(true);
   }
@@ -220,7 +227,8 @@ class FgwServiceHelper with FeedbackMixin{
     debugPrint('$runtimeType syncDataByNativeCall activeGuardLevels $activeGuardLevels');
 
     // Get the current entry
-    AvesEntry? curEntry = await FgwSyncItem.curEntryName.syncData(source: _source,updateType: updateType,widgetId: widgetId);
+    AvesEntry? curEntry =
+        await FgwSyncItem.curEntryName.syncData(source: _source, updateType: updateType, widgetId: widgetId);
     String entryFilenameWithoutExtension = curEntry?.filenameWithoutExtension ?? ':null in $updateType $widgetId';
 
     // Return the map
@@ -238,5 +246,4 @@ class FgwServiceHelper with FeedbackMixin{
       debugPrint('Failed to show toast: $e');
     }
   }
-
 }

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/enum/assign_item.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:collection/collection.dart';
@@ -49,7 +50,8 @@ class AssignRecord with ChangeNotifier {
           .toSet();
 
       if (expiredRows.isNotEmpty) {
-        removeRows(expiredRows, type: AssignRecordRowsType.all); // Remove expired records
+        scenariosHelper.removeTemporaryAssignRows(expiredRows,
+            type: AssignRecordRowsType.all); // Remove expired records
       }
     }
     return Set.unmodifiable(_rows);
@@ -86,6 +88,7 @@ class AssignRecord with ChangeNotifier {
         assignType: row.assignType,
         dateMillis: row.dateMillis,
         isActive: row.isActive,
+        scenarioId: row.scenarioId,
         type: type,
       );
     }
@@ -100,6 +103,7 @@ class AssignRecord with ChangeNotifier {
     required Color? color,
     required int dateMillis,
     required bool isActive,
+    int scenarioId = 0,
     AssignRecordRowsType type = AssignRecordRowsType.all,
   }) async {
     final targetSet = _getTarget(type);
@@ -117,6 +121,7 @@ class AssignRecord with ChangeNotifier {
       assignType: assignType,
       color: color,
       dateMillis: dateMillis,
+      scenarioId: scenarioId,
       isActive: isActive,
     );
     targetSet.add(row);
@@ -136,9 +141,7 @@ class AssignRecord with ChangeNotifier {
 
     final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
     final removeAssignEntries = switch (type) {
-      // TODO: Handle this case.
       AssignRecordRowsType.all => assignEntries.all.where((e) => rowIds.contains(e.assignId)).toSet(),
-      // TODO: Handle this case.
       AssignRecordRowsType.bridgeAll => assignEntries.bridgeAll.where((e) => rowIds.contains(e.assignId)).toSet(),
     };
     if (type == AssignRecordRowsType.all) {
@@ -147,6 +150,7 @@ class AssignRecord with ChangeNotifier {
     } else {
       await assignEntries.removeRows(removeAssignEntries, type: AssignEntryRowsType.bridgeAll);
     }
+
     removedRows.forEach(targetSet.remove);
 
     notifyListeners();
@@ -185,6 +189,7 @@ class AssignRecord with ChangeNotifier {
       Color? color,
       int? dateMillis,
       bool isActive = true,
+      int scenarioId = 0,
       AssignRecordRowsType type = AssignRecordRowsType.all}) async {
     final targetSet = _getTarget(type);
 
@@ -200,6 +205,7 @@ class AssignRecord with ChangeNotifier {
       color: color ?? getRandomColor(),
       assignType: assignType ?? AssignRecordType.permanent,
       dateMillis: dateMillis ?? finalDateTime.millisecondsSinceEpoch,
+      scenarioId: scenarioId,
       isActive: isActive,
     );
   }
@@ -231,6 +237,7 @@ class AssignRecord with ChangeNotifier {
           color: newValues[AssignRecordRow.propColor] ?? row.color,
           assignType: newValues[AssignRecordRow.propAssignType] ?? row.assignType,
           dateMillis: newValues[AssignRecordRow.propDateMills] ?? DateTime.now().millisecondsSinceEpoch,
+          scenarioId: newValues[AssignRecordRow.propScenarioId] ?? row.scenarioId,
           isActive: newValues[AssignRecordRow.propIsActive] ?? row.isActive,
         );
 
@@ -313,6 +320,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
   final AssignRecordType assignType;
   final Color? color;
   final int dateMillis;
+  final int scenarioId;
   final bool isActive;
 
   // Define property name constants
@@ -322,6 +330,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
   static const String propAssignType = 'assignType';
   static const String propColor = 'color';
   static const String propDateMills = 'dateMillis';
+  static const String propScenarioId = 'scenarioId';
   static const String propIsActive = 'isActive';
 
   @override
@@ -332,6 +341,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
         assignType,
         color,
         dateMillis,
+        scenarioId,
         isActive,
       ];
 
@@ -342,6 +352,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
     required this.assignType,
     required this.color,
     required this.dateMillis,
+    required this.scenarioId,
     required this.isActive,
   });
 
@@ -359,6 +370,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
       assignType: defaultAssignRecordType,
       color: color,
       dateMillis: map['dateMillis'] as int,
+      scenarioId: map['scenarioId'] as int,
       isActive: (map['isActive'] as int? ?? 0) != 0,
     );
   }
@@ -372,6 +384,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
         'assignType': assignType.name,
         'color': '0x${color?.value.toRadixString(16).padLeft(8, '0')}',
         'dateMillis': dateMillis,
+        'scenarioId': scenarioId,
         'isActive': isActive ? 1 : 0,
       };
 
@@ -418,6 +431,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
     AssignRecordType? assignType,
     Color? color,
     int? dateMillis,
+    int? scenarioId,
     bool? isActive,
   }) {
     return AssignRecordRow(
@@ -427,6 +441,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
       assignType: assignType ?? this.assignType,
       color: color ?? this.color,
       dateMillis: dateMillis ?? this.dateMillis,
+      scenarioId: scenarioId ?? this.scenarioId,
       isActive: isActive ?? this.isActive,
     );
   }

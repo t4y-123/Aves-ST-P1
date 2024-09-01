@@ -37,7 +37,7 @@ class FgwScheduleHelper {
       throw ('PrivacyGuardLevels.all active items is empty ');
     }
     final result = activeItems.firstWhere(
-      (e) => e.guardLevel == settings.curPrivacyGuardLevel,
+      (e) => e.guardLevel == settings.curFgwGuardLevelNum,
       orElse: () => activeItems.first,
     );
     debugPrint('$runtimeType  getPrivacyGuardLevel result ${result.toMap()}');
@@ -73,11 +73,13 @@ class FgwScheduleHelper {
     return filters;
   }
 
-  Future<Set<FgwScheduleRow>> getCurSchedules(
+  Future<Set<FgwScheduleRow>> getGuardLevelSchedules(
       {FgwGuardLevelRow? curPrivacyGuardLevel, PresentationRowType rowsType = PresentationRowType.all}) async {
     curPrivacyGuardLevel ??= await getCurGuardLevel();
+
     final targetSet = fgwSchedules.getAll(rowsType);
     final curSchedules = targetSet.where((e) => e.guardLevelId == curPrivacyGuardLevel?.id).toSet();
+
     debugPrint(
         '$runtimeType getScheduleEntries \n curPrivacyGuardLevel $curPrivacyGuardLevel \n curSchedules :$curSchedules');
     return curSchedules;

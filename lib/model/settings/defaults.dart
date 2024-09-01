@@ -168,7 +168,7 @@ class SettingsDefaults {
 
   //t4y: foreground wallpaper
   static const int fgwNewUpdateInterval = 3;
-  static const int defaultPrivacyGuardLevel = 1;
+  static const int fgwGuardLevel = 1;
   //for easily test, debug set to most recent,else, release change to random.
   static const fgwDisplayedItem = FgwDisplayedType.mostRecent;
   // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount

@@ -75,10 +75,33 @@ class _PresentRowItemPageState<T extends PresentRow<T>> extends State<PresentRow
             ),
             children: [
               ...widget.buildTiles(_item).map((v) => v.build(context)),
+              CommonApplyTile<T>(item: _item).build(context),
             ],
           ),
         );
       },
     );
   }
+}
+
+class CommonApplyTile<T> extends SettingsTile {
+  @override
+  String title(BuildContext context) => context.l10n.applyTooltip;
+
+  final T item;
+
+  CommonApplyTile({
+    required this.item,
+  });
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        title: null,
+        trailing: ElevatedButton(
+          onPressed: () async {
+            Navigator.of(context).pop(true);
+          },
+          child: Text(context.l10n.applyTooltip),
+        ),
+      );
 }

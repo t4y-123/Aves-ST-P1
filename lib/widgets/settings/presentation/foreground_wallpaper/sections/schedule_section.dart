@@ -1,5 +1,4 @@
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
-import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/theme/format.dart';
@@ -7,7 +6,7 @@ import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/big_duration_dialog.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
-import 'package:aves/widgets/settings/presentation/foreground_wallpaper/schedule/schedule_collection_tile.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sections/schedule_collection_tile.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +30,9 @@ class FgwSchedulesTitleTile extends SettingsTile {
               'item: $item \n'
               'rows ${levels.all} \n'
               'bridges ${levels.bridgeAll}\n');
-          return ('id:${item.id}');
+          return ('id:${item.id}\n'
+              '${context.l10n.settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle}: ${item.updateType.getName(context)}\n'
+              '${context.l10n.wallpaperUpdateTypeWidget} id:${item.widgetId}');
         },
       );
 }
@@ -60,12 +61,12 @@ class FgwSchedulesLabelNameModifiedTile extends SettingsTile {
             return 'Error';
           }
         },
-        onChanged: (value) {
+        onChanged: (value) async {
           debugPrint('$runtimeType FgwSchedulesSectionBaseSection\n'
               'row.labelName ${item.labelName} \n'
               'to value $value\n');
-          final newRow = item.copyWith(labelName: value);
-          fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
+          final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(labelName: value);
+          await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
         },
       );
 }
@@ -81,22 +82,12 @@ class FgwScheduleFilterSetTile extends SettingsTile {
   });
 
   @override
-  Widget build(BuildContext context) => Selector<FgwSchedule, Set<FiltersSetRow>>(
-        selector: (context, s) {
-          final curSchedule = s.bridgeAll.firstWhere((e) => e.id == item.id);
-
-          final selectedFiltersSet = filtersSets.bridgeAll.firstWhere((e) => e.id == curSchedule.filtersSetId);
-          return {selectedFiltersSet};
-        },
+  Widget build(BuildContext context) => Selector<FgwSchedule, FgwScheduleRow>(
+        selector: (context, s) => s.bridgeAll.firstWhere((e) => e.id == item.id),
         builder: (context, current, child) {
-          return ScheduleCollectionTile(
-            selectedFilterSet: current,
-            onSelection: (v) async {
-              final curFilterSetRow = v.first;
-              final newRow = item.copyWith(filtersSetId: curFilterSetRow.id);
-              await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
-            },
-            title: current.first.id.toString(),
+          return ScheduleFilterSetTile(
+            item: current,
+            title: current.filtersSetId.toString(),
           );
         },
       );
@@ -159,7 +150,7 @@ class FgwSchedulesIntervalTile extends SettingsTile {
               await _buildInterval(context, schedule);
               return;
             } else {
-              final newRow = schedule.copyWith(interval: 0);
+              final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(interval: 0);
               await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
             }
             _useInterval = v;
@@ -197,7 +188,7 @@ class FgwSchedulesIntervalTile extends SettingsTile {
       builder: (context) => HmsDurationDialog(initialSeconds: schedule.interval),
     );
     if (v != null) {
-      final newRow = schedule.copyWith(interval: v);
+      final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(interval: v);
       await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
     }
   }
@@ -218,7 +209,7 @@ class FgwDisplayTypeSwitchTile extends SettingsTile with FeedbackMixin {
         getName: (context, v) => v.getName(context),
         selector: (context, s) => s.bridgeAll.firstWhereOrNull((e) => e.id == item.id)?.displayType ?? item.displayType,
         onSelection: (v) async {
-          final newRow = item.copyWith(displayType: v);
+          final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(displayType: v);
           await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
         },
         tileTitle: title(context),
@@ -240,8 +231,7 @@ class FgwSchedulesActiveListTile extends SettingsTile {
   Widget build(BuildContext context) => ItemSettingsSwitchListTile<FgwSchedule>(
         selector: (context, s) => s.bridgeAll.firstWhere((e) => e.id == item.id).isActive,
         onChanged: (v) async {
-          final schedule = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id);
-          final newRow = schedule.copyWith(isActive: v);
+          final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(isActive: v);
           await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
         },
         title: title(context),

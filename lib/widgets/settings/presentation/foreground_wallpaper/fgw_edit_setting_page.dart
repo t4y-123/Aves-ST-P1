@@ -103,7 +103,6 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
                             editAction: _fgwSchedulesActions.opItem,
                             activeChangeAction: _fgwSchedulesActions.activeItem,
                             bannerString: l10n.settingsFgwScheduleBanner,
-                            canRemove: false,
                           );
                         },
                       ),

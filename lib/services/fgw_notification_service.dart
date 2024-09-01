@@ -196,7 +196,7 @@ class FgwServiceHelper with FeedbackMixin {
     final activeLevels = await fgwScheduleHelper.getActiveLevels();
 
     if (activeLevels.any((item) => item.guardLevel == newGuardLevel)) {
-      settings.curPrivacyGuardLevel = newGuardLevel;
+      settings.curFgwGuardLevelNum = newGuardLevel;
       await syncDataToNative({FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules});
       await (handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
           FgwServiceWallpaperType.next));
@@ -233,7 +233,7 @@ class FgwServiceHelper with FeedbackMixin {
 
     // Return the map
     return {
-      'curGuardLevel': settings.curPrivacyGuardLevel,
+      'curGuardLevel': settings.curFgwGuardLevelNum,
       'activeLevels': activeGuardLevels,
       'entryFileName': entryFilenameWithoutExtension,
     };

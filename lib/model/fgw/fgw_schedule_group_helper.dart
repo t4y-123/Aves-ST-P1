@@ -26,7 +26,7 @@ class ForegroundWallpaperHelper {
     await fgwSchedules.init();
     if (fgwSchedules.all.isEmpty && fgwGuardLevels.all.isEmpty && filtersSets.all.isEmpty) {
       await addDefaultScheduleSet(fgwScheduleSetType: fgwScheduleSetType);
-      settings.curPrivacyGuardLevel = fgwGuardLevels.all.first.id;
+      settings.curFgwGuardLevelNum = fgwGuardLevels.all.first.guardLevel;
     }
     await fgwUsedEntryRecord.init();
   }

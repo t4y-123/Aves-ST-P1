@@ -51,24 +51,37 @@ abstract class BridgeConfigActions<T extends PresentRow> with FeedbackMixin {
 
   Future<T> makeNewRow();
 
+  Future<void> removeRelateRow(T item) async {}
+  Future<void> resetRelateRow(T item) async {}
+
   Future<void> opItem(BuildContext context, [T? item]) async {
     // add a new item to bridge.
+    bool isAdded = false;
+
     if (item == null) {
       item = await makeNewRow();
+      isAdded = true;
       //await presentationRows.newRow(1, type: PresentationRowType.bridgeAll);
       debugPrint('add new item $item\n');
       await presentationRows.add({item}, type: PresentationRowType.bridgeAll);
     }
-
+    final originRow = item;
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => getItemPage(item!),
       ),
-    ).then((newItem) {
-      if (newItem != null) {
-        setState(() {});
+    ).then((result) {
+      if (result != true) {
+        if (isAdded) {
+          presentationRows.removeRows({item!}, type: PresentationRowType.bridgeAll);
+          removeRelateRow(item);
+        } else {
+          presentationRows.setRows({originRow}, type: PresentationRowType.bridgeAll);
+          resetRelateRow(item!);
+        }
       }
+      setState(() {});
     });
   }
 

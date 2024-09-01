@@ -4,8 +4,8 @@ import 'package:aves/app_flavor.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
-import 'package:aves/model/fgw/fgw_schedule_helper.dart';
 import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/enums/widget_outline.dart';
@@ -91,10 +91,7 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   }
 
   await androidFileUtils.init();
-  final filters = settings.getWidgetCollectionFilters(widgetId);
-  debugPrint('foregroundWallpaperWidgetMainCommon filters ${filters}');
-  debugPrint(
-      'foregroundWallpaperWidgetMainCommon widgetId $widgetId settings.getWidgetCollectionFilters(widgetId) ${settings.getWidgetOpenPage(widgetId)}');
+
   final source = MediaStoreSource();
   final readyCompleter = Completer();
   source.stateNotifier.addListener(() {
@@ -104,65 +101,84 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   });
   await source.init(canAnalyze: false);
   await readyCompleter.future;
+  try {
+    final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
+    AvesEntry? fgwEntry;
+    final curLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+    debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curLevel [$curLevel]');
 
-  final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
-  AvesEntry? fgwEntry;
-  List<AvesEntry>? fgwEntries;
-  if (activeLevelIds.contains(settings.curPrivacyGuardLevel)) {
-    final curLevel = await fgwScheduleHelper.getCurGuardLevel();
+    if (activeLevelIds.contains(settings.curFgwGuardLevelNum)) {
+      final curSchedule =
+          fgwSchedules.all.firstWhereOrNull((e) => e.guardLevelId == curLevel?.id && e.widgetId == widgetId);
+      if (curSchedule == null) {
+        throw 'Failed to get curSchedule for widgetId $widgetId';
+      }
+      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curSchedule [$curSchedule]');
 
-    fgwEntries = await fgwScheduleHelper.getScheduleEntries(source, WallpaperUpdateType.widget,
-        widgetId: widgetId, curPrivacyGuardLevel: curLevel);
-  }
+      final curFilterSet = filtersSets.all.firstWhereOrNull((e) => e.id == curSchedule.filtersSetId);
+      if (curFilterSet == null) {
+        throw 'Failed to get curFilterSet for widgetId $widgetId';
+      }
+      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilterSet [$curFilterSet]');
 
-  if (fgwEntries != null && fgwEntries.isNotEmpty) {
-    debugPrint(' foregroundWallpaperWidgetMainCommon Widget $widgetId entries length [${fgwEntries?.length}]\n');
-    final recentUsedEntryRecord =
-        await fgwScheduleHelper.getRecentEntryRecord(WallpaperUpdateType.widget, widgetId: widgetId);
-    final curDisplayType = fgwSchedules.all
-        .firstWhereOrNull((e) =>
-            e.guardLevelId == settings.curPrivacyGuardLevel &&
-            e.updateType == WallpaperUpdateType.widget &&
-            e.widgetId == widgetId)
-        ?.displayType;
-    if (curDisplayType != null) {
-      switch (curDisplayType) {
-        case FgwDisplayedType.random:
-          fgwEntries.shuffle();
-        case FgwDisplayedType.mostRecent:
-          fgwEntries.sort(AvesEntrySort.compareByDate);
+      final curFilters = curFilterSet.filters;
+      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilters [$curFilters]');
+
+      final fgwEntries =
+          CollectionLens(source: source, filters: curFilters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
+      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon fgwEntries ${fgwEntries.length}: [$fgwEntries]');
+
+      if (fgwEntries.isNotEmpty) {
+        switch (curSchedule.displayType) {
+          case FgwDisplayedType.random:
+            fgwEntries.shuffle();
+            break;
+          case FgwDisplayedType.mostRecent:
+            fgwEntries.sort(AvesEntrySort.compareByDate);
+            break;
+        }
+
+        final recentUsedEntryRecord =
+            fgwUsedEntryRecord.all.where((e) => e.widgetId == widgetId && e.privacyGuardLevelId == curLevel?.id);
+        debugPrint(
+            '$widgetId foregroundWallpaperWidgetMainCommon recentUsedEntryRecord entries length [${recentUsedEntryRecord.length}]');
+
+        fgwEntry = fgwEntries.firstWhereOrNull(
+          (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
+        );
+        if (fgwEntry != null) {
+          debugPrint('$widgetId calling addAvesEntry fgwEntry: $fgwEntry');
+          await fgwUsedEntryRecord.addAvesEntry(fgwEntry, WallpaperUpdateType.widget,
+              widgetId: widgetId, curLevel: curLevel);
+        }
+        debugPrint('$widgetId Widget fgwEntry found: $fgwEntry');
+        return fgwEntry;
       }
     }
-    fgwEntry = fgwEntries.firstWhereOrNull(
-      (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
-    );
-    debugPrint('Widget $widgetId recentUsedEntryRecord  fgwEntry length [${recentUsedEntryRecord.length}]\n');
-    if (fgwEntry != null) {
-      await fgwUsedEntryRecord.addAvesEntry(fgwEntry, WallpaperUpdateType.widget, widgetId: widgetId);
-    }
+  } catch (e) {
+    debugPrint('Error in foregroundWallpaperWidgetMainCommon _getWidgetEntry for widgetId $widgetId: $e');
+  }
 
-    debugPrint('Widget $widgetId fgwEntry entries length [${fgwEntries.length}]\n'
-        'fgwEntry: $fgwEntry');
+  debugPrint('Attempting to retrieve a normal entry for widgetId $widgetId');
+  final filters = settings.getWidgetCollectionFilters(widgetId);
+  debugPrint('foregroundWallpaperWidgetMainCommon getWidgetCollectionFilters:\n[ $filters ]');
+
+  final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+
+  switch (settings.getWidgetDisplayedItem(widgetId)) {
+    case WidgetDisplayedItem.random:
+      entries.shuffle();
+      break;
+    case WidgetDisplayedItem.mostRecent:
+      entries.sort(AvesEntrySort.compareByDate);
+      break;
   }
-  if (fgwEntry == null) {
-    final entries = CollectionLens(source: source, filters: filters).sortedEntries;
-    debugPrint('fgwEntry == null in foregroundWallpaperWidgetMainCommon entries ${entries.length} '
-        'settings.getWidgetDisplayedItem(widgetId) ${settings.getWidgetDisplayedItem(widgetId)}');
-    switch (settings.getWidgetDisplayedItem(widgetId)) {
-      case WidgetDisplayedItem.random:
-        entries.shuffle();
-      case WidgetDisplayedItem.mostRecent:
-        entries.sort(AvesEntrySort.compareByDate);
-    }
-    final entry = entries.firstOrNull;
-    if (entry != null) {
-      settings.setWidgetUri(widgetId, entry.uri);
-    }
-    source.dispose();
-    debugPrint('return in foregroundWallpaperWidgetMainCommon entry $entry');
-    return entry;
-  } else {
-    debugPrint('return in foregroundWallpaperWidgetMainCommon entry $fgwEntry');
-    return fgwEntry;
+
+  final entry = entries.firstOrNull;
+  if (entry != null) {
+    settings.setWidgetUri(widgetId, entry.uri);
   }
+  source.dispose();
+  debugPrint('Returning normal entry for widgetId $widgetId: $entry');
+  return entry;
 }

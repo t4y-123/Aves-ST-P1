@@ -1139,7 +1139,7 @@
 
   "settingsPrivacyGuardLevelTabTypes": "Guard Level",
   "settingsMultiTabEditPageBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
-  "settingsFgwScheduleBanner": "Can only remove schedule in guard level edit page.",
+  "settingsFgwScheduleBanner": "Can not manually remove schedule unless none guard level using happen (a error).",
   "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
   "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
   "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
@@ -1162,14 +1162,16 @@
   "settingsActiveTitle": "Active:",
 
   "filterSetNamePrefix": "Filters set",
-  "settingsFilterSetTabTypes": "Filter Set",
-  "settingsFilterSetTile": "Filter Set Setting",
-  "settingsScheduleIntervalTile": "Interval:",
-  "settingsScheduleIntervalFixedIntervalInfo": "Fixed interval are inexact.\nDepending on your device battery optimizations and restrictions.",
+  "settingsFilterSetTabTypes": "Filters Set",
+  "settingsFilterSetTile": "Filters Set Setting",
+  "settingsFilterSetCancelTile": "Cancel this added:",
+
 
   "settingsWallpaperScheduleTabTypes": "Schedule",
   "settingsScheduleNamePrefix": "Schedule: ",
   "settingsGuardLevelScheduleSubPagePrefix": "Schedule Setting",
+  "settingsScheduleIntervalTile": "Interval:",
+  "settingsScheduleIntervalFixedIntervalInfo": "Fixed interval are inexact.\nDepending on your device battery optimizations and restrictions.",
 
   "wallpaperUpdateTypeHome": "home",
   "wallpaperUpdateTypeLock": "lock",
@@ -1369,6 +1371,10 @@
 
   "chipRemoveAssignFiltersMessage": "Only remove assign record without romove entries.\nAre you sure continue??",
   "drawerAssignPage": "Assign",
+
+  "widgetEmpty": "No widgets available.",
+  "widgetSettingPageTile": "Widgets settings",
+  "widgetSettingPageTitle": "Widgets settings",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

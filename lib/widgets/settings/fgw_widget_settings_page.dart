@@ -19,6 +19,7 @@ import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
 import 'package:aves/widgets/home_widget.dart';
 import 'package:aves/widgets/settings/common/collection_tile.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sections/guard_level_section.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -129,7 +130,7 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
 
               // Add new schedules to the existing schedules list
               fgwSchedules.add(newSchedules.toSet(), type: PresentationRowType.bridgeAll);
-
+              final newSchedulesIds = newSchedules.map((e) => e.id);
               return Column(
                 children: [
                   Expanded(
@@ -161,6 +162,19 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
                         SettingsCollectionTile(
                           filters: _collectionFilters,
                           onSelection: (v) => setState(() => _collectionFilters = v),
+                        ),
+                        Selector<FgwSchedule, Set<FgwScheduleRow>>(
+                          selector: (_, schedules) => schedules.bridgeAll,
+                          builder: (_, bridgeAll, __) {
+                            return Column(
+                              children: bridgeAll
+                                  .where((e) => newSchedulesIds.contains(e.id))
+                                  .toList()
+                                  .sorted()
+                                  .map((e) => ScheduleItemPageTile(schedule: e).build(context))
+                                  .toList(),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -216,7 +230,7 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
     );
   }
 
-  void _saveSettings() {
+  Future<void> _saveSettings() async {
     final invalidateUri = _displayedItem != settings.getWidgetDisplayedItem(widgetId) ||
         !const SetEquality().equals(_collectionFilters, settings.getWidgetCollectionFilters(widgetId));
 
@@ -226,7 +240,9 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
     settings.setWidgetDisplayedItem(widgetId, _displayedItem);
     settings.setWidgetCollectionFilters(widgetId, _collectionFilters);
     // t4y: sync bridge to all to save settings.
-    fgwSchedules.syncBridgeToRows();
+    await fgwSchedules.syncBridgeToRows();
+    await fgwSchedules.syncBridgeToRows();
+    await filtersSets.syncBridgeToRows();
 
     if (invalidateUri) {
       settings.setWidgetUri(widgetId, null);

@@ -6,6 +6,7 @@ import 'package:aves/widgets/settings/common/item_tiles.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FiltersSetTitleTile extends SettingsTile {
   @override
@@ -41,11 +42,16 @@ class FiltersCollectionTile extends SettingsTile {
   });
 
   @override
-  Widget build(BuildContext context) => SettingsCollectionTile(
-        filters: item.filters!,
-        onSelection: (v) {
-          final newRow = item.copyWith(filters: v);
-          filtersSets.setRows({newRow}, type: PresentationRowType.bridgeAll);
+  Widget build(BuildContext context) => Selector<FiltersSet, FiltersSetRow>(
+        selector: (context, s) => s.bridgeAll.firstWhere((e) => e.id == item.id),
+        builder: (context, current, child) {
+          return SettingsCollectionTile(
+            filters: current.filters!,
+            onSelection: (v) {
+              final newRow = filtersSets.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(filters: v);
+              filtersSets.setRows({newRow}, type: PresentationRowType.bridgeAll);
+            },
+          );
         },
       );
 }
@@ -74,14 +80,14 @@ class FiltersSetLabelNameModifiedTile extends SettingsTile {
             return 'Error';
           }
         },
-        onChanged: (value) {
+        onChanged: (value) async {
           debugPrint('$runtimeType FiltersSetSectionBaseSection\n'
               'row.labelName ${item.labelName} \n'
               'to value $value\n');
 
           if (filtersSets.bridgeAll.map((e) => e.id).contains(item.id)) {
-            final newRow = item.copyWith(labelName: value);
-            filtersSets.setRows({newRow}, type: PresentationRowType.bridgeAll);
+            final newRow = filtersSets.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(labelName: value);
+            await filtersSets.setRows({newRow}, type: PresentationRowType.bridgeAll);
           }
           ;
         },
@@ -102,7 +108,7 @@ class FiltersSetActiveListTile extends SettingsTile {
   Widget build(BuildContext context) => ItemSettingsSwitchListTile<FiltersSet>(
         selector: (context, s) => s.bridgeAll.firstWhereOrNull((e) => e.id == item.id)?.isActive ?? item.isActive,
         onChanged: (v) async {
-          final newRow = item.copyWith(isActive: v);
+          final newRow = filtersSets.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(isActive: v);
           await filtersSets.setRows({newRow}, type: PresentationRowType.bridgeAll);
         },
         title: title(context),

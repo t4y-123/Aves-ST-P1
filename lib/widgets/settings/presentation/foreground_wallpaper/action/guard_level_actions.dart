@@ -1,4 +1,5 @@
 import 'package:aves/model/fgw/fgw_schedule_group_helper.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
 import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
@@ -10,6 +11,8 @@ import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sub_page
 import 'package:flutter/material.dart';
 
 class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
+  Set<FgwScheduleRow>? relateSchedules;
+
   GuardLevelActions({
     required super.setState,
   }) : super(
@@ -53,6 +56,29 @@ class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
   @override
   Widget getItemPage(FgwGuardLevelRow item) {
     return GuardLevelItemPage(item: item);
+  }
+
+  @override
+  Future<void> opItem(BuildContext context, [FgwGuardLevelRow? item]) async {
+    if (item != null) {
+      relateSchedules = await fgwScheduleHelper.getGuardLevelSchedules(
+          curPrivacyGuardLevel: item, rowsType: PresentationRowType.bridgeAll);
+    }
+    await super.opItem(context, item);
+  }
+
+  @override
+  Future<void> removeRelateRow(FgwGuardLevelRow item) async {
+    if (relateSchedules != null) {
+      await fgwSchedules.removeRows(relateSchedules!, type: PresentationRowType.bridgeAll);
+    }
+  }
+
+  @override
+  Future<void> resetRelateRow(FgwGuardLevelRow item) async {
+    if (relateSchedules != null) {
+      await fgwSchedules.setWithDealConflictUpdateType(relateSchedules!, type: PresentationRowType.bridgeAll);
+    }
   }
 
   @override

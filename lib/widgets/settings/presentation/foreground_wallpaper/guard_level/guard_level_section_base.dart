@@ -139,8 +139,8 @@ class GuardLevelCopySchedulesFromExistListTile extends SettingsTile with Feedbac
           debugPrint('$runtimeType GuardLevelSelectButtonListTile\n'
               'row ${item} \n'
               'to value $v\n');
-          final copiedSchedules =
-              await fgwScheduleHelper.getCurSchedules(curPrivacyGuardLevel: v, rowsType: PresentationRowType.bridgeAll);
+          final copiedSchedules = await fgwScheduleHelper.getGuardLevelSchedules(
+              curPrivacyGuardLevel: v, rowsType: PresentationRowType.bridgeAll);
           debugPrint('$runtimeType GuardLevelSelectButtonListTile\n'
               'copiedSchedules $copiedSchedules \n'
               'all ${fgwSchedules.all}\n'

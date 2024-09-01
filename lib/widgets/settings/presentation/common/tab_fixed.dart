@@ -1,3 +1,4 @@
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -187,6 +188,10 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
       return !fgwSchedules.bridgeAll.any((e) => e.filtersSetId == item.id) &&
           !fgwSchedules.all.any((e) => e.filtersSetId == item.id);
     }
+    if (item is FgwScheduleRow) {
+      // can only be able to remove widget schedule.
+      return item.updateType == WallpaperUpdateType.widget;
+    }
     return true;
   }
 
@@ -212,7 +217,7 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
               await _showSyncDialog();
             },
           ),
-        if (widget.addItemAction != null || widget.useSyncScheduleButton)
+        if (widget.addItemAction != null)
           AvesOutlinedButton(
             icon: const Icon(AIcons.add),
             label: context.l10n.settingsForegroundWallpaperConfigAddItem,
@@ -233,6 +238,7 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
         children: [
           if (widget.resetAction != null)
             _buildActionButton(context.l10n.resetTooltip, AIcons.reset, widget.resetAction!),
+          if (widget.resetAction != null) const SizedBox(width: 32),
           if (widget.applyAction != null)
             _buildActionButton(context.l10n.applyButtonLabel, AIcons.apply, widget.applyAction!),
         ],

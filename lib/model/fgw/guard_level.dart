@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aves/l10n/l10n.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
@@ -33,6 +34,15 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
   @override
   Future<void> clearRowsInDb() async {
     await metadataDb.clearFgwGuardLevel();
+  }
+
+  @override
+  Future<void> removeIds(Set<int> rowIds,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await super.removeIds(rowIds, type: type, notify: notify);
+
+    final relatedSchedules = fgwSchedules.getAll(type).where((e) => rowIds.contains(e.guardLevelId)).toSet();
+    await fgwSchedules.removeRows(relatedSchedules, type: type, notify: notify);
   }
 
   Future<String> getLabelName(int guardLevel) async {

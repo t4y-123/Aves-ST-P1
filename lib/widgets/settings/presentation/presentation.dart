@@ -18,6 +18,8 @@ import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:aves/widgets/settings/presentation/widget/wdiget_edit_setting_page.dart';
+
 class PresentationSection extends SettingsSection {
   @override
   String get key => 'presentation';
@@ -40,6 +42,7 @@ class PresentationSection extends SettingsSection {
         SettingsAssignEditConfigPage(),
         SettingsAssignOperationPage(),
         SettingsTileShareByCopy(),
+        SettingsWidgetEditConfigPage(),
       ];
 }
 
@@ -124,5 +127,17 @@ class SettingsAssignOperationPage extends SettingsTile {
         title: title(context),
         routeName: AssignOperationPage.routeName,
         builder: (context) => const AssignOperationPage(),
+      );
+}
+
+class SettingsWidgetEditConfigPage extends SettingsTile {
+  @override
+  String title(BuildContext context) => context.l10n.widgetSettingPageTile;
+
+  @override
+  Widget build(BuildContext context) => SettingsSubPageTile(
+        title: title(context),
+        routeName: WidgetEditSettingPage.routeName,
+        builder: (context) => const WidgetEditSettingPage(),
       );
 }

@@ -35,9 +35,11 @@ class GuardLevelItemPage extends StatelessWidget {
               .firstWhereOrNull((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.lock);
           final bothSchedule = fgwSchedules.bridgeAll
               .firstWhereOrNull((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.both);
+          debugPrint(
+              'widgetSchedulesList all =${fgwSchedules.all.where((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.widget).toSet()}');
           final widgetSchedulesList = fgwSchedules.bridgeAll
               .where((e) => e.guardLevelId == item.id && e.updateType == WallpaperUpdateType.widget);
-
+          debugPrint('widgetSchedulesList=$widgetSchedulesList');
           return [
             GuardLevelTitleTile(item: item),
             GuardLevelLabelNameModifiedTile(item: item),

@@ -1,5 +1,7 @@
 package deckers.thibault.aves.channel.calls
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.app.Service
 import android.app.PendingIntent
@@ -13,8 +15,7 @@ import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.fgw.*
-
-import android.appwidget.AppWidgetManager
+import deckers.thibault.aves.HomeWidgetProvider
 
 class ForegroundWallpaperHandler(private val context: Context): MethodChannel.MethodCallHandler {
 
@@ -43,6 +44,9 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
             "isForegroundWallpaperRunning" -> {
                 result.success(ForegroundWallpaperService.isRunning)
             }
+            "getAllWidgetIds" ->{
+                result.success( getAllWidgetIds(appContext))
+            }
             FgwConstant.SYNC_FGW_SCHEDULE_CHANGES -> {
                 val isTileRunning = ForegroundWallpaperTileService.getIsTileClickRunning(appContext)
                 if (isTileRunning && ForegroundWallpaperService.isRunning) {
@@ -66,6 +70,32 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
         val appWidgetManager = AppWidgetManager.getInstance(context)
         ForegroundWallpaperWidgetProvider().onUpdate(context, appWidgetManager, intArrayOf(widgetId))
         result.success(null)
+    }
+
+    fun getAllWidgetIds(context: Context): Map<String, List<Int>> {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+
+        // ComponentNames of your widget providers
+        val homeWidgetProvider = ComponentName(context, HomeWidgetProvider::class.java)
+        val foregroundWallpaperWidgetProvider = ComponentName(context, ForegroundWallpaperWidgetProvider::class.java)
+
+        // Get all widget IDs for each provider
+        val homeWidgetIds = appWidgetManager.getAppWidgetIds(homeWidgetProvider).filter { isActiveWidget(it, context) }
+        val foregroundWallpaperWidgetIds = appWidgetManager.getAppWidgetIds(foregroundWallpaperWidgetProvider).filter { isActiveWidget(it, context) }
+
+        // Return a map with the provider names as keys and the active widget ID lists as values
+        return mapOf(
+            "homeWidgets" to homeWidgetIds,
+            "foregroundWallpaperWidgets" to foregroundWallpaperWidgetIds
+        )
+    }
+
+    private fun isActiveWidget(appWidgetId: Int, context: Context): Boolean {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val appWidgetOptions = appWidgetManager.getAppWidgetOptions(appWidgetId)
+
+        // Check if the widget is currently bound to the home screen
+        return appWidgetOptions != null
     }
 
     companion object {

@@ -7,12 +7,11 @@ import 'package:flutter/widgets.dart';
 class FgwUsedFilter extends CollectionFilter {
   static const type = 'fgw_used';
 
+  static const int allRecordId = 0;
   static late EntryFilter _test;
 
   static final instance = FgwUsedFilter._private();
   static final instanceReversed = FgwUsedFilter._private(reversed: true);
-
-  static late int nowSecs;
 
   static void updateNow() {
     Set<int> usedIds = fgwUsedEntryRecord.all.map((item) => (item.entryId)).toSet();

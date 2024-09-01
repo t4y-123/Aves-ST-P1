@@ -90,12 +90,13 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxScheduleNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-
+    final labelNameCommon = labelName ??
+        'L${thisGuardLevel.guardLevel} id.${thisGuardLevel.id} ${thisGuardLevel.labelName} ${updateType.name}';
+    final newLabelName = (updateType == WallpaperUpdateType.widget) ? '$labelNameCommon $widgetId' : labelNameCommon;
     return FgwScheduleRow(
       id: id ?? metadataDb.nextId,
       orderNum: maxScheduleNum + existMaxOrderNumOffset,
-      labelName: labelName ??
-          'L${thisGuardLevel.guardLevel} id.${thisGuardLevel.id} ${thisGuardLevel.labelName} ${updateType.name}',
+      labelName: newLabelName,
       guardLevelId: privacyGuardLevelId,
       filtersSetId: thisFiltersSet.id,
       updateType: updateType,

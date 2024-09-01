@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:aves/services/common/services.dart';
 import 'package:flutter/services.dart';
 
@@ -33,6 +34,11 @@ class ForegroundWallpaperService {
       // simply return false
       return false;
     }
+  }
+
+  static Future<Map<String, List<int>>> getAllWidgetIds() async {
+    final Map<dynamic, dynamic> result = await _platform.invokeMethod('getAllWidgetIds');
+    return Map<String, List<int>>.from(result.map((key, value) => MapEntry(key, List<int>.from(value))));
   }
 
   static Future<void> syncFgwScheduleChanges() async {

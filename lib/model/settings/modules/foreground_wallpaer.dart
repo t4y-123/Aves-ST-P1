@@ -12,9 +12,9 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
 
   static const curPrivacyGuardLevelKey = 'current_privacy_guard_level';
 
-  int get curPrivacyGuardLevel => getInt(curPrivacyGuardLevelKey) ?? SettingsDefaults.defaultPrivacyGuardLevel;
+  int get curFgwGuardLevelNum => getInt(curPrivacyGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
 
-  set curPrivacyGuardLevel(int newValue) => set(curPrivacyGuardLevelKey, newValue);
+  set curFgwGuardLevelNum(int newValue) => set(curPrivacyGuardLevelKey, newValue);
 
   static const maxForegroundWallpaperUsedEntryKey = 'max_foreground_wallpaper_used_entry_record';
 
@@ -24,7 +24,7 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
 
   static const tmpPrivacyGuardLevelKey = 'tmp_privacy_guard_level';
 
-  int get tmpPrivacyGuardLevel => getInt(tmpPrivacyGuardLevelKey) ?? SettingsDefaults.defaultPrivacyGuardLevel;
+  int get tmpPrivacyGuardLevel => getInt(tmpPrivacyGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
 
   set tmpPrivacyGuardLevel(int newValue) => set(tmpPrivacyGuardLevelKey, newValue);
 

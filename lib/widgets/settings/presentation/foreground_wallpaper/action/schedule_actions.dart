@@ -1,3 +1,4 @@
+import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/widgets/settings/presentation/common/config_actions.dart';
@@ -15,6 +16,13 @@ class FgwScheduleActions extends BridgeConfigActions<FgwScheduleRow> {
   @override
   FgwScheduleRow incrementRowWithActive(int incrementNum, FgwScheduleRow srcItem, bool active) {
     return srcItem.copyWith(orderNum: incrementNum, isActive: active);
+  }
+
+  @override
+  void applyChanges(BuildContext context, List<FgwScheduleRow?> allItems, Set<FgwScheduleRow?> activeItems) {
+    filtersSets.syncBridgeToRows();
+    // then call the super to apply changes to guard level
+    super.applyChanges(context, allItems, activeItems);
   }
 
   @override

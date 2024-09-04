@@ -78,9 +78,6 @@ class ScenarioFilter extends CoveredCollectionFilter {
 
         return result;
       };
-    } else if (scenarioId == scenarioAddNewItemId) {
-      scenario = null;
-      _test = (entry) => false;
     } else {
       scenario = null;
       _test = (entry) => true;

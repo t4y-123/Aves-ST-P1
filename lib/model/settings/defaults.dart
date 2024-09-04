@@ -15,7 +15,7 @@ import 'enums/presentation.dart';
 
 class SettingsDefaults {
   // app
-  static const hasAcceptedTerms = true; // t4y temp set true accept for test
+  static const hasAcceptedTerms = false; // t4y temp set true accept for test
 
   static const canUseAnalysisService = false; // t4y temp set false accept for test
   static const isInstalledAppAccessAllowed = false;
@@ -174,7 +174,7 @@ class SettingsDefaults {
   // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
   // set to type333 in release for some os,like miui,
   //  third part app will not be able to set the lock screen wallpaper for having strict limit.
-  static const fgwScheduleSet = FgwScheduleSetType.type346;
+  static const fgwScheduleSet = FgwScheduleSetType.type333;
 
   static const showFgwChipButton = false;
 
@@ -191,7 +191,7 @@ class SettingsDefaults {
   static const shareByCopyCollectionPageAutoRemove = true;
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
-  static const shareByCopyRemoveInterval = 10; // seconds
+  static const shareByCopyRemoveInterval = 15; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
@@ -216,7 +216,7 @@ class SettingsDefaults {
   // t4y: assign:
   static const assignSortFactor = ChipSortFactor.name;
   static const assignTemporaryFollowAction = AssignTemporaryFollowAction.activeExcludeAndLock;
-  static const assignTemporaryExpiredInterval = 10;
+  static const assignTemporaryExpiredInterval = 15;
   static const canAutoRemoveExpiredTempAssign = true; // seconds
   static const confirmRemoveScenario = true;
   static const confirmRemoveAssign = true;

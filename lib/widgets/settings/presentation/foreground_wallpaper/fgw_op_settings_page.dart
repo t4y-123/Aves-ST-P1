@@ -147,7 +147,13 @@ class FgwOpSettingsPage extends StatelessWidget with FeedbackMixin, FgwAwareMixi
               return '${selectedRow.guardLevel} ${selectedRow.labelName}';
             },
             selector: (context, s) => s.curFgwGuardLevelNum,
-            onSelection: (v) {
+            onSelection: (v) async {
+              if (settings.guardLevelLock) {
+                if (!await unlockFgw(context)) {
+                  showFeedback(context, FeedbackType.info, l10n.genericFailureFeedback);
+                  return;
+                }
+              }
               settings.curFgwGuardLevelNum = v;
               showFeedback(context, FeedbackType.info, l10n.applyCompletedFeedback);
             },

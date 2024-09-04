@@ -1125,7 +1125,7 @@
   "confirmResetAllScheduleToDefault": "This will clear all current guard levels, filter sets, and schedules, reset to default values.\ncontinue?",
 
   "settingsAddNewScheduleGroup": "Add new group",
-  "confirmAddNewScheduleGroup": "This will add a new set of \n[guard levelscorresponding/filters sets/schedules].Continue?",
+  "confirmAddNewScheduleGroup": "This will add a new set of \n[guard levels/filters sets/schedules].Continue?",
 
   "settingsClearRecentUsedEntryRecord": "Clear wallpaper used records",
   "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries {num} record \nContinue?",
@@ -1383,7 +1383,6 @@
   "settingsAssignEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
   "settingsAssignStepsAllBanner": "Can only remove entries assigned in record page.",
   "settingsAssignStepsOneBanner": "Can only remove or  assigned in record page.",
-  "settingsAssignEntryNotExistWarn": "Can only remove or inactive entries assigned.",
   "settingsAssignEntrySubPagePrefix": "Assign entry :",
   "settingsAssignEditEntries": "Edit assign entries",
 
@@ -1392,7 +1391,7 @@
   "settingsAssignResetDefaultText": "Clear all assign record",
   "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
   "settingsAssignTemporaryFollowActionTile": "Assign temporary follow action",
-  "settingsSlideshowIntervalTile": "Temporary assign expired interval",
+  "settingsTempAssignExpiredInterval": "Temporary assign expired interval",
   "settingsAutoRemoveExpiredTempAssign": "Auto remove expired temporary assign",
   "settingsAutoRemoveCorrespondScenarioAsTempAssignRemoveTile": "Auto remove correspond scenario as temp assign removed",
   "settingsAutoRemoveTempAssignAsCorrespondScenarioRemoveTile": "Auto remove  temp assign as correspond scenario removed",

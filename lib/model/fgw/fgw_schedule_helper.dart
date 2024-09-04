@@ -27,42 +27,43 @@ class FgwScheduleHelper {
     await fgwGuardLevels.refresh();
     await filtersSets.refresh();
     await fgwSchedules.refresh();
+    await fgwUsedEntryRecord.refresh();
   }
 
   Future<FgwGuardLevelRow> getCurGuardLevel() async {
-    //debugPrint('$runtimeType  getPrivacyGuardLevel start');
+    //debugPrint('$runtimeType  getFgwGuardLevel start');
     final activeItems = fgwGuardLevels.all.where((e) => e.isActive).toSet();
     if (activeItems.isEmpty) {
-      //debugPrint('No active PrivacyGuardLevels found.');
-      throw ('PrivacyGuardLevels.all active items is empty ');
+      //debugPrint('No active FgwGuardLevels found.');
+      throw ('FgwGuardLevels.all active items is empty ');
     }
     final result = activeItems.firstWhere(
       (e) => e.guardLevel == settings.curFgwGuardLevelNum,
       orElse: () => activeItems.first,
     );
-    debugPrint('$runtimeType  getPrivacyGuardLevel result ${result.toMap()}');
+    debugPrint('$runtimeType  getFgwGuardLevel result ${result.toMap()}');
     return result;
   }
 
-  Future<Set<FgwGuardLevelRow>> getActiveLevels({FgwGuardLevelRow? curPrivacyGuardLevel}) async {
-    //debugPrint('$runtimeType  getPrivacyGuardLevel start');
+  Future<Set<FgwGuardLevelRow>> getActiveLevels({FgwGuardLevelRow? curFgwGuardLevel}) async {
+    //debugPrint('$runtimeType  getFgwGuardLevel start');
     final activeItems = fgwGuardLevels.all.where((e) => e.isActive).toSet();
     if (activeItems.isEmpty) {
-      //debugPrint('No active PrivacyGuardLevels found.');
-      throw ('PrivacyGuardLevels.all active items is empty');
+      //debugPrint('No active FgwGuardLevels found.');
+      throw ('FgwGuardLevels.all active items is empty');
     }
     return activeItems;
   }
 
   Future<Set<CollectionFilter>> getScheduleFilters(WallpaperUpdateType updateType,
-      {int widgetId = 0, FgwGuardLevelRow? curPrivacyGuardLevel}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
+      {int widgetId = 0, FgwGuardLevelRow? curFgwGuardLevel}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
     final id = fgwSchedules.all
         .firstWhere(
           (schedule) =>
               schedule.updateType == updateType &&
               schedule.widgetId == widgetId &&
-              schedule.guardLevelId == curPrivacyGuardLevel!.id,
+              schedule.guardLevelId == curFgwGuardLevel!.id,
         )
         .filtersSetId;
 
@@ -74,32 +75,30 @@ class FgwScheduleHelper {
   }
 
   Future<Set<FgwScheduleRow>> getGuardLevelSchedules(
-      {FgwGuardLevelRow? curPrivacyGuardLevel, PresentationRowType rowsType = PresentationRowType.all}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
+      {FgwGuardLevelRow? curFgwGuardLevel, PresentationRowType rowsType = PresentationRowType.all}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
 
     final targetSet = fgwSchedules.getAll(rowsType);
-    final curSchedules = targetSet.where((e) => e.guardLevelId == curPrivacyGuardLevel?.id).toSet();
+    final curSchedules = targetSet.where((e) => e.guardLevelId == curFgwGuardLevel?.id).toSet();
 
-    debugPrint(
-        '$runtimeType getScheduleEntries \n curPrivacyGuardLevel $curPrivacyGuardLevel \n curSchedules :$curSchedules');
+    debugPrint('$runtimeType getScheduleEntries \n curFgwGuardLevel $curFgwGuardLevel \n curSchedules :$curSchedules');
     return curSchedules;
   }
 
   Future<Set<FgwScheduleRow>> getCurActiveSchedules(
-      {FgwGuardLevelRow? curPrivacyGuardLevel, PresentationRowType rowsType = PresentationRowType.all}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
+      {FgwGuardLevelRow? curFgwGuardLevel, PresentationRowType rowsType = PresentationRowType.all}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
     final targetSet = fgwSchedules.getAll(rowsType);
-    final curSchedules = targetSet.where((e) => e.guardLevelId == curPrivacyGuardLevel?.id && e.isActive).toSet();
+    final curSchedules = targetSet.where((e) => e.guardLevelId == curFgwGuardLevel?.id && e.isActive).toSet();
     debugPrint(
-        '$runtimeType getScheduleEntries \n curPrivacyGuardLevel ${curPrivacyGuardLevel.toMap()} \n curSchedules :${curSchedules.map((e) => e.toMap()).toString()}');
+        '$runtimeType getScheduleEntries \n curFgwGuardLevel ${curFgwGuardLevel.toMap()} \n curSchedules :${curSchedules.map((e) => e.toMap()).toString()}');
     return curSchedules;
   }
 
   Future<List<AvesEntry>> getScheduleEntries(CollectionSource source, WallpaperUpdateType updateType,
-      {int widgetId = 0, FgwGuardLevelRow? curPrivacyGuardLevel}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
-    final filters =
-        await getScheduleFilters(updateType, widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel);
+      {int widgetId = 0, FgwGuardLevelRow? curFgwGuardLevel}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
+    final filters = await getScheduleFilters(updateType, widgetId: widgetId, curFgwGuardLevel: curFgwGuardLevel);
     final entries =
         CollectionLens(source: source, filters: filters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
     final int itemsToPrint = min(entries.length, 10);
@@ -109,25 +108,22 @@ class FgwScheduleHelper {
   }
 
   Future<AvesEntry> getCurEntry(CollectionSource source, WallpaperUpdateType updateType,
-      {int widgetId = 0, FgwGuardLevelRow? curPrivacyGuardLevel}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
+      {int widgetId = 0, FgwGuardLevelRow? curFgwGuardLevel}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
 
     final entries = await fgwScheduleHelper.getScheduleEntries(source, updateType,
-        widgetId: widgetId, curPrivacyGuardLevel: curPrivacyGuardLevel);
+        widgetId: widgetId, curFgwGuardLevel: curFgwGuardLevel);
     AvesEntry? curEntry = entries.firstWhere((entry) => entry.id == settings.getFgwCurEntryId(updateType, widgetId));
     debugPrint('$runtimeType getCurEntry curEntry :$curEntry');
     return curEntry;
   }
 
   Future<List<FgwUsedEntryRecordRow>> getRecentEntryRecord(WallpaperUpdateType updateType,
-      {int widgetId = 0, FgwGuardLevelRow? curPrivacyGuardLevel}) async {
-    curPrivacyGuardLevel ??= await getCurGuardLevel();
+      {int widgetId = 0, FgwGuardLevelRow? curFgwGuardLevel}) async {
+    curFgwGuardLevel ??= await getCurGuardLevel();
     final result = fgwUsedEntryRecord.all
         .where(
-          (row) =>
-              row.updateType == updateType &&
-              row.widgetId == widgetId &&
-              row.privacyGuardLevelId == curPrivacyGuardLevel!.id,
+          (row) => row.updateType == updateType && row.widgetId == widgetId && row.guardLevelId == curFgwGuardLevel!.id,
         )
         .toList();
     debugPrint('$runtimeType getRecentEntryRecord :$result');

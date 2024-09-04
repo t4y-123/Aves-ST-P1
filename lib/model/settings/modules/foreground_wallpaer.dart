@@ -1,4 +1,5 @@
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/settings/defaults.dart';
 import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves_model/aves_model.dart';
@@ -10,11 +11,11 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
 
   set defaultNewUpdateInterval(int newValue) => set(defaultNewUpdateIntervalKey, newValue);
 
-  static const curPrivacyGuardLevelKey = 'current_privacy_guard_level';
+  static const curFgwGuardLevelKey = 'current_privacy_guard_level';
 
-  int get curFgwGuardLevelNum => getInt(curPrivacyGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
+  int get curFgwGuardLevelNum => getInt(curFgwGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
 
-  set curFgwGuardLevelNum(int newValue) => set(curPrivacyGuardLevelKey, newValue);
+  set curFgwGuardLevelNum(int newValue) => set(curFgwGuardLevelKey, newValue);
 
   static const maxForegroundWallpaperUsedEntryKey = 'max_foreground_wallpaper_used_entry_record';
 
@@ -22,18 +23,18 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
 
   set maxFgwUsedEntryRecord(int newValue) => set(maxForegroundWallpaperUsedEntryKey, newValue);
 
-  static const tmpPrivacyGuardLevelKey = 'tmp_privacy_guard_level';
+  static const tmpFgwGuardLevelKey = 'tmp_privacy_guard_level';
 
-  int get tmpPrivacyGuardLevel => getInt(tmpPrivacyGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
+  int get tmpFgwGuardLevel => getInt(tmpFgwGuardLevelKey) ?? SettingsDefaults.fgwGuardLevel;
 
-  set tmpPrivacyGuardLevel(int newValue) => set(tmpPrivacyGuardLevelKey, newValue);
+  set tmpFgwGuardLevel(int newValue) => set(tmpFgwGuardLevelKey, newValue);
 
-  static const resetPrivacyGuardLevelDurationKey = 'reset_privacy_guard_level';
+  static const resetFgwGuardLevelDurationKey = 'reset_privacy_guard_level';
 
-  int get resetPrivacyGuardLevelDuration =>
-      getInt(resetPrivacyGuardLevelDurationKey) ?? SettingsDefaults.resetPrivacyGuardLevelDuration;
+  int get resetFgwGuardLevelDuration =>
+      getInt(resetFgwGuardLevelDurationKey) ?? SettingsDefaults.resetFgwGuardLevelDuration;
 
-  set resetPrivacyGuardLevelDuration(int newValue) => set(resetPrivacyGuardLevelDurationKey, newValue);
+  set resetFgwGuardLevelDuration(int newValue) => set(resetFgwGuardLevelDurationKey, newValue);
 
   static const fgwCurEntryIdKey = 'fgw_current_entry_id';
 
@@ -117,4 +118,20 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
   static const showFgwChipButtonKey = 'show_chip_fgw_button';
   set showFgwChipButton(bool newValue) => set(showFgwChipButtonKey, newValue);
   bool get showFgwChipButton => getBool(showFgwChipButtonKey) ?? SettingsDefaults.showFgwChipButton;
+
+  static const guardLevelLockPassKey = 'guard_level_lock_password';
+  static const guardLevelLockTypeKey = 'guard_level_lock_type';
+
+  CommonLockType get guardLevelLockType =>
+      getEnumOrDefault(guardLevelLockTypeKey, SettingsDefaults.guardLevelLockType, CommonLockType.values);
+
+  set guardLevelLockType(CommonLockType newValue) => set(guardLevelLockTypeKey, newValue.toString());
+
+  static const guardLevelLockKey = 'guard_level_lock';
+  bool get guardLevelLock => getBool(guardLevelLockKey) ?? SettingsDefaults.guardLevelLock;
+  set guardLevelLock(bool newValue) => set(guardLevelLockKey, newValue);
+
+  static const widgetUpdateWhenOpenKey = 'widget_update_when_open';
+  bool get widgetUpdateWhenOpen => getBool(widgetUpdateWhenOpenKey) ?? SettingsDefaults.guardLevelLock;
+  set widgetUpdateWhenOpen(bool newValue) => set(widgetUpdateWhenOpenKey, newValue);
 }

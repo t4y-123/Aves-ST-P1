@@ -1,4 +1,4 @@
-import 'package:aves/model/fgw/fgw_schedule_group_helper.dart';
+import 'package:aves/model/fgw/fgw_rows_helper.dart';
 import 'package:aves/model/fgw/fgw_schedule_helper.dart';
 import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 
 class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
   Set<FgwScheduleRow>? relateSchedules;
+  Set<FiltersSetRow>? relateFiltersSets;
 
   GuardLevelActions({
+    required super.context,
     required super.setState,
   }) : super(
           presentationRows: fgwGuardLevels,
@@ -62,7 +64,7 @@ class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
   Future<void> opItem(BuildContext context, [FgwGuardLevelRow? item]) async {
     if (item != null) {
       relateSchedules = await fgwScheduleHelper.getGuardLevelSchedules(
-          curPrivacyGuardLevel: item, rowsType: PresentationRowType.bridgeAll);
+          curFgwGuardLevel: item, rowsType: PresentationRowType.bridgeAll);
     }
     await super.opItem(context, item);
   }
@@ -72,6 +74,9 @@ class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
     if (relateSchedules != null) {
       await fgwSchedules.removeRows(relateSchedules!, type: PresentationRowType.bridgeAll);
     }
+    if (relateFiltersSets != null) {
+      await filtersSets.removeRows(relateFiltersSets!, type: PresentationRowType.bridgeAll);
+    }
   }
 
   @override
@@ -79,15 +84,26 @@ class GuardLevelActions extends BridgeConfigActions<FgwGuardLevelRow> {
     if (relateSchedules != null) {
       await fgwSchedules.setWithDealConflictUpdateType(relateSchedules!, type: PresentationRowType.bridgeAll);
     }
+    if (relateFiltersSets != null) {
+      await filtersSets.setRows(relateFiltersSets!, type: PresentationRowType.bridgeAll);
+    }
   }
 
   @override
   Future<FgwGuardLevelRow> makeNewRow() async {
     final newRow = await fgwGuardLevels.newRow(1, type: PresentationRowType.bridgeAll);
-    await presentationRows.add({newRow}, type: PresentationRowType.bridgeAll);
-    final bridgeSchedules =
-        await foregroundWallpaperHelper.newSchedulesGroup(newRow, rowsType: PresentationRowType.bridgeAll);
-    await fgwSchedules.add(bridgeSchedules.toSet(), type: PresentationRowType.bridgeAll);
+    await fgwGuardLevels.add({newRow}, type: PresentationRowType.bridgeAll);
+
+    final newMap = await fgwRowsHelper.newSchedulesGroup(newRow, rowsType: PresentationRowType.bridgeAll);
+
+    List<FiltersSetRow> newFilters = newMap[FgwRowsHelper.newFilters] as List<FiltersSetRow>;
+    List<FgwScheduleRow> newSchedule = newMap[FgwRowsHelper.newSchedules] as List<FgwScheduleRow>;
+
+    relateSchedules = newSchedule.toSet();
+    relateFiltersSets = newFilters.toSet();
+
+    await filtersSets.add(newFilters.toSet(), type: PresentationRowType.bridgeAll);
+    await fgwSchedules.add(newSchedule.toSet(), type: PresentationRowType.bridgeAll);
     return newRow;
   }
 }

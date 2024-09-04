@@ -90,7 +90,10 @@ class _WidgetEditSettingPageState extends State<WidgetEditSettingPage> with Feed
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => FgwWidgetSettings(widgetId: widgetId),
+            builder: (context) => FgwWidgetSettings(
+              widgetId: widgetId,
+              fromSettingsPage: true, // Add this line
+            ),
           ),
         );
       },
@@ -103,7 +106,10 @@ class _WidgetEditSettingPageState extends State<WidgetEditSettingPage> with Feed
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => HomeWidgetSettingsPage(widgetId: widgetId),
+            builder: (context) => HomeWidgetSettingsPage(
+              widgetId: widgetId,
+              fromSettingsPage: true,
+            ),
           ),
         );
       },

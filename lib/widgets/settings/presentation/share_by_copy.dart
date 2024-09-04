@@ -1,5 +1,5 @@
 import 'package:aves/model/fgw/share_copied_entry.dart';
-import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/utils/android_file_utils.dart';
@@ -26,10 +26,8 @@ class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
         child: ListView(
           children: [
             SettingsSwitchListTile(
-              selector: (context, s) =>
-                  !s.hiddenFilters.contains(AlbumFilter(androidFileUtils.avesShareByCopyPath, null)),
-              onChanged: (v) =>
-                  settings.changeFilterVisibility({AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}, v),
+              selector: (context, s) => !s.hiddenFilters.contains(PathFilter(androidFileUtils.avesShareByCopyPath)),
+              onChanged: (v) => settings.changeFilterVisibility({PathFilter(androidFileUtils.avesShareByCopyPath)}, v),
               title: l10n.settingsShowAvesShareCopiedItems,
             ),
             SettingsSwitchListTile(
@@ -61,7 +59,7 @@ class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
             SettingsDurationListTile(
               selector: (context, s) => s.shareByCopyRemoveInterval,
               onChanged: (v) => settings.shareByCopyRemoveInterval = v,
-              title: l10n.settingsShareByCopyExpiredInterval,
+              title: l10n.settingsExpiredInterval,
             ),
             SettingsSelectionListTile<ShareByCopySetDateType>(
               values: ShareByCopySetDateType.values,

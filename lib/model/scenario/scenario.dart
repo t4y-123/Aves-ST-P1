@@ -1,154 +1,50 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
-import 'package:aves/model/scenario/scenarios_helper.dart';
+import 'package:aves/l10n/l10n.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/theme/colors.dart';
 import 'package:aves/utils/collection_utils.dart';
-import 'package:collection/collection.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
-import '../../l10n/l10n.dart';
-import '../settings/settings.dart';
-import 'enum/scenario_item.dart';
-
-enum ScenarioRowsType { all, bridgeAll }
-
 final Scenario scenarios = Scenario._private();
 
-class Scenario with ChangeNotifier {
-  Set<ScenarioRow> _rows = {};
-  Set<ScenarioRow> _bridgeRows = {};
-
+class Scenario extends PresentationRows<ScenarioRow> {
   Scenario._private();
 
-  Future<void> init() async {
-    _rows = await metadataDb.loadAllScenarios();
-    _bridgeRows = await metadataDb.loadAllScenarios();
+  @override
+  Future<Set<ScenarioRow>> loadAllRows() async {
+    return await metadataDb.loadAllScenarios();
   }
 
-  Future<void> refresh() async {
-    _rows.clear();
-    _bridgeRows.clear();
-    _rows = await metadataDb.loadAllScenarios();
-    _bridgeRows = await metadataDb.loadAllScenarios();
+  @override
+  Future<void> addRowsToDb(Set<ScenarioRow> newRows) async {
+    await metadataDb.addScenarios(newRows);
   }
 
-  int get count => _rows.length;
-
-  Set<ScenarioRow> get all => Set.unmodifiable(_rows);
-
-  Set<ScenarioRow> get bridgeAll => Set.unmodifiable(_bridgeRows);
-
-  Set<ScenarioRow> _getTarget(ScenarioRowsType type) {
-    switch (type) {
-      case ScenarioRowsType.bridgeAll:
-        return _bridgeRows;
-      case ScenarioRowsType.all:
-      default:
-        return _rows;
-    }
+  @override
+  Future<void> removeRowsFromDb(Set<ScenarioRow> removedRows) async {
+    await metadataDb.removeScenarios(removedRows);
   }
 
-  Future<void> add(Set<ScenarioRow> newRows, {ScenarioRowsType type = ScenarioRowsType.all}) async {
-    final targetSet = _getTarget(type);
-    if (type == ScenarioRowsType.all) {
-      await metadataDb.addScenarios(newRows);
-    }
-    targetSet.addAll(newRows);
-    notifyListeners();
+  @override
+  Future<void> clearRowsInDb() async {
+    await metadataDb.clearScenarios();
   }
 
-  Future<void> setRows(Set<ScenarioRow> newRows, {ScenarioRowsType type = ScenarioRowsType.all}) async {
-    for (var row in newRows) {
-      await set(
-        id: row.id,
-        orderNum: row.orderNum,
-        labelName: row.labelName,
-        color: row.color!,
-        loadType: row.loadType,
-        dateMillis: row.dateMillis,
-        isActive: row.isActive,
-        type: type,
-      );
-    }
-    notifyListeners();
-  }
+  @override
+  Future<void> removeIds(Set<int> rowIds,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await super.removeIds(rowIds, type: type, notify: notify);
 
-  Future<void> set({
-    required int id,
-    required int orderNum,
-    required String labelName,
-    required ScenarioLoadType loadType,
-    required Color? color,
-    required int dateMillis,
-    required bool isActive,
-    ScenarioRowsType type = ScenarioRowsType.all,
-  }) async {
-    final targetSet = _getTarget(type);
-
-    final oldRows = targetSet.where((row) => row.id == id).toSet();
-    targetSet.removeAll(oldRows);
-    if (type == ScenarioRowsType.all) {
-      await metadataDb.removeScenarios(oldRows);
-    }
-
-    final row = ScenarioRow(
-      id: id,
-      orderNum: orderNum,
-      labelName: labelName,
-      loadType: loadType,
-      color: color,
-      dateMillis: dateMillis,
-      isActive: isActive,
-    );
-    targetSet.add(row);
-    if (type == ScenarioRowsType.all) {
-      await metadataDb.addScenarios({row});
-    }
-
-    notifyListeners();
-  }
-
-  Future<void> removeRows(Set<ScenarioRow> rows, {ScenarioRowsType type = ScenarioRowsType.all}) async {
-    await removeIds(rows.map((row) => row.id).toSet(), type: type);
-  }
-
-  Future<void> removeIds(Set<int> rowIds, {ScenarioRowsType type = ScenarioRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
-    if (type == ScenarioRowsType.all) {
-      scenariosHelper.removeScenarioPinnedFilters(removedRows);
-      await metadataDb.removeScenarios(removedRows);
-    }
-    removedRows.forEach(targetSet.remove);
-
-    notifyListeners();
-  }
-
-  Future<void> clear({ScenarioRowsType type = ScenarioRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    if (type == ScenarioRowsType.all) {
-      await metadataDb.clearScenarios();
-    }
-    targetSet.clear();
-
-    notifyListeners();
-  }
-
-  Color getRandomColor() {
-    final Random random = Random();
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
+    final relateItems = scenarioSteps.getAll(type).where((e) => rowIds.contains(e.scenarioId)).toSet();
+    await scenarioSteps.removeRows(relateItems, type: type, notify: notify);
   }
 
   Future<String> getLabelName(int orderNum, ScenarioLoadType loadType) async {
@@ -167,143 +63,36 @@ class Scenario with ChangeNotifier {
       Color? color,
       int? dateMillis,
       bool isActive = true,
-      ScenarioRowsType type = ScenarioRowsType.all}) async {
-    final targetSet = _getTarget(type);
+      PresentationRowType type = PresentationRowType.all}) async {
+    final targetSet = getAll(type);
     final newLoadType = loadType ?? ScenarioLoadType.excludeUnique;
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
-    final maxGuardLevel =
+    final maxScenario =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-    final orderNum = maxGuardLevel + existOrderNumOffset;
+    final orderNum = maxScenario + existOrderNumOffset;
     return ScenarioRow(
       id: metadataDb.nextId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, newLoadType),
-      color: color ?? getRandomColor(),
+      color: color ?? AColors.getRandomColor(),
       loadType: newLoadType,
       dateMillis: dateMillis ?? DateTime.now().millisecondsSinceEpoch,
       isActive: isActive,
     );
   }
 
-  Future<void> setExistRows({
-    required Set<ScenarioRow> rows,
-    required Map<String, dynamic> newValues,
-    ScenarioRowsType type = ScenarioRowsType.all,
-  }) async {
-    final setBridge = type == ScenarioRowsType.bridgeAll;
-    final targetSet = setBridge ? _bridgeRows : _rows;
-
-    debugPrint('$runtimeType setExistRows scenarios: ${scenarios.all.map((e) => e.toMap())}\n'
-        'row.targetSet:[${targetSet.map((e) => e.toMap())}]  \n'
-        'newValues ${newValues.toString()}\n');
-    for (var row in rows) {
-      final oldRow = targetSet.firstWhereOrNull((r) => r.id == row.id);
-      if (oldRow != null) {
-        debugPrint('$runtimeType setExistRows:$oldRow');
-        targetSet.remove(oldRow);
-        if (!setBridge) {
-          await metadataDb.removeScenarios({oldRow});
-        }
-
-        final updatedRow = ScenarioRow(
-          id: row.id,
-          orderNum: newValues[ScenarioRow.propOrderNum] ?? row.orderNum,
-          labelName: newValues[ScenarioRow.propLabelName] ?? row.labelName,
-          color: newValues[ScenarioRow.propColor] ?? row.color,
-          loadType: newValues[ScenarioRow.propLoadType] ?? row.loadType,
-          dateMillis: newValues[ScenarioRow.propDateMills] ?? DateTime.now().millisecondsSinceEpoch,
-          isActive: newValues[ScenarioRow.propIsActive] ?? row.isActive,
-        );
-
-        targetSet.add(updatedRow);
-        if (!setBridge) {
-          await metadataDb.addScenarios({updatedRow});
-        }
-      }
-    }
-    notifyListeners();
-  }
-
-  Future<void> syncRowsToBridge() async {
-    debugPrint('$runtimeType  syncRowsToBridge,\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    _bridgeRows.clear();
-    _bridgeRows.addAll(_rows);
-    debugPrint('$runtimeType  syncRowsToBridge,\n'
-        'after bridget:[$_bridgeRows]');
-  }
-
-  Future<void> syncBridgeToRows() async {
-    debugPrint('$runtimeType  syncBridgeToRows, before\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    await clear();
-    _rows.addAll(_bridgeRows);
-    await metadataDb.addScenarios(_rows);
-    debugPrint('$runtimeType  syncBridgeToRows, after\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    notifyListeners();
-  }
-
-  // import/export
-  Map<String, Map<String, dynamic>>? export() {
-    final rows = scenarios.all;
-    final jsonMap = Map.fromEntries(rows.map((row) {
-      return MapEntry(
-        row.id.toString(),
-        row.toMap(),
-      );
-    }));
-    return jsonMap.isNotEmpty ? jsonMap : null;
-  }
-
-  Future<void> import(dynamic jsonMap) async {
-    if (jsonMap is! Map) {
-      debugPrint('failed to import privacy guard levels for jsonMap=$jsonMap');
-      return;
-    }
-
-    final foundRows = <ScenarioRow>{};
-    jsonMap.forEach((id, attributes) {
-      if (id is String && attributes is Map<String, dynamic>) {
-        try {
-          final row = ScenarioRow.fromMap(attributes);
-          foundRows.add(row);
-        } catch (e) {
-          debugPrint('failed to import privacy guard level for id=$id, attributes=$attributes, error=$e');
-        }
-      } else {
-        debugPrint('failed to import privacy guard level for id=$id, attributes=${attributes.runtimeType}');
-      }
-    });
-
-    if (foundRows.isNotEmpty) {
-      await scenarios.clear();
-      await scenarios.add(foundRows);
-    }
+  @override
+  ScenarioRow importFromMap(Map<String, dynamic> attributes) {
+    return ScenarioRow.fromMap(attributes);
   }
 }
 
 @immutable
-class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
-  final int id;
+class ScenarioRow extends PresentRow<ScenarioRow> {
   final int orderNum;
-  final String labelName;
   final ScenarioLoadType loadType;
   final Color? color;
   final int dateMillis;
-  final bool isActive;
-
-  // Define property name constants
-  static const String propId = 'id';
-  static const String propOrderNum = 'orderNum';
-  static const String propLabelName = 'labelName';
-  static const String propLoadType = 'loadType';
-  static const String propColor = 'color';
-  static const String propDateMills = 'dateMillis';
-  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [
@@ -317,16 +106,16 @@ class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
       ];
 
   const ScenarioRow({
-    required this.id,
+    required super.id,
     required this.orderNum,
-    required this.labelName,
+    required super.labelName,
     required this.loadType,
     required this.color,
     required this.dateMillis,
-    required this.isActive,
+    required super.isActive,
   });
 
-  static ScenarioRow fromMap(Map map) {
+  factory ScenarioRow.fromMap(Map map) {
     final defaultDisplayType =
         ScenarioLoadType.values.safeByName(map['loadType'] as String, ScenarioLoadType.excludeUnique);
     //debugPrint('ScenarioRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
@@ -346,6 +135,7 @@ class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
 
   String toJson() => jsonEncode(toMap());
 
+  @override
   Map<String, dynamic> toMap() => {
         'id': id,
         'orderNum': orderNum,
@@ -392,6 +182,7 @@ class ScenarioRow extends Equatable implements Comparable<ScenarioRow> {
     return id.compareTo(other.id);
   }
 
+  @override
   ScenarioRow copyWith({
     int? id,
     int? orderNum,

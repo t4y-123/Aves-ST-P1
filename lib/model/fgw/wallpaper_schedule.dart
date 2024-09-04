@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
-import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -60,7 +59,7 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
 
   FgwScheduleRow newRow({
     required int existMaxOrderNumOffset,
-    required int privacyGuardLevelId,
+    required int guardLevelId,
     required int filtersSetId,
     required WallpaperUpdateType updateType,
     FgwDisplayedType? displayType,
@@ -73,32 +72,33 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
   }) {
     // get a guard level.
     final relateGuardLevel = fgwGuardLevels.getAll(type);
+
     if (relateGuardLevel.isEmpty) throw 'In general GuardLevel show not be empty!';
     debugPrint('$runtimeType WallpaperScheduleRow newRow relateGuardLevel:\n$relateGuardLevel');
-    var thisGuardLevel = relateGuardLevel.firstWhereOrNull((e) => e.id == privacyGuardLevelId);
-    debugPrint('$runtimeType WallpaperScheduleRow newRow $privacyGuardLevelId thisGuardLevel:\n$thisGuardLevel');
+    var thisGuardLevel = relateGuardLevel.firstWhereOrNull((e) => e.id == guardLevelId);
+    debugPrint('$runtimeType WallpaperScheduleRow newRow $guardLevelId thisGuardLevel:\n$thisGuardLevel');
 
     thisGuardLevel ??= relateGuardLevel.first;
-
     //
     // get a filterSet
-    final relateFilterSet = filtersSets.getAll(type);
-    if (relateGuardLevel.isEmpty) throw 'In general FilterSet  show not be empty!';
-    var thisFiltersSet = relateFilterSet.firstWhereOrNull((e) => e.id == filtersSetId) ?? filtersSets.all.first;
+    // final relateFilterSet = filtersSets.getAll(type);
+    // if (relateGuardLevel.isEmpty) throw 'In general FilterSet  show not be empty!';
+    // var thisFiltersSet = relateFilterSet.firstWhereOrNull((e) => e.id == filtersSetId) ?? filtersSets.all.first;
 
-    final targetSet = getTarget(type);
+    final targetSet = getAll(type);
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxScheduleNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
     final labelNameCommon = labelName ??
         'L${thisGuardLevel.guardLevel} id.${thisGuardLevel.id} ${thisGuardLevel.labelName} ${updateType.name}';
     final newLabelName = (updateType == WallpaperUpdateType.widget) ? '$labelNameCommon $widgetId' : labelNameCommon;
+
     return FgwScheduleRow(
       id: id ?? metadataDb.nextId,
       orderNum: maxScheduleNum + existMaxOrderNumOffset,
       labelName: newLabelName,
-      guardLevelId: privacyGuardLevelId,
-      filtersSetId: thisFiltersSet.id,
+      guardLevelId: guardLevelId,
+      filtersSetId: filtersSetId,
       updateType: updateType,
       widgetId: widgetId ?? 0,
       displayType: displayType ?? settings.fgwDisplayType,
@@ -109,10 +109,12 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
 
   Future<void> setWithDealConflictUpdateType(Set<FgwScheduleRow> rows,
       {PresentationRowType type = PresentationRowType.all}) async {
-    final targetSet = getTarget(type);
+    final targetSet = getAll(type);
 
     // Make a copy of the targetSet to avoid concurrent modification issues
     final targetSetCopy = targetSet.toSet();
+    debugPrint('$runtimeType \n curRow $rows \n'
+        'targetSet $targetSet\n ');
 
     for (var row in rows) {
       final oldRow = targetSetCopy.firstWhereOrNull((r) => r.id == row.id);
@@ -121,7 +123,7 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
         await removeRows({oldRow}, type: type);
         await setRows({updatedRow}, type: type);
         // set conflict update type in {home,lock} and {both}.
-        if (updatedRow.isActive) {
+        if (updatedRow.isActive && (updatedRow.updateType != WallpaperUpdateType.widget)) {
           if (updatedRow.updateType == WallpaperUpdateType.home || updatedRow.updateType == WallpaperUpdateType.lock) {
             // Deactivate rows with updateType both
             for (var conflictingRow in targetSetCopy
@@ -139,44 +141,8 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
             }
           }
         }
-      }
-    }
-    await _removeDuplicates(type: type);
-    notifyListeners();
-  }
-
-  Future<void> setExistRows(Set<FgwScheduleRow> rows, Map<String, dynamic> newValues,
-      {PresentationRowType type = PresentationRowType.all}) async {
-    final targetSet = getTarget(type);
-
-    // Make a copy of the targetSet to avoid concurrent modification issues
-    final targetSetCopy = targetSet.toSet();
-
-    for (var row in rows) {
-      final oldRow = targetSetCopy.firstWhereOrNull((r) => r.id == row.id);
-      if (oldRow != null) {
-        final updatedRow = row.copyWith();
-        await removeRows({oldRow}, type: type);
-        await setRows({updatedRow}, type: type);
-        // set conflict update type in {home,lock} and {both}.
-        if (updatedRow.isActive) {
-          if (updatedRow.updateType == WallpaperUpdateType.home || updatedRow.updateType == WallpaperUpdateType.lock) {
-            // Deactivate rows with updateType both
-            for (var conflictingRow in targetSetCopy
-                .where((r) => r.updateType == WallpaperUpdateType.both && r.guardLevelId == updatedRow.guardLevelId)) {
-              final newRow = conflictingRow.copyWith(isActive: false);
-              await set(newRow, type: type);
-            }
-          } else if (updatedRow.updateType == WallpaperUpdateType.both) {
-            // Deactivate rows with updateType home or lock
-            for (var conflictingRow in targetSetCopy.where((r) =>
-                (r.updateType == WallpaperUpdateType.home || r.updateType == WallpaperUpdateType.lock) &&
-                r.guardLevelId == updatedRow.guardLevelId)) {
-              final newRow = conflictingRow.copyWith(isActive: false);
-              await set(newRow, type: type);
-            }
-          }
-        }
+      } else {
+        await set(row, type: type);
       }
     }
     await _removeDuplicates(type: type);
@@ -198,18 +164,6 @@ class FgwScheduleRow extends PresentRow<FgwScheduleRow> {
   final int widgetId;
   final FgwDisplayedType displayType;
   final int interval;
-  // in seconds
-  // Define property name constants
-  static const String propId = 'id';
-  static const String propOrderNum = 'orderNum';
-  static const String propLabelName = 'labelName';
-  static const String propPrivacyGuardLevelId = 'privacyGuardLevelId';
-  static const String propFiltersSetId = 'filtersSetId';
-  static const String propUpdateType = 'updateType';
-  static const String propWidgetId = 'widgetId';
-  static const String propDisplayType = 'displayType';
-  static const String propInterval = 'interval';
-  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [
@@ -238,7 +192,7 @@ class FgwScheduleRow extends PresentRow<FgwScheduleRow> {
     required super.isActive,
   });
 
-  static FgwScheduleRow fromMap(Map map) {
+  factory FgwScheduleRow.fromMap(Map map) {
     final defaultDisplayType =
         FgwDisplayedType.values.safeByName(map['displayType'] as String, settings.fgwDisplayType);
     debugPrint('WallpaperScheduleRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
@@ -246,7 +200,7 @@ class FgwScheduleRow extends PresentRow<FgwScheduleRow> {
       id: map['id'] as int,
       orderNum: map['orderNum'] as int,
       labelName: map['labelName'] as String,
-      guardLevelId: map['privacyGuardLevelId'] as int,
+      guardLevelId: map['fgwGuardLevelId'] as int,
       filtersSetId: map['filtersSetId'] as int,
       updateType: WallpaperUpdateType.values.safeByName(map['updateType'] as String, WallpaperUpdateType.home),
       widgetId: map['widgetId'] as int,
@@ -263,7 +217,7 @@ class FgwScheduleRow extends PresentRow<FgwScheduleRow> {
         'id': id,
         'orderNum': orderNum,
         'labelName': labelName,
-        'privacyGuardLevelId': guardLevelId,
+        'fgwGuardLevelId': guardLevelId,
         'filtersSetId': filtersSetId,
         'updateType': updateType.name,
         'widgetId': widgetId,

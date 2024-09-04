@@ -23,12 +23,29 @@ class ForegroundWallpaperTileService : TileService() {
                     state = Tile.STATE_ACTIVE
                     updateTile()
                 }
+                FgwIntentAction.UNLOCK -> {
+                    handleLockStateChange(false)
+                }
+                FgwIntentAction.LOCK -> {
+                    handleLockStateChange(true)
+                }
             }
         } catch (e: Exception) {
             Log.e(LOG_TAG, "onStartCommand  current state: ${qsTile.state}",e)
         }
         setIsTileClickRunning(this,true)
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun handleLockStateChange(isLocked: Boolean) {
+        val serviceIntent = Intent(tileServiceContext, ForegroundWallpaperService::class.java).apply {
+            action = if (isLocked) FgwIntentAction.LOCK else FgwIntentAction.UNLOCK
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            tileServiceContext.startForegroundService(serviceIntent)
+        } else {
+            tileServiceContext.startService(serviceIntent)
+        }
     }
 
     override fun onClick() {

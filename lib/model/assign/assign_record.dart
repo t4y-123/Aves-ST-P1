@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/enum/assign_item.dart';
-import 'package:aves/model/scenario/scenarios_helper.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/theme/colors.dart';
 import 'package:aves/utils/collection_utils.dart';
-import 'package:collection/collection.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -17,164 +15,38 @@ import 'package:intl/intl.dart';
 import '../../l10n/l10n.dart';
 import '../settings/settings.dart';
 
-enum AssignRecordRowsType { all, bridgeAll }
-
 final AssignRecord assignRecords = AssignRecord._private();
 
-class AssignRecord with ChangeNotifier {
-  Set<AssignRecordRow> _rows = {};
-  Set<AssignRecordRow> _bridgeRows = {};
-
+class AssignRecord extends PresentationRows<AssignRecordRow> {
   AssignRecord._private();
 
-  Future<void> init() async {
-    _rows = await metadataDb.loadAllAssignRecords();
-    _bridgeRows = await metadataDb.loadAllAssignRecords();
+  @override
+  Future<Set<AssignRecordRow>> loadAllRows() async {
+    return await metadataDb.loadAllAssignRecords();
   }
 
-  Future<void> refresh() async {
-    _rows.clear();
-    _bridgeRows.clear();
-    _rows = await metadataDb.loadAllAssignRecords();
-    _bridgeRows = await metadataDb.loadAllAssignRecords();
+  @override
+  Future<void> addRowsToDb(Set<AssignRecordRow> newRows) async {
+    await metadataDb.addAssignRecords(newRows);
   }
 
-  int get count => _rows.length;
-
-  Set<AssignRecordRow> get all {
-    if (settings.canAutoRemoveExpiredTempAssign) {
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final expirationTime = settings.assignTemporaryExpiredInterval * 1000; // Convert to milliseconds
-      final expiredRows = _rows
-          .where((row) => (now - row.dateMillis) > expirationTime && row.assignType == AssignRecordType.temporary)
-          .toSet();
-
-      if (expiredRows.isNotEmpty) {
-        scenariosHelper.removeTemporaryAssignRows(expiredRows,
-            type: AssignRecordRowsType.all); // Remove expired records
-      }
-    }
-    return Set.unmodifiable(_rows);
+  @override
+  Future<void> removeRowsFromDb(Set<AssignRecordRow> removedRows) async {
+    await metadataDb.removeAssignRecords(removedRows);
   }
 
-  Set<AssignRecordRow> get bridgeAll => Set.unmodifiable(_bridgeRows);
-
-  Set<AssignRecordRow> _getTarget(AssignRecordRowsType type) {
-    switch (type) {
-      case AssignRecordRowsType.bridgeAll:
-        return _bridgeRows;
-      case AssignRecordRowsType.all:
-      default:
-        return _rows;
-    }
+  @override
+  Future<void> clearRowsInDb() async {
+    await metadataDb.clearAssignRecords();
   }
 
-  Future<void> add(Set<AssignRecordRow> newRows, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    final targetSet = _getTarget(type);
-    if (type == AssignRecordRowsType.all) {
-      await metadataDb.addAssignRecords(newRows);
-    }
-    targetSet.addAll(newRows);
-    notifyListeners();
-  }
+  @override
+  Future<void> removeIds(Set<int> rowIds,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await super.removeIds(rowIds, type: type, notify: notify);
 
-  Future<void> setRows(Set<AssignRecordRow> newRows, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    for (var row in newRows) {
-      await set(
-        id: row.id,
-        orderNum: row.orderNum,
-        labelName: row.labelName,
-        color: row.color!,
-        assignType: row.assignType,
-        dateMillis: row.dateMillis,
-        isActive: row.isActive,
-        scenarioId: row.scenarioId,
-        type: type,
-      );
-    }
-    notifyListeners();
-  }
-
-  Future<void> set({
-    required int id,
-    required int orderNum,
-    required String labelName,
-    required AssignRecordType assignType,
-    required Color? color,
-    required int dateMillis,
-    required bool isActive,
-    int scenarioId = 0,
-    AssignRecordRowsType type = AssignRecordRowsType.all,
-  }) async {
-    final targetSet = _getTarget(type);
-
-    final oldRows = targetSet.where((row) => row.id == id).toSet();
-    targetSet.removeAll(oldRows);
-    if (type == AssignRecordRowsType.all) {
-      await metadataDb.removeAssignRecords(oldRows);
-    }
-
-    final row = AssignRecordRow(
-      id: id,
-      orderNum: orderNum,
-      labelName: labelName,
-      assignType: assignType,
-      color: color,
-      dateMillis: dateMillis,
-      scenarioId: scenarioId,
-      isActive: isActive,
-    );
-    targetSet.add(row);
-    if (type == AssignRecordRowsType.all) {
-      await metadataDb.addAssignRecords({row});
-    }
-
-    notifyListeners();
-  }
-
-  Future<void> removeRows(Set<AssignRecordRow> rows, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    await removeIds(rows.map((row) => row.id).toSet(), type: type);
-  }
-
-  Future<void> removeIds(Set<int> rowIds, {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
-    final removeAssignEntries = switch (type) {
-      AssignRecordRowsType.all => assignEntries.all.where((e) => rowIds.contains(e.assignId)).toSet(),
-      AssignRecordRowsType.bridgeAll => assignEntries.bridgeAll.where((e) => rowIds.contains(e.assignId)).toSet(),
-    };
-    if (type == AssignRecordRowsType.all) {
-      await metadataDb.removeAssignRecords(removedRows);
-      await assignEntries.removeRows(removeAssignEntries, type: AssignEntryRowsType.all);
-    } else {
-      await assignEntries.removeRows(removeAssignEntries, type: AssignEntryRowsType.bridgeAll);
-    }
-
-    removedRows.forEach(targetSet.remove);
-
-    notifyListeners();
-  }
-
-  Future<void> clear({AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    if (type == AssignRecordRowsType.all) {
-      await metadataDb.clearAssignRecords();
-    }
-    targetSet.clear();
-
-    notifyListeners();
-  }
-
-  Color getRandomColor() {
-    final Random random = Random();
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
+    final relateItems = assignEntries.getAll(type).where((e) => rowIds.contains(e.assignId)).toSet();
+    await assignEntries.removeRows(relateItems, type: type, notify: notify);
   }
 
   Future<String> getLabelName(int orderNum, DateTime dateTime) async {
@@ -186,23 +58,22 @@ class AssignRecord with ChangeNotifier {
   Future<AssignRecordRow> newRow(int existOrderNumOffset,
       {String? labelName,
       AssignRecordType? assignType,
-      Color? color,
       int? dateMillis,
       bool isActive = true,
       int scenarioId = 0,
-      AssignRecordRowsType type = AssignRecordRowsType.all}) async {
-    final targetSet = _getTarget(type);
+      PresentationRowType type = PresentationRowType.all}) async {
+    final targetSet = getTarget(type);
 
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
-    final maxGuardLevel =
+    final maxOrderNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-    final orderNum = maxGuardLevel + existOrderNumOffset;
+    final orderNum = maxOrderNum + existOrderNumOffset;
     final finalDateTime = DateTime.now();
     return AssignRecordRow(
       id: metadataDb.nextId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, finalDateTime),
-      color: color ?? getRandomColor(),
+      color: AColors.getRandomColor(),
       assignType: assignType ?? AssignRecordType.permanent,
       dateMillis: dateMillis ?? finalDateTime.millisecondsSinceEpoch,
       scenarioId: scenarioId,
@@ -210,128 +81,19 @@ class AssignRecord with ChangeNotifier {
     );
   }
 
-  Future<void> setExistRows({
-    required Set<AssignRecordRow> rows,
-    required Map<String, dynamic> newValues,
-    AssignRecordRowsType type = AssignRecordRowsType.all,
-  }) async {
-    final setBridge = type == AssignRecordRowsType.bridgeAll;
-    final targetSet = setBridge ? _bridgeRows : _rows;
-
-    debugPrint('$runtimeType setExistRows assignRecords: ${assignRecords.all.map((e) => e.toMap())}\n'
-        'row.targetSet:[${targetSet.map((e) => e.toMap())}]  \n'
-        'newValues ${newValues.toString()}\n');
-    for (var row in rows) {
-      final oldRow = targetSet.firstWhereOrNull((r) => r.id == row.id);
-      if (oldRow != null) {
-        debugPrint('$runtimeType setExistRows:$oldRow');
-        targetSet.remove(oldRow);
-        if (!setBridge) {
-          await metadataDb.removeAssignRecords({oldRow});
-        }
-
-        final updatedRow = AssignRecordRow(
-          id: row.id,
-          orderNum: newValues[AssignRecordRow.propOrderNum] ?? row.orderNum,
-          labelName: newValues[AssignRecordRow.propLabelName] ?? row.labelName,
-          color: newValues[AssignRecordRow.propColor] ?? row.color,
-          assignType: newValues[AssignRecordRow.propAssignType] ?? row.assignType,
-          dateMillis: newValues[AssignRecordRow.propDateMills] ?? DateTime.now().millisecondsSinceEpoch,
-          scenarioId: newValues[AssignRecordRow.propScenarioId] ?? row.scenarioId,
-          isActive: newValues[AssignRecordRow.propIsActive] ?? row.isActive,
-        );
-
-        targetSet.add(updatedRow);
-        if (!setBridge) {
-          await metadataDb.addAssignRecords({updatedRow});
-        }
-      }
-    }
-    notifyListeners();
-  }
-
-  Future<void> syncRowsToBridge() async {
-    debugPrint('$runtimeType  syncRowsToBridge,\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    _bridgeRows.clear();
-    _bridgeRows.addAll(_rows);
-    debugPrint('$runtimeType  syncRowsToBridge,\n'
-        'after bridget:[$_bridgeRows]');
-  }
-
-  Future<void> syncBridgeToRows() async {
-    debugPrint('$runtimeType  syncBridgeToRows, before\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    await clear();
-    _rows.addAll(_bridgeRows);
-    await metadataDb.addAssignRecords(_rows);
-    debugPrint('$runtimeType  syncBridgeToRows, after\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
-    notifyListeners();
-  }
-
-  // import/export
-  Map<String, Map<String, dynamic>>? export() {
-    final rows = assignRecords.all;
-    final jsonMap = Map.fromEntries(rows.map((row) {
-      return MapEntry(
-        row.id.toString(),
-        row.toMap(),
-      );
-    }));
-    return jsonMap.isNotEmpty ? jsonMap : null;
-  }
-
-  Future<void> import(dynamic jsonMap) async {
-    if (jsonMap is! Map) {
-      debugPrint('failed to import assign filters s for jsonMap=$jsonMap');
-      return;
-    }
-
-    final foundRows = <AssignRecordRow>{};
-    jsonMap.forEach((id, attributes) {
-      if (id is String && attributes is Map<String, dynamic>) {
-        try {
-          final row = AssignRecordRow.fromMap(attributes);
-          foundRows.add(row);
-        } catch (e) {
-          debugPrint('failed to import assign filters  for id=$id, attributes=$attributes, error=$e');
-        }
-      } else {
-        debugPrint('failed to import assign filters  for id=$id, attributes=${attributes.runtimeType}');
-      }
-    });
-
-    if (foundRows.isNotEmpty) {
-      await assignRecords.clear();
-      await assignRecords.add(foundRows);
-    }
+  @override
+  AssignRecordRow importFromMap(Map<String, dynamic> attributes) {
+    return AssignRecordRow.fromMap(attributes);
   }
 }
 
 @immutable
-class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
-  final int id;
+class AssignRecordRow extends PresentRow<AssignRecordRow> {
   final int orderNum;
-  final String labelName;
   final AssignRecordType assignType;
   final Color? color;
   final int dateMillis;
   final int scenarioId;
-  final bool isActive;
-
-  // Define property name constants
-  static const String propId = 'id';
-  static const String propOrderNum = 'orderNum';
-  static const String propLabelName = 'labelName';
-  static const String propAssignType = 'assignType';
-  static const String propColor = 'color';
-  static const String propDateMills = 'dateMillis';
-  static const String propScenarioId = 'scenarioId';
-  static const String propIsActive = 'isActive';
 
   @override
   List<Object?> get props => [
@@ -346,17 +108,17 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
       ];
 
   const AssignRecordRow({
-    required this.id,
+    required super.id,
     required this.orderNum,
-    required this.labelName,
+    required super.labelName,
     required this.assignType,
     required this.color,
     required this.dateMillis,
     required this.scenarioId,
-    required this.isActive,
+    required super.isActive,
   });
 
-  static AssignRecordRow fromMap(Map map) {
+  factory AssignRecordRow.fromMap(Map map) {
     final defaultAssignRecordType =
         AssignRecordType.values.safeByName(map['assignType'] as String, AssignRecordType.permanent);
     //debugPrint('AssignRecordRow defaultAssignRecordType $defaultAssignRecordType fromMap:\n  $map.');
@@ -377,6 +139,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
 
   String toJson() => jsonEncode(toMap());
 
+  @override
   Map<String, dynamic> toMap() => {
         'id': id,
         'orderNum': orderNum,
@@ -424,6 +187,7 @@ class AssignRecordRow extends Equatable implements Comparable<AssignRecordRow> {
     return id.compareTo(other.id);
   }
 
+  @override
   AssignRecordRow copyWith({
     int? id,
     int? orderNum,

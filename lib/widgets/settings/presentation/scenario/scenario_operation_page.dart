@@ -61,16 +61,19 @@ class ScenariosOperationPage extends StatelessWidget with FeedbackMixin, Scenari
             ),
           ),
           ListTile(
-            title: Text(l10n.settingsScenarioSetScenarioPassDefaultText),
+            title: Text(l10n.settingsSetPassDefaultText),
             trailing: ElevatedButton(
               onPressed: () async {
                 if (settings.scenarioLock) {
                   if (!await unlockScenarios(context)) return;
                 }
-                final details = await showDialog<EditScenarioLockDialog>(
+                final details = await showDialog<EditLockTypeDialog>(
                   context: context,
-                  builder: (context) => const EditScenarioLockDialog(),
-                  routeSettings: const RouteSettings(name: EditScenarioLockDialog.routeName),
+                  builder: (context) => EditLockTypeDialog(
+                    initialType: settings.scenarioLockType,
+                    onSubmitLockPass: setScenarioLockPass,
+                  ),
+                  routeSettings: const RouteSettings(name: EditLockTypeDialog.routeName),
                 );
                 if (details == null) return;
                 // wait for the dialog to hide as applying the change may block the UI

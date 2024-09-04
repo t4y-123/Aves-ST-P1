@@ -47,9 +47,15 @@ object FgwServiceActionHandler {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = false
                 FgwServiceFlutterHandler.changeGuardLevel(context,FgwServiceFlutterHandler.curGuardLevel)
             }
-            FgwIntentAction.LOCK_UNLOCK -> {
-                FgwSeviceNotificationHandler.canChangeLevel = !FgwSeviceNotificationHandler.canChangeLevel
-//                showToast(context,if (FgwSeviceNotificationHandler.canChangeLevel) "Locked" else "Unlocked")
+            FgwIntentAction.LOCK -> {
+                FgwSeviceNotificationHandler.isGuardLevelLocked = true;
+                FgwServiceFlutterHandler.callDartNoArgsMethod(context,FgwConstant.FGW_LOCK)
+//                showToast(context,if (FgwSeviceNotificationHandler.isGuardLevelLocked) "Locked" else "Unlocked")
+            }
+            FgwIntentAction.UNLOCK -> {
+                FgwSeviceNotificationHandler.isGuardLevelLocked = false;
+                FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
+//                showToast(context,if (FgwSeviceNotificationHandler.isGuardLevelLocked) "Locked" else "Unlocked")
             }
             FgwIntentAction.SYNC_FGW_SCHEDULE_CHANGES -> {
                 FgwServiceFlutterHandler.callDartNoArgsMethod(context,FgwConstant.SYNC_FGW_SCHEDULE_CHANGES)

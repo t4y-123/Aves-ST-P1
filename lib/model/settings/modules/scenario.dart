@@ -53,10 +53,10 @@ mixin ScenarioSettings on SettingsAccess {
 
   static const scenarioLockTypeKey = 'scenario_lock_type';
 
-  ScenarioLockType get scenarioLockType =>
-      getEnumOrDefault(scenarioLockTypeKey, SettingsDefaults.scenarioLockType, ScenarioLockType.values);
+  CommonLockType get scenarioLockType =>
+      getEnumOrDefault(scenarioLockTypeKey, SettingsDefaults.scenarioLockType, CommonLockType.values);
 
-  set scenarioLockType(ScenarioLockType newValue) => set(scenarioLockTypeKey, newValue.toString());
+  set scenarioLockType(CommonLockType newValue) => set(scenarioLockTypeKey, newValue.toString());
 
   static const scenarioLockPassKey = 'scenario_lock_password';
 

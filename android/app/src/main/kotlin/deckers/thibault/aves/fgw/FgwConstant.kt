@@ -15,7 +15,8 @@ object FgwIntentAction {
     const val USED_RECORD = "fgw_used_entry_record_open"
     const val DOWNWARD = "FGW_DOWNWARD"
     const val UPWARD = "FGW_UPWARD"
-    const val LOCK_UNLOCK = "FGW_LOCK_UNLOCK"
+    const val LOCK = "FGW_LOCK"
+    const val UNLOCK = "FGW_UNLOCK"
     const val APPLY_LEVEL_CHANGE = "FGW_APPLY_LEVEL_CHANGE"
     const val CANCEL_LEVEL_CHANGE = "FGW_CANCEL_LEVEL_CHANGE"
     const val SYNC_FGW_SCHEDULE_CHANGES = "syncFgwScheduleChanges"
@@ -49,14 +50,20 @@ object FgwConstant {
     const val ACTIVE_LEVELS = "activeLevels"
     const val SCHEDULES = "schedules"
     const val CUR_ENTRY_NAME = "curEntryName"
+    const val GUARD_LEVEL_LOCK = "guardLevelLock"
 
     //sync data from Native side.
     const val SYNC_FGW_SCHEDULE_CHANGES = "syncFgwScheduleChanges"
+    const val FGW_LOCK = "fgwLock"
+    const val FGW_UNLOCK = "fgw_unlock"
 
     // Use diff key with the package name prefix to diff in debug apk or release or flavor apk.
+
     const val home_schedule_key = "home-0"
     const val lock_schedule_key = "lock-0"
     const val both_schedule_key = "both-0"
+
+
 
     fun getScheduleKey(context: Context, baseKey: String): String {
         val packageName = context.packageName
@@ -69,7 +76,7 @@ object FgwConstant {
 }
 
 // Data classes to represent the complex objects
-data class PrivacyGuardLevelRow(val id: Int, val level: Int, val name: String, val color: Int,val isActive: Boolean)
+data class FgwGuardLevelRow(val id: Int, val level: Int, val name: String, val color: Int,val isActive: Boolean)
 data class WallpaperScheduleRow(
     val id: Int, val order: Int, val labelName: String, val guardLevelId: Int, val filtersSetId: Int,
     val updateType: String, val widgetId: Int,val displayType:String, val interval: Int, val isActive: Boolean

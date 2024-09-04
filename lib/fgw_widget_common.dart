@@ -139,7 +139,7 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
         }
 
         final recentUsedEntryRecord =
-            fgwUsedEntryRecord.all.where((e) => e.widgetId == widgetId && e.privacyGuardLevelId == curLevel?.id);
+            fgwUsedEntryRecord.all.where((e) => e.widgetId == widgetId && e.guardLevelId == curLevel?.id);
         debugPrint(
             '$widgetId foregroundWallpaperWidgetMainCommon recentUsedEntryRecord entries length [${recentUsedEntryRecord.length}]');
 
@@ -152,6 +152,9 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
               widgetId: widgetId, curLevel: curLevel);
         }
         debugPrint('$widgetId Widget fgwEntry found: $fgwEntry');
+        if (fgwEntry != null) {
+          settings.setWidgetUri(widgetId, fgwEntry.uri);
+        }
         return fgwEntry;
       }
     }
@@ -163,7 +166,8 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   final filters = settings.getWidgetCollectionFilters(widgetId);
   debugPrint('foregroundWallpaperWidgetMainCommon getWidgetCollectionFilters:\n[ $filters ]');
 
-  final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+  final entries =
+      CollectionLens(source: source, filters: filters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
 
   switch (settings.getWidgetDisplayedItem(widgetId)) {
     case WidgetDisplayedItem.random:

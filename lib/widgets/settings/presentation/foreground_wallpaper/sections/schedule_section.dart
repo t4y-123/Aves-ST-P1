@@ -6,80 +6,17 @@ import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/big_duration_dialog.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
+import 'package:aves/widgets/settings/presentation/common/section.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sections/schedule_collection_tile.dart';
-import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class FgwSchedulesTitleTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => '${context.l10n.settingsScheduleNamePrefix} ${item.orderNum}';
-
-  final FgwScheduleRow item;
-
-  FgwSchedulesTitleTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemInfoListTile<FgwSchedule>(
-        tileTitle: title(context),
-        selector: (context, levels) {
-          debugPrint('$runtimeType FgwSchedulesLabelNameModifiedTile\n'
-              'item: $item \n'
-              'rows ${levels.all} \n'
-              'bridges ${levels.bridgeAll}\n');
-          return ('id:${item.id}\n'
-              '${context.l10n.settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle}: ${item.updateType.getName(context)}\n'
-              '${context.l10n.wallpaperUpdateTypeWidget} id:${item.widgetId}');
-        },
-      );
-}
-
-class FgwSchedulesLabelNameModifiedTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => context.l10n.renameLabelNameTileTitle;
-  final FgwScheduleRow item;
-
-  FgwSchedulesLabelNameModifiedTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemSettingsLabelNameListTile<FgwSchedule>(
-        tileTitle: title(context),
-        selector: (context, levels) {
-          debugPrint('$runtimeType FgwSchedulesLabelNameModifiedTile\n'
-              'item: $item \n'
-              'rows ${levels.all} \n'
-              'bridges ${levels.bridgeAll}\n');
-          final row = levels.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
-          if (row != null) {
-            return row.labelName;
-          } else {
-            return 'Error';
-          }
-        },
-        onChanged: (value) async {
-          debugPrint('$runtimeType FgwSchedulesSectionBaseSection\n'
-              'row.labelName ${item.labelName} \n'
-              'to value $value\n');
-          final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(labelName: value);
-          await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
-        },
-      );
-}
-
-class FgwScheduleFilterSetTile extends SettingsTile {
+class FgwScheduleFilterSetTile extends ItemSettingsTile<FgwScheduleRow> {
   @override
   String title(BuildContext context) => '${context.l10n.filterSetNamePrefix}:';
 
-  final FgwScheduleRow item;
-
-  FgwScheduleFilterSetTile({
-    required this.item,
-  });
+  FgwScheduleFilterSetTile({required super.item});
 
   @override
   Widget build(BuildContext context) => Selector<FgwSchedule, FgwScheduleRow>(
@@ -93,15 +30,11 @@ class FgwScheduleFilterSetTile extends SettingsTile {
       );
 }
 
-class FgwSchedulesIntervalTile extends SettingsTile {
+class FgwSchedulesIntervalTile extends ItemSettingsTile<FgwScheduleRow> {
   @override
   String title(BuildContext context) => context.l10n.settingsActiveTitle;
 
-  final FgwScheduleRow item;
-
-  FgwSchedulesIntervalTile({
-    required this.item,
-  });
+  FgwSchedulesIntervalTile({required super.item});
 
   @override
   Widget build(BuildContext context) => _buildIntervalSelectTile(context, item);
@@ -194,14 +127,11 @@ class FgwSchedulesIntervalTile extends SettingsTile {
   }
 }
 
-class FgwDisplayTypeSwitchTile extends SettingsTile with FeedbackMixin {
+class FgwDisplayTypeSwitchTile extends ItemSettingsTile<FgwScheduleRow> with FeedbackMixin {
   @override
   String title(BuildContext context) => context.l10n.fgwDisplayType;
-  final FgwScheduleRow item;
 
-  FgwDisplayTypeSwitchTile({
-    required this.item,
-  });
+  FgwDisplayTypeSwitchTile({required super.item});
 
   @override
   Widget build(BuildContext context) => ItemSettingsSelectionListTile<FgwSchedule, FgwDisplayedType>(
@@ -214,26 +144,5 @@ class FgwDisplayTypeSwitchTile extends SettingsTile with FeedbackMixin {
         },
         tileTitle: title(context),
         dialogTitle: context.l10n.fgwDisplayType,
-      );
-}
-
-class FgwSchedulesActiveListTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => context.l10n.settingsActiveTitle;
-
-  final FgwScheduleRow item;
-
-  FgwSchedulesActiveListTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemSettingsSwitchListTile<FgwSchedule>(
-        selector: (context, s) => s.bridgeAll.firstWhere((e) => e.id == item.id).isActive,
-        onChanged: (v) async {
-          final newRow = fgwSchedules.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(isActive: v);
-          await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
-        },
-        title: title(context),
       );
 }

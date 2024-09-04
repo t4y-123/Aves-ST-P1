@@ -49,4 +49,13 @@ class ForegroundWallpaperService {
       await reportService.recordError(e, stack);
     }
   }
+
+  static Future<void> setFgwGuardLevelLockState(bool isLocked) async {
+    await reportService.log('setFgwGuardLevelLockState: $isLocked');
+    try {
+      await _platform.invokeMethod('setFgwGuardLevelLockState', {'isLocked': isLocked});
+    } on PlatformException catch (e, stack) {
+      await reportService.recordError(e, stack);
+    }
+  }
 }

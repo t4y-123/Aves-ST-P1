@@ -7,6 +7,7 @@ import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/highlight.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
@@ -166,7 +167,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     final source = context.read<CollectionSource>();
     //await shareCopiedEntries.init();
     final todoEntries = source.allEntries
-        .where((entry) => {AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}.any((f) => f.test(entry)))
+        .where((entry) => {PathFilter(androidFileUtils.avesShareByCopyPath)}.any((f) => f.test(entry)))
         .toSet();
     final expiredEntries = todoEntries.where(shareCopiedEntries.isExpiredCopied).toSet();
     if (expiredEntries.isEmpty) return;
@@ -374,8 +375,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       // await deleteExpiredShareCopied(context);
       final source = context.read<CollectionSource>();
       final allCopiedEntries = source.allEntries
-          .where((entry) =>
-              {AlbumFilter(androidFileUtils.avesShareByCopyPath, null)}.any((f) => f.test(entry) && !entry.trashed))
+          .where(
+              (entry) => {PathFilter(androidFileUtils.avesShareByCopyPath)}.any((f) => f.test(entry) && !entry.trashed))
           .where(shareCopiedEntries.isShareCopied)
           .toSet();
       final todoEntries = switch (settings.shareByCopySetDateType) {

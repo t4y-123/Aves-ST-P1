@@ -1,4 +1,5 @@
 package deckers.thibault.aves.fgw
+
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -9,9 +10,11 @@ import java.util.concurrent.TimeUnit
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.fgw.*
 import deckers.thibault.aves.ForegroundWallpaperService
+import deckers.thibault.aves.ForegroundWallpaperWidgetProvider
 import deckers.thibault.aves.utils.servicePendingIntent
+import deckers.thibault.aves.utils.widgetPendingIntent
 import deckers.thibault.aves.utils.getExistingPendingIntent
-
+import android.appwidget.AppWidgetManager
 
 // Define the WallpaperWorker class
 class WallpaperWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
@@ -23,6 +26,32 @@ class WallpaperWorker(context: Context, params: WorkerParameters) : Worker(conte
             action = FgwIntentAction.NEXT
         }
         applicationContext.startService(intent)
+        return Result.success()
+    }
+}
+
+class UpdateWidgetWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
+    private val LOG_TAG = LogUtils.createTag<UpdateWidgetWorker>()
+
+    override fun doWork(): Result {
+        val widgetId = inputData.getInt("widgetId", FgwConstant.NOT_WIDGET_ID)
+        Log.d(LOG_TAG, "doWork: Updating widget with ID $widgetId")
+
+        if (widgetId == FgwConstant.NOT_WIDGET_ID) {
+            Log.e(LOG_TAG, "doWork: Invalid widget ID, cannot update widget")
+            return Result.failure()
+        }
+
+        // Create an intent to update the widget
+        val intent = Intent(applicationContext, ForegroundWallpaperWidgetProvider::class.java).apply {
+            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+        }
+
+        // Send the broadcast to update the widget
+        applicationContext.sendBroadcast(intent)
+        Log.d(LOG_TAG, "doWork: Widget update broadcast sent for widget ID $widgetId")
+
         return Result.success()
     }
 }
@@ -65,9 +94,16 @@ object WallpaperScheduleHelper {
         }
 
         // Create a new WorkManager
-        val workRequest = PeriodicWorkRequestBuilder<WallpaperWorker>(schedule.interval.toLong(), TimeUnit.SECONDS)
-            .setInputData(workDataOf("interval" to schedule.interval))
-            .build()
+        val workRequest = if (schedule.updateType == FgwConstant.CUR_TYPE_WIDGET) {
+            PeriodicWorkRequestBuilder<UpdateWidgetWorker>(schedule.interval.toLong(), TimeUnit.SECONDS)
+                .setInputData(workDataOf("widgetId" to schedule.widgetId))
+                .build()
+        } else {
+            PeriodicWorkRequestBuilder<WallpaperWorker>(schedule.interval.toLong(), TimeUnit.SECONDS)
+                .setInputData(workDataOf("interval" to schedule.interval))
+                .build()
+        }
+
         workManager.enqueueUniquePeriodicWork(key, ExistingPeriodicWorkPolicy.REPLACE, workRequest)
         Log.d(LOG_TAG, "handleWorkManager: WorkManager task scheduled with key $key")
     }
@@ -81,21 +117,26 @@ object WallpaperScheduleHelper {
 
         // Check for existing AlarmManager
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pendingIntent = getExistingPendingIntent(context, key)
 
-        if (pendingIntent != null) {
-            Log.i(LOG_TAG, "AlarmManager with key $key already exists, returning.")
-            return
+        val pendingIntent = if (schedule.updateType == FgwConstant.CUR_TYPE_WIDGET) {
+            context.widgetPendingIntent<ForegroundWallpaperWidgetProvider>(schedule.widgetId, key.hashCode())
+        } else {
+            context.servicePendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT, key.hashCode())
         }
-        // Set a new AlarmManager
-        val newPendingIntent = context.servicePendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT,key.hashCode())
-      if (newPendingIntent != null){
-            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis(), schedule.interval * 1000L, newPendingIntent)
-            Log.d(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled with key $key and schedule.interval ${schedule.interval}")
-        }else{
-            Log.e(LOG_TAG, "handleAlarmManager: AlarmManager task scheduled newPendingIntent key:$key")
-        }
+        pendingIntent?.let {
+            alarmManager.setInexactRepeating(
+                AlarmManager.RTC,
+                System.currentTimeMillis(),
+                schedule.interval * 1000L,
+                it
+            )
+            Log.d(
+                LOG_TAG,
+                "handleAlarmManager: AlarmManager task scheduled with key $key and schedule.interval ${schedule.interval}"
+            )
+        } ?: Log.e(LOG_TAG, "handleAlarmManager: Failed to schedule AlarmManager task for key: $key")
     }
+
 
     private fun cancelAlarmWork(context: Context, key: String) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -128,20 +169,22 @@ object WallpaperScheduleHelper {
 
     private fun getExistingPendingIntent(context: Context, key: String): PendingIntent? {
         Log.d(LOG_TAG, "getExistingPendingIntent key [${key}] key.hashCode() [${key.hashCode()}] context [$context]")
-        val returnPendingIntent = context.getExistingPendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT,key.hashCode())
-       Log.d(LOG_TAG, "getExistingPendingIntent returnPendingIntent [${returnPendingIntent}] ")
+        val returnPendingIntent =
+            context.getExistingPendingIntent<ForegroundWallpaperService>(FgwIntentAction.NEXT, key.hashCode())
+        Log.d(LOG_TAG, "getExistingPendingIntent returnPendingIntent [${returnPendingIntent}] ")
         return returnPendingIntent
     }
 
     fun cancelFgwServiceRelateSchedule(context: Context) {
         Log.d(LOG_TAG, "cancelFgwServiceRelateSchedule context [${context}] ")
-        val homeKey = FgwConstant.getHomeScheduleKey(context)
-        val lockKey = FgwConstant.getLockScheduleKey(context)
-        val bothKey = FgwConstant.getBothScheduleKey(context)
-        cancelWorkAndAlarm(context, homeKey)
-        cancelWorkAndAlarm(context, lockKey)
-        cancelWorkAndAlarm(context, bothKey)
+
+        // Cancel all schedules from the current schedule list in FgwServiceFlutterHandler
+        FgwServiceFlutterHandler.scheduleList.forEach { schedule ->
+            val key = "${context.packageName}-${schedule.updateType}-${schedule.widgetId}"
+            cancelWorkAndAlarm(context, key)
+        }
     }
+
 
     fun handleScreenEvents(context: Context, scheduleList: List<WallpaperScheduleRow>) {
         Log.d(LOG_TAG, "handleScreenEvents scheduleList [{$scheduleList}] context [${context}] ")
@@ -161,5 +204,4 @@ object WallpaperScheduleHelper {
             }
         }
     }
-
 }

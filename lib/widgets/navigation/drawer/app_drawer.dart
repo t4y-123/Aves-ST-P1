@@ -150,7 +150,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   OutlinedText(
                     textSpans: [
                       TextSpan(
-                        text: l10n.appName,
+                        text: l10n.appNameSt,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 38,

@@ -5,9 +5,9 @@ import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
-import 'package:aves/model/filters/album.dart';
-import 'package:aves/model/fgw/fgw_schedule_group_helper.dart';
+import 'package:aves/model/fgw/fgw_rows_helper.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
@@ -66,7 +66,7 @@ class MediaStoreSource extends CollectionSource {
     await covers.init();
 
     //t4y: for foreground wallpaper initialize.
-    await foregroundWallpaperHelper.initWallpaperSchedules();
+    await fgwRowsHelper.initWallpaperSchedules();
     await shareCopiedEntries.init();
     //t4y: for scenario
     await scenariosHelper.initScenarios();

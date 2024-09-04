@@ -1,38 +1,68 @@
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/fgw/fgw_used_entry_record.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/theme/icons.dart';
+import 'package:aves/utils/collection_utils.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/widgets.dart';
 
-class FgwUsedFilter extends CollectionFilter {
+class FgwUsedFilter extends CoveredCollectionFilter {
   static const type = 'fgw_used';
 
-  static const int allRecordId = 0;
-  static late EntryFilter _test;
+  final int? guardLevelId;
+  final WallpaperUpdateType? updateType;
+  final int? widgetId;
 
-  static final instance = FgwUsedFilter._private();
-  static final instanceReversed = FgwUsedFilter._private(reversed: true);
+  late final EntryFilter _test;
 
-  static void updateNow() {
-    Set<int> usedIds = fgwUsedEntryRecord.all.map((item) => (item.entryId)).toSet();
-    _test = (entry) => (usedIds.any((item) => item == entry.id));
+  FgwUsedFilter({this.guardLevelId, this.updateType, this.widgetId, super.reversed = false}) {
+    _initializeTest();
   }
 
-  @override
-  List<Object?> get props => [reversed];
-
-  FgwUsedFilter._private({super.reversed = false}) {
-    updateNow();
+  void _initializeTest() {
+    _test = (entry) {
+      () async {
+        await fgwUsedEntryRecord.refresh();
+      };
+      final filteredRecords = fgwUsedEntryRecord.all
+          .where((row) {
+            if (guardLevelId != null && row.guardLevelId != guardLevelId) return false;
+            if (updateType != null && row.updateType != updateType) return false;
+            if (widgetId != null && row.widgetId != widgetId) return false;
+            return true;
+          })
+          .map((row) => row.entryId)
+          .toSet();
+      if (filteredRecords.isNotEmpty) {
+        return filteredRecords.contains(entry.id);
+      } else {
+        return false;
+      }
+    };
   }
 
   factory FgwUsedFilter.fromMap(Map<String, dynamic> json) {
+    final guardLevelId = json['guardLevelId'] as int?;
+    final updateType = json['updateType'] != null
+        ? WallpaperUpdateType.values.safeByName(json['updateType'] as String, WallpaperUpdateType.home)
+        : null;
+    final widgetId = json['widgetId'] as int?;
     final reversed = json['reversed'] ?? false;
-    return reversed ? instanceReversed : instance;
+
+    return FgwUsedFilter(
+      guardLevelId: guardLevelId,
+      updateType: updateType,
+      widgetId: widgetId,
+      reversed: reversed,
+    );
   }
 
   @override
   Map<String, dynamic> toMap() => {
         'type': type,
+        'guardLevelId': guardLevelId,
+        'updateType': updateType?.name,
+        'widgetId': widgetId,
         'reversed': reversed,
       };
 
@@ -40,13 +70,18 @@ class FgwUsedFilter extends CollectionFilter {
   EntryFilter get positiveTest => _test;
 
   @override
-  bool get exclusiveProp => false;
+  List<Object?> get props => [guardLevelId, updateType, widgetId, reversed];
 
   @override
   String get universalLabel => type;
 
   @override
-  String getLabel(BuildContext context) => context.l10n.filterFgwUsedLabel;
+  String getLabel(BuildContext context) {
+    final guardLevelLabel = guardLevelId?.toString() ?? context.l10n.menuActionSelectAll;
+    final updateTypeLabel = updateType?.getName(context) ?? context.l10n.menuActionSelectAll;
+    final widgetIdLabel = widgetId?.toString() ?? context.l10n.menuActionSelectAll;
+    return '${guardLevelLabel}_${updateTypeLabel}_$widgetIdLabel';
+  }
 
   @override
   Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) =>
@@ -56,5 +91,8 @@ class FgwUsedFilter extends CollectionFilter {
   String get category => type;
 
   @override
-  String get key => '$type-$reversed';
+  String get key => '$type-$guardLevelId-$updateType-$widgetId-$reversed';
+
+  @override
+  bool get exclusiveProp => false;
 }

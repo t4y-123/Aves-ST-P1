@@ -1,21 +1,25 @@
 package deckers.thibault.aves.channel.calls
 
+
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.app.Service
 import android.app.PendingIntent
 import android.content.Intent
+import android.os.Build
 import androidx.core.content.ContextCompat
 import deckers.thibault.aves.ForegroundWallpaperService
 import deckers.thibault.aves.ForegroundWallpaperTileService
 import deckers.thibault.aves.ForegroundWallpaperWidgetProvider
+import deckers.thibault.aves.fgw.FgwIntentAction
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import deckers.thibault.aves.utils.LogUtils
 import deckers.thibault.aves.fgw.*
 import deckers.thibault.aves.HomeWidgetProvider
+import deckers.thibault.aves.utils.servicePendingIntent
 
 class ForegroundWallpaperHandler(private val context: Context): MethodChannel.MethodCallHandler {
 
@@ -47,6 +51,20 @@ class ForegroundWallpaperHandler(private val context: Context): MethodChannel.Me
             "getAllWidgetIds" ->{
                 result.success( getAllWidgetIds(appContext))
             }
+            "setFgwGuardLevelLockState" -> {
+                val isLocked = call.argument<Boolean>("isLocked") ?: false
+                val action = if (isLocked) FgwIntentAction.LOCK else FgwIntentAction.UNLOCK
+                val intent = Intent(appContext, ForegroundWallpaperTileService::class.java).apply {
+                    this.action = action
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    appContext.startForegroundService(intent)
+                } else {
+                    appContext.startService(intent)
+                }
+                result.success(null)
+            }
+
             FgwConstant.SYNC_FGW_SCHEDULE_CHANGES -> {
                 val isTileRunning = ForegroundWallpaperTileService.getIsTileClickRunning(appContext)
                 if (isTileRunning && ForegroundWallpaperService.isRunning) {

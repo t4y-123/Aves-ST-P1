@@ -9,38 +9,40 @@ import 'package:aves/widgets/dialogs/selection_dialogs/common.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/single_selection.dart';
 import 'package:flutter/material.dart';
 
-class EditScenarioLockDialog extends StatefulWidget {
+class EditLockTypeDialog extends StatefulWidget {
   static const routeName = '/dialog/edit_scenario_lock';
 
-  final ScenarioLockType? initialType;
+  final CommonLockType? initialType;
+  final Future<bool> Function(BuildContext, CommonLockType) onSubmitLockPass;
 
-  const EditScenarioLockDialog({
+  const EditLockTypeDialog({
     super.key,
     this.initialType,
+    required this.onSubmitLockPass,
   });
 
   @override
-  State<EditScenarioLockDialog> createState() => _EditScenarioLockDialogState();
+  State<EditLockTypeDialog> createState() => _EditLockTypeDialogState();
 }
 
-class _EditScenarioLockDialogState extends State<EditScenarioLockDialog> with FeedbackMixin, ScenarioAwareMixin {
-  late ScenarioLockType _lockType;
+class _EditLockTypeDialogState extends State<EditLockTypeDialog> with FeedbackMixin, ScenarioAwareMixin {
+  late CommonLockType _lockType;
 
-  final List<ScenarioLockType> _lockTypeOptions = [
-    if (device.canAuthenticateUser) ScenarioLockType.system,
+  final List<CommonLockType> _lockTypeOptions = [
+    if (device.canAuthenticateUser) CommonLockType.system,
     if (device.canUseCrypto) ...[
-      ScenarioLockType.pattern,
-      ScenarioLockType.pin,
-      ScenarioLockType.password,
+      CommonLockType.pattern,
+      CommonLockType.pin,
+      CommonLockType.password,
     ],
   ];
 
-  ScenarioLockType? get initialType => widget.initialType;
+  CommonLockType? get initialType => widget.initialType;
 
   @override
   void initState() {
     super.initState();
-    _lockType = initialType ?? ScenarioLockType.pin;
+    _lockType = initialType ?? CommonLockType.pin;
   }
 
   @override
@@ -52,7 +54,7 @@ class _EditScenarioLockDialogState extends State<EditScenarioLockDialog> with Fe
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AvesDialog(
-      title: l10n.configureScenarioLockTitle,
+      title: l10n.configureLockTitle,
       scrollableContent: [
         if (_lockTypeOptions.length > 1)
           ListTile(
@@ -60,9 +62,9 @@ class _EditScenarioLockDialogState extends State<EditScenarioLockDialog> with Fe
             subtitle: AvesCaption(_lockType.getText(context)),
             onTap: () {
               _unFocus();
-              showSelectionDialog<ScenarioLockType>(
+              showSelectionDialog<CommonLockType>(
                 context: context,
-                builder: (context) => AvesSingleSelectionDialog<ScenarioLockType>(
+                builder: (context) => AvesSingleSelectionDialog<CommonLockType>(
                   initialValue: _lockType,
                   options: Map.fromEntries(_lockTypeOptions.map((v) => MapEntry(v, v.getText(context)))),
                 ),
@@ -88,7 +90,7 @@ class _EditScenarioLockDialogState extends State<EditScenarioLockDialog> with Fe
   Future<void> _submit(BuildContext context) async {
     _unFocus();
 
-    if (!await setScenarioLockPass(context, _lockType)) return;
+    if (!await widget.onSubmitLockPass(context, _lockType)) return;
 
     Navigator.maybeOf(context)?.pop();
   }

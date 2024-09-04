@@ -8,6 +8,8 @@ import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/entry/extensions/location.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
@@ -15,8 +17,6 @@ import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
-import 'package:aves/model/fgw/fgw_used_entry_record.dart';
-import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
@@ -294,8 +294,27 @@ abstract class CollectionSource
     updateTags();
   }
 
+  final Map<String, AvesEntry> _entriesByPath = {};
+
+  void addOrUpdateEntry(AvesEntry entry) {
+    final path = entry.path;
+    if (path != null) {
+      if (_entriesByPath.containsKey(path)) {
+        // Optionally update the existing entry
+        _rawEntries.remove(_entriesByPath[path]);
+        _entriesByPath[path] = entry;
+      } else {
+        _entriesByPath[path] = entry;
+      }
+    }
+  }
+
   void addEntries(Set<AvesEntry> entries, {bool notify = true}) {
     if (entries.isEmpty) return;
+
+    for (var entry in entries) {
+      addOrUpdateEntry(entry);
+    }
 
     final newIdMapEntries = Map.fromEntries(entries.map((entry) => MapEntry(entry.id, entry)));
     if (_rawEntries.isNotEmpty) {

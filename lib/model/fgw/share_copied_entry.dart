@@ -16,8 +16,8 @@ class ShareCopiedEntries with ChangeNotifier {
   Future<void> init() async {
     //_rows.clear();
     _rows = await metadataDb.loadAllShareCopiedEntries();
-    debugPrint('$runtimeType ShareCopiedEntries init _rows'
-        '[$_rows]  start');
+    //debugPrint('$runtimeType ShareCopiedEntries init _rows'
+    //     '[$_rows]  start');
   }
 
   int get count => _rows.length;
@@ -27,36 +27,39 @@ class ShareCopiedEntries with ChangeNotifier {
   bool isShareCopied(AvesEntry entry) => _rows.any((row) => row.id == entry.id);
 
   bool isExpiredCopied(AvesEntry entry) {
-    debugPrint('[$entry] isExpiredCopied start');
-    if(!isShareCopied(entry))return false;
+    //debugPrint('[$entry] isExpiredCopied start');
+    if (!isShareCopied(entry)) return false;
     final dateMillis = _rows.firstWhereOrNull((row) => row.id == entry.id)?.dateMillis;
     if (dateMillis == null) return false;
-    debugPrint('$runtimeType [$entry] isExpiredCopied dateMillis $dateMillis');
-    debugPrint('dateMillis add ${settings.shareByCopyRemoveInterval} : $runtimeType '
-        '${DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval))}');
-    debugPrint('(${DateTime.now()}');
-    return DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval)).isBefore(DateTime.now());
+    // //debugPrint('$runtimeType [$entry] isExpiredCopied dateMillis $dateMillis');
+    // //debugPrint('dateMillis add ${settings.shareByCopyRemoveInterval} : $runtimeType '
+    //     '${DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval))}');
+    // //debugPrint('(${DateTime.now()}');
+    return DateTime.fromMillisecondsSinceEpoch(dateMillis)
+        .add(Duration(seconds: settings.shareByCopyRemoveInterval))
+        .isBefore(DateTime.now());
   }
 
-  ShareCopiedEntryRow _entryToRow(AvesEntry entry) => ShareCopiedEntryRow(id: entry.id, dateMillis:DateTime.now().millisecondsSinceEpoch);
+  ShareCopiedEntryRow _entryToRow(AvesEntry entry) =>
+      ShareCopiedEntryRow(id: entry.id, dateMillis: DateTime.now().millisecondsSinceEpoch);
 
   Future<void> add(Set<AvesEntry> entries) async {
-    debugPrint('shareCopiedEntries.add(add:\n$entries');
+    //debugPrint('shareCopiedEntries.add(add:\n$entries');
     final newRows = entries.map(_entryToRow).toSet();
-    debugPrint('shareCopiedEntries.add(newRows:\n$newRows');
+    //debugPrint('shareCopiedEntries.add(newRows:\n$newRows');
     await metadataDb.addShareCopiedEntries(newRows);
     _rows.addAll(newRows);
     notifyListeners();
   }
 
   Future<void> removeEntryIds(Set<int> rowIds) async {
-    debugPrint('$runtimeType removeShareCopiedEntries ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
+    //debugPrint('$runtimeType removeShareCopiedEntries ${_rows.length} removeEntryIds entries:\n[$_rows]\n[$rowIds]');
     final removedRows = _rows.where((row) => rowIds.contains(row.id)).toSet();
     await metadataDb.removeShareCopiedEntries(removedRows);
     removedRows.forEach(_rows.remove);
     notifyListeners();
-
   }
+
   Future<void> removeEntries(Set<AvesEntry> entries) => removeIds(entries.map((entry) => entry.id).toSet());
 
   Future<void> removeIds(Set<int> entryIds) async {

@@ -418,6 +418,12 @@ open class MainActivity : FlutterFragmentActivity() {
                     INTENT_DATA_KEY_ACTION to  FgwConstant.FGW_VIEW_OPEN,
                 )
             }
+            FgwConstant.FGW_UNLOCK -> {
+                Log.d(LOG_TAG, "FgwConstant.FGW_UNLOCK in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to  FgwConstant.FGW_UNLOCK,
+                )
+            }
             FgwIntentAction.DUPLICATE -> {
                 Log.d(LOG_TAG, "FgwServiceHiddenActivity .FgwIntentAction.DUPLICATE return hashMapOf")
                 return hashMapOf(

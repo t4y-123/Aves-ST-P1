@@ -10,10 +10,11 @@ class IntentActions {
   static const widgetOpen = 'widget_open';
   static const widgetSettings = 'widget_settings';
   // t4y: foreground wallpaper.
-  static const foregroundWallpaperWidgetSettings = 'foreground_wallpaper_widget_settings';
-  static const foregroundWallpaperWidgetOpen = 'foreground_wallpaper_widget_open';
+  static const fgwWidgetSettings = 'foreground_wallpaper_widget_settings';
+  static const fgwWidgetOpen = 'foreground_wallpaper_widget_open';
   static const fgwUsedRecordOpen = 'fgw_used_entry_record_open';
-  static const fgwUsedViewOpen = 'fgw_view_open';
+  static const fgwViewOpen = 'fgw_view_open';
+  static const fgwUnlock = 'fgw_unlock';
   static const fgwDuplicateOpen = 'FGW_DUPLICATE';
 }
 
@@ -30,5 +31,4 @@ class IntentDataKeys {
   static const secureUris = 'secureUris';
   static const uri = 'uri';
   static const widgetId = 'widgetId';
-
 }

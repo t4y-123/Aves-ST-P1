@@ -2,6 +2,7 @@ import 'package:aves/app_mode.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
@@ -18,9 +19,9 @@ import 'package:aves/widgets/common/identity/aves_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/covered_filter_chip.dart';
 import 'package:aves/widgets/filter_grids/common/filter_chip_grid_decorator.dart';
 import 'package:aves/widgets/filter_grids/common/list_details.dart';
-import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/scenario_edit_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
-import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_base_setting_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_item_page.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -110,8 +111,8 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                   } else if (filter.scenarioId == ScenarioFilter.scenarioSettingId) {
                     await Navigator.maybeOf(context)?.push(
                       MaterialPageRoute(
-                        settings: const RouteSettings(name: ScenarioConfigPage.routeName),
-                        builder: (context) => const ScenarioConfigPage(),
+                        settings: const RouteSettings(name: ScenarioEditSettingPage.routeName),
+                        builder: (context) => const ScenarioEditSettingPage(),
                       ),
                     );
                   } else if (filter.scenarioId == ScenarioFilter.scenarioOpId) {
@@ -130,21 +131,20 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                     await scenarios.syncRowsToBridge();
                     await scenarioSteps.syncRowsToBridge();
 
-                    final newItem = await scenarios.newRow(1, type: ScenarioRowsType.bridgeAll);
+                    final newItem = await scenarios.newRow(1, type: PresentationRowType.bridgeAll);
                     debugPrint('addScenarioBase newItem $newItem\n');
-                    await scenarios.add({newItem}, type: ScenarioRowsType.bridgeAll);
+                    await scenarios.add({newItem}, type: PresentationRowType.bridgeAll);
 
                     // add a new group of schedule to schedules bridge.
                     final bridgeSubItems =
-                        await scenariosHelper.newScenarioStepsGroup(newItem, rowsType: ScenarioStepRowsType.bridgeAll);
-                    await scenarioSteps.add(bridgeSubItems.toSet(), type: ScenarioStepRowsType.bridgeAll);
+                        await scenariosHelper.newScenarioStepsGroup(newItem, rowsType: PresentationRowType.bridgeAll);
+                    await scenarioSteps.add(bridgeSubItems.toSet(), type: PresentationRowType.bridgeAll);
 
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ScenarioBaseSettingPage(
+                        builder: (context) => ScenarioItemPage(
                           item: newItem,
-                          subItems: bridgeSubItems.toSet(),
                         ),
                       ),
                     ).then((newItem) {
@@ -158,8 +158,8 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                           scenarioSteps.syncBridgeToRows();
                         });
                       } else {
-                        scenarios.removeRows({newItem}, type: ScenarioRowsType.bridgeAll);
-                        scenarioSteps.removeEntries(bridgeSubItems.toSet(), type: ScenarioStepRowsType.bridgeAll);
+                        scenarios.removeRows({newItem}, type: PresentationRowType.bridgeAll);
+                        scenarioSteps.removeRows(bridgeSubItems.toSet(), type: PresentationRowType.bridgeAll);
                       }
                     });
                   }

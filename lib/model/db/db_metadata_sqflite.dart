@@ -157,7 +157,7 @@ class SqfliteMetadataDb implements MetadataDb {
             'id INTEGER PRIMARY KEY'
             ', orderNum INTEGER'
             ', labelName TEXT'
-            ', privacyGuardLevelId INTEGER'
+            ', fgwGuardLevelId INTEGER'
             ', filtersSetId INTEGER'
             ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
@@ -167,7 +167,7 @@ class SqfliteMetadataDb implements MetadataDb {
             ')');
         await db.execute('CREATE TABLE $fgwUsedEntryTable('
             'id INTEGER PRIMARY KEY'
-            ', privacyGuardLevelId INTEGER'
+            ', fgwGuardLevelId INTEGER'
             ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
             ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
             ', entryId INTEGER'
@@ -214,6 +214,8 @@ class SqfliteMetadataDb implements MetadataDb {
             ', assignId INTEGER'
             ', entryId INTEGER'
             ', dateMillis INTEGER'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
             ', isActive INTEGER DEFAULT 0'
             ')');
       },
@@ -734,7 +736,7 @@ class SqfliteMetadataDb implements MetadataDb {
   @override
   Future<void> clearFgwGuardLevel() async {
     final count = await _db.delete(fgwGuardLevelTable, where: '1');
-    debugPrint('clearPrivacyGuardLevel deleted $count rows');
+    debugPrint('clearFgwGuardLevel deleted $count rows');
   }
 
   @override
@@ -748,7 +750,7 @@ class SqfliteMetadataDb implements MetadataDb {
     if (rows.isEmpty) return;
 
     final batch = _db.batch();
-    rows.forEach((row) => _batchInsertPrivacyGuardLevel(batch, row));
+    rows.forEach((row) => _batchInsertFgwGuardLevel(batch, row));
     await batch.commit(noResult: true);
   }
 
@@ -756,7 +758,7 @@ class SqfliteMetadataDb implements MetadataDb {
   Future<void> updateFgwGuardLevelId(int id, FgwGuardLevelRow row) async {
     final batch = _db.batch();
     batch.delete(fgwGuardLevelTable, where: 'id = ?', whereArgs: [id]);
-    _batchInsertPrivacyGuardLevel(batch, row);
+    _batchInsertFgwGuardLevel(batch, row);
     await batch.commit(noResult: true);
   }
 
@@ -771,7 +773,7 @@ class SqfliteMetadataDb implements MetadataDb {
     await batch.commit(noResult: true);
   }
 
-  void _batchInsertPrivacyGuardLevel(Batch batch, FgwGuardLevelRow row) {
+  void _batchInsertFgwGuardLevel(Batch batch, FgwGuardLevelRow row) {
     batch.insert(
       fgwGuardLevelTable,
       row.toMap(),

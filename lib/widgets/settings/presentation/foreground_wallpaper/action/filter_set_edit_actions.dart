@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class FiltersSetConfigActions extends BridgeConfigActions<FiltersSetRow> {
   FiltersSetConfigActions({
-    required BuildContext context,
+    required super.context,
     required super.setState,
   }) : super(
           presentationRows: filtersSets,

@@ -41,17 +41,15 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
     return FgwUsedEntryRecordRow.fromMap(attributes);
   }
 
-  Future<void> removeEntries(Set<AvesEntry> entries) async {
+  Future<void> removeEntries(Set<AvesEntry> entries,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
     final entryIds = entries.map((entry) => entry.id).toSet();
-    await removeRows(all.where((row) => entryIds.contains(row.entryId)).toSet());
+    await removeEntryIds(entryIds, type: type, notify: notify);
   }
 
-  Future<void> removeEntryIds(Set<int> rowIds) async {
-    await removeRows(all.where((row) => rowIds.contains(row.entryId)).toSet());
-  }
-
-  Future<void> removeWidgetIds(Set<int> rowWidgetIds) async {
-    await removeRows(all.where((row) => rowWidgetIds.contains(row.widgetId)).toSet());
+  Future<void> removeEntryIds(Set<int> rowIds,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await removeRows(all.where((row) => rowIds.contains(row.entryId)).toSet(), type: type, notify: notify);
   }
 
   @override
@@ -61,11 +59,12 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
     await _removeOldestEntries();
   }
 
-  Future<void> _removeOldestEntries() async {
+  Future<void> _removeOldestEntries({PresentationRowType type = PresentationRowType.all}) async {
     final Map<String, List<FgwUsedEntryRecordRow>> groupedRows = {};
-    if (rows.isNotEmpty) {
-      for (var row in rows) {
-        String key = '${row.privacyGuardLevelId}_${row.updateType}_${row.widgetId}';
+    final targetSet = getTarget(type);
+    if (targetSet.isNotEmpty) {
+      for (var row in targetSet) {
+        String key = '${row.guardLevelId}_${row.updateType}_${row.widgetId}';
         groupedRows.putIfAbsent(key, () => []).add(row);
       }
       debugPrint('$runtimeType _removeOldestEntries groupedRows ${groupedRows.values}');
@@ -77,14 +76,14 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
           group.sort((a, b) => a.dateMillis.compareTo(b.dateMillis));
           final toRemoveRows = group.sublist(0, group.length - settings.maxFgwUsedEntryRecord).toSet();
           debugPrint('$runtimeType _removeOldestEntries toRemoveRows $toRemoveRows');
-          await removeRows(group.sublist(0, group.length - settings.maxFgwUsedEntryRecord).toSet());
+          await removeRows(group.sublist(0, group.length - settings.maxFgwUsedEntryRecord).toSet(), type: type);
         }
       }
     }
   }
 
   Future<FgwUsedEntryRecordRow> newRow(
-    int privacyGuardLevelId,
+    int fgwGuardLevelId,
     WallpaperUpdateType updateType,
     int entryId, {
     int widgetId = 0,
@@ -96,7 +95,7 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
       id: id,
       labelName: 'null',
       isActive: true,
-      privacyGuardLevelId: privacyGuardLevelId,
+      guardLevelId: fgwGuardLevelId,
       updateType: updateType,
       widgetId: widgetId,
       entryId: entryId,
@@ -114,7 +113,7 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
 
 @immutable
 class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
-  final int privacyGuardLevelId;
+  final int guardLevelId;
   final WallpaperUpdateType updateType;
   final int widgetId;
   final int entryId;
@@ -123,7 +122,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
   @override
   List<Object?> get props => [
         id,
-        privacyGuardLevelId,
+        guardLevelId,
         updateType,
         widgetId,
         entryId,
@@ -134,7 +133,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
     required super.id,
     required super.labelName,
     required super.isActive,
-    required this.privacyGuardLevelId,
+    required this.guardLevelId,
     required this.updateType,
     required this.widgetId,
     required this.entryId,
@@ -144,7 +143,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
   factory FgwUsedEntryRecordRow.fromMap(Map<String, dynamic> map) {
     return FgwUsedEntryRecordRow(
       id: map['id'] as int,
-      privacyGuardLevelId: map['privacyGuardLevelId'] as int,
+      guardLevelId: map['fgwGuardLevelId'] as int,
       updateType: WallpaperUpdateType.values.safeByName(map['updateType'] as String, WallpaperUpdateType.home),
       widgetId: map['widgetId'] as int,
       entryId: map['entryId'] as int,
@@ -157,7 +156,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
   @override
   Map<String, dynamic> toMap() => {
         'id': id,
-        'privacyGuardLevelId': privacyGuardLevelId,
+        'fgwGuardLevelId': guardLevelId,
         'updateType': updateType.name,
         'widgetId': widgetId,
         'entryId': entryId,
@@ -169,7 +168,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
     int? id,
     String? labelName,
     bool? isActive,
-    int? privacyGuardLevelId,
+    int? fgwGuardLevelId,
     WallpaperUpdateType? updateType,
     int? widgetId,
     int? entryId,
@@ -179,7 +178,7 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
       id: id ?? this.id,
       labelName: labelName ?? this.labelName,
       isActive: isActive ?? this.isActive,
-      privacyGuardLevelId: privacyGuardLevelId ?? this.privacyGuardLevelId,
+      guardLevelId: fgwGuardLevelId ?? this.guardLevelId,
       updateType: updateType ?? this.updateType,
       widgetId: widgetId ?? this.widgetId,
       entryId: entryId ?? this.entryId,
@@ -189,8 +188,8 @@ class FgwUsedEntryRecordRow extends PresentRow<FgwUsedEntryRecordRow> {
 
   @override
   int compareTo(FgwUsedEntryRecordRow other) {
-    // Sort primarily by privacyGuardLevelId
-    int result = privacyGuardLevelId.compareTo(other.privacyGuardLevelId);
+    // Sort primarily by fgwGuardLevelId
+    int result = guardLevelId.compareTo(other.guardLevelId);
     if (result != 0) return result;
 
     // Then by dateMillis

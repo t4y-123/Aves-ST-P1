@@ -56,6 +56,9 @@ Future<void> fgwNotificationServiceAsync() async {
       case 'syncFgwScheduleChanges':
         // after sync new schedules, right away make next wallpaper
         return await fgwServiceHelper.syncFgwScheduleChanges();
+      case 'fgwLock':
+        settings.guardLevelLock = true;
+        return Future.value(true);
       default:
         throw PlatformException(code: 'not-implemented', message: 'failed to handle method=${call.method}');
     }
@@ -95,9 +98,21 @@ class FgwServiceHelper with FeedbackMixin {
   Future<void> start() async {
     await reportService.log('FgwServiceHelper in start');
     await _initDependencies();
-    await syncDataToNative({FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules});
-    unawaited(handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
-        FgwServiceWallpaperType.next));
+    await syncDataToNative(
+        {FgwSyncItem.curLevel, FgwSyncItem.activeLevels, FgwSyncItem.schedules, FgwSyncItem.guardLevelLock});
+
+    // final curGuardLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+    // debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
+    //   if (curGuardLevel != null) {
+    //     final curWidgetSchedule = fgwSchedules.all.firstWhereOrNull((e) =>
+    //         e.guardLevelId == curGuardLevel.id &&
+    //         [WallpaperUpdateType.home, WallpaperUpdateType.both].contains(e.updateType) &&
+    //         e.isActive);
+    //     if (curWidgetSchedule != null) {
+    //       // unawaited(handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
+    //       //     FgwServiceWallpaperType.next));
+    //     }
+    //   }
   }
 
   Future<void> syncDataToNative(Set<FgwSyncItem> syncItems,
@@ -111,7 +126,8 @@ class FgwServiceHelper with FeedbackMixin {
         source: _source,
         updateType: updateType,
         widgetId: widgetId,
-        curPrivacyGuardLevel: curLevel,
+        curFgwGuardLevel: curLevel,
+        guardLevelLock: settings.guardLevelLock,
       );
       debugPrint('$runtimeType syncDataToKotlin data: $data');
       return data != null ? MapEntry(v.name, data) : null;
@@ -135,7 +151,7 @@ class FgwServiceHelper with FeedbackMixin {
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
     final curLevel = await fgwScheduleHelper.getCurGuardLevel();
-    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType, curPrivacyGuardLevel: curLevel);
+    final entries = await fgwScheduleHelper.getScheduleEntries(_source, updateType, curFgwGuardLevel: curLevel);
     if (entries.isEmpty) {
       final guardLevel = await fgwScheduleHelper.getCurGuardLevel();
       final emptyMessage = _l10n.fgwScheduleEntryEmptyMessage('Level[${guardLevel.guardLevel}][$updateType]');
@@ -214,29 +230,6 @@ class FgwServiceHelper with FeedbackMixin {
     unawaited(handleWallpaper(<String, dynamic>{'updateType': WallpaperUpdateType.home.toString(), 'widgetId': 0},
         FgwServiceWallpaperType.next));
     return Future.value(true);
-  }
-
-  Future<Map<String, dynamic>> syncDataByNativeCall(dynamic args) async {
-    await _initDependencies();
-    final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
-    final widgetId = args['widgetId'] as int;
-    debugPrint('syncDataByNativeCall $updateType $widgetId');
-
-    // Use ExtraFgwSyncItem to get active guard levels
-    final activeGuardLevels = await FgwSyncItem.activeLevels.syncData();
-    debugPrint('$runtimeType syncDataByNativeCall activeGuardLevels $activeGuardLevels');
-
-    // Get the current entry
-    AvesEntry? curEntry =
-        await FgwSyncItem.curEntryName.syncData(source: _source, updateType: updateType, widgetId: widgetId);
-    String entryFilenameWithoutExtension = curEntry?.filenameWithoutExtension ?? ':null in $updateType $widgetId';
-
-    // Return the map
-    return {
-      'curGuardLevel': settings.curFgwGuardLevelNum,
-      'activeLevels': activeGuardLevels,
-      'entryFileName': entryFilenameWithoutExtension,
-    };
   }
 
   Future<void> showToast(String message) async {

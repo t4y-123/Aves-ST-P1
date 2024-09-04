@@ -4,15 +4,14 @@ import 'package:aves/theme/text.dart';
 import 'package:aves/utils/time_utils.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/aves_caption.dart';
+import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/duration_dialog.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/common.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/multi_selection.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/single_selection.dart';
+import 'package:aves/widgets/settings/common/item_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../dialogs/aves_dialog.dart';
-import 'item_dialog.dart';
 
 class ItemSettingsSubPageTile<S> extends StatelessWidget {
   final String title, routeName;
@@ -433,6 +432,7 @@ class _RenameLabelDialogState extends State<LabelNameDialog> {
           valueListenable: _existsNotifier,
           builder: (context, exists, child) {
             return TextField(
+              keyboardType: TextInputType.number,
               controller: _nameController,
               decoration: InputDecoration(
                 labelText: context.l10n.renameLabelNameDialogLabel,
@@ -459,9 +459,9 @@ class _RenameLabelDialogState extends State<LabelNameDialog> {
   }
 
   Future<void> _validate() async {
-    final newName = _nameController.text;
-    _existsNotifier.value = newName.isNotEmpty && newName == label;
-    _isValidNotifier.value = newName.isNotEmpty && !_existsNotifier.value;
+    final newValue = _nameController.text;
+    _existsNotifier.value = newValue.isNotEmpty && newValue == label;
+    _isValidNotifier.value = newValue.isNotEmpty && !_existsNotifier.value;
   }
 
   void _submit(BuildContext context) {

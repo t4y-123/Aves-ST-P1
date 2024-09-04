@@ -1,83 +1,25 @@
 import 'dart:async';
 
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
-import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/theme/colors.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/list_tiles/color.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
+import 'package:aves/widgets/settings/presentation/common/section.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sub_page/schedule_item_page.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GuardLevelTitleTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => '${context.l10n.guardLevelNamePrefix}:${item.guardLevel}';
-
-  final FgwGuardLevelRow item;
-
-  GuardLevelTitleTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemInfoListTile<GuardLevel>(
-        tileTitle: title(context),
-        selector: (context, levels) {
-          debugPrint('$runtimeType GuardLevelLabelNameModifiedTile\n'
-              'item: $item \n'
-              'rows ${levels.all} \n'
-              'bridges ${levels.bridgeAll}\n');
-          return ('id:${item.id}');
-        },
-      );
-}
-
-class GuardLevelLabelNameModifiedTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => context.l10n.renameLabelNameTileTitle;
-  final FgwGuardLevelRow item;
-
-  GuardLevelLabelNameModifiedTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemSettingsLabelNameListTile<GuardLevel>(
-        tileTitle: title(context),
-        selector: (context, levels) {
-          debugPrint('$runtimeType GuardLevelLabelNameModifiedTile\n'
-              'item: $item \n'
-              'rows ${levels.all} \n'
-              'bridges ${levels.bridgeAll}\n');
-          final row = levels.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
-          if (row != null) {
-            return row.labelName;
-          } else {
-            return 'Error';
-          }
-        },
-        onChanged: (value) {
-          debugPrint('$runtimeType GuardLevelSectionBaseSection\n'
-              'row.labelName ${item.labelName} \n'
-              'to value $value\n');
-          if (fgwGuardLevels.bridgeAll.map((e) => e.id).contains(item.id)) {
-            final newRow = fgwGuardLevels.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(labelName: value);
-            fgwGuardLevels.setRows({newRow}, type: PresentationRowType.bridgeAll);
-          }
-          ;
-        },
-      );
-}
-
 class GuardLevelColorPickerTile extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsGuardLevelColor;
+  String title(BuildContext context) => context.l10n.settingsItemSelectColor;
   final FgwGuardLevelRow item;
 
   GuardLevelColorPickerTile({
@@ -106,7 +48,7 @@ class GuardLevelColorPickerTile extends SettingsTile {
     final color = await showDialog<Color>(
       context: context,
       builder: (context) => ColorPickerDialog(
-        initialValue: item.color ?? fgwGuardLevels.getRandomColor(),
+        initialValue: item.color ?? AColors.getRandomColor(),
       ),
       routeSettings: const RouteSettings(name: ColorPickerDialog.routeName),
     );
@@ -117,14 +59,11 @@ class GuardLevelColorPickerTile extends SettingsTile {
   }
 }
 
-class GuardLevelCopySchedulesFromExistListTile extends SettingsTile with FeedbackMixin {
+class GuardLevelCopySchedulesFromExistListTile extends ItemSettingsTile<FgwGuardLevelRow> with FeedbackMixin {
   @override
   String title(BuildContext context) => context.l10n.settingsCopySchedulesFromExist;
-  final FgwGuardLevelRow item;
 
-  GuardLevelCopySchedulesFromExistListTile({
-    required this.item,
-  });
+  GuardLevelCopySchedulesFromExistListTile({required super.item});
 
   @override
   Widget build(BuildContext context) => ItemSettingsSelectionListTile<GuardLevel, FgwGuardLevelRow>(
@@ -132,30 +71,42 @@ class GuardLevelCopySchedulesFromExistListTile extends SettingsTile with Feedbac
         getName: (context, v) => v.labelName,
         selector: (context, s) => s.bridgeAll.firstWhereOrNull((e) => e.id == item.id) ?? item,
         onSelection: (v) async {
-          debugPrint('$runtimeType GuardLevelSelectButtonListTile\n' 'row ${item} \n' 'to value $v\n');
+          debugPrint('$runtimeType GuardLevelSelectButtonListTile\n' 'row $item \n' 'to value $v\n');
 
-          final srcSchedules = await fgwScheduleHelper.getGuardLevelSchedules(
-              curPrivacyGuardLevel: v, rowsType: PresentationRowType.bridgeAll);
+          // get src cope item value of select.
+          final fromItems = fgwSchedules.bridgeAll.where((e) => e.guardLevelId == v.id);
 
-          debugPrint('$runtimeType GuardLevelSelectButtonListTile\n copiedSchedules $srcSchedules \n'
-              'all ${fgwSchedules.all}\n bridgeAll: ${fgwSchedules.bridgeAll}\n');
+          if (fromItems.isNotEmpty) {
+            debugPrint('$runtimeType \n copiedSchedules $fromItems \n'
+                'all ${fgwSchedules.all}\n bridgeAll: ${fgwSchedules.bridgeAll}\n');
 
-          for (final srcRow in srcSchedules) {
-            final desRow = fgwSchedules.bridgeAll.firstWhereOrNull(
-                (e) => e.guardLevelId == item.id && srcRow.updateType == e.updateType && srcRow.widgetId == e.widgetId);
-
-            if (desRow != null) {
-              final newScheduleRow = srcRow.copyWith(
-                labelName: srcRow.labelName,
-                filtersSetId: srcRow.filtersSetId,
-                displayType: srcRow.displayType,
-                interval: srcRow.interval,
-                isActive: srcRow.isActive,
-              );
-              await fgwSchedules.setWithDealConflictUpdateType({newScheduleRow}, type: PresentationRowType.bridgeAll);
+            // copy every srcRow value to curRow diff in key: updateType-widgetId,
+            for (final fromRow in fromItems) {
+              //get curRow
+              final curRow = fgwSchedules.bridgeAll.firstWhereOrNull((e) =>
+                  e.guardLevelId == item.id && e.updateType == fromRow.updateType && e.widgetId == fromRow.widgetId);
+              FgwScheduleRow? newRow;
+              if (curRow != null) {
+                newRow = fromRow.copyWith(
+                    id: curRow.id, guardLevelId: item.id, orderNum: curRow.orderNum, labelName: curRow.labelName);
+              } else {
+                final tmpRow = fgwSchedules.newRow(
+                    existMaxOrderNumOffset: 1,
+                    guardLevelId: item.id,
+                    filtersSetId: filtersSets.bridgeAll.first.id,
+                    updateType: WallpaperUpdateType.widget);
+                newRow = fromRow.copyWith(
+                    id: tmpRow.id, guardLevelId: item.id, orderNum: tmpRow.orderNum, labelName: tmpRow.labelName);
+              }
+              debugPrint('$runtimeType \n curRow ${curRow?.toMap()} \n'
+                  'newScheduleRow $newRow\n fromRow: $fromRow\n');
+              //await fgwSchedules.setRows({newRow}, type: PresentationRowType.bridgeAll);
+              await fgwSchedules.setWithDealConflictUpdateType({newRow}, type: PresentationRowType.bridgeAll);
             }
+            showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
+          } else {
+            showFeedback(context, FeedbackType.warn, context.l10n.genericFailureFeedback);
           }
-          showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
         },
         tileTitle: title(context),
         dialogTitle: context.l10n.settingsCopySchedulesFromExist,
@@ -210,52 +161,28 @@ class GuardLevelScheduleUpdateTypeListTile extends SettingsTile {
       );
 }
 
-class ScheduleItemPageTile extends SettingsTile {
+class ScheduleItemPageTile extends ItemSettingsTile<FgwScheduleRow> {
+  ScheduleItemPageTile({required super.item});
+
   @override
   String title(BuildContext context) {
-    final titlePost = schedule.updateType == WallpaperUpdateType.widget
-        ? '${schedule.updateType.getName(context)}: ${schedule.labelName}'
-        : schedule.updateType.getName(context);
+    final titlePost = item.updateType == WallpaperUpdateType.widget
+        ? '${item.updateType.getName(context)}: ${item.labelName}'
+        : item.updateType.getName(context);
     return '${context.l10n.settingsGuardLevelScheduleSubPagePrefix}: $titlePost';
   }
-
-  final FgwScheduleRow schedule;
-
-  ScheduleItemPageTile({
-    required this.schedule,
-  });
 
   @override
   Widget build(BuildContext context) => ItemSettingsSubPageTile<FgwSchedule>(
         title: title(context),
         subtitleSelector: (context, s) {
-          final titlePost = fgwSchedules.bridgeAll.firstWhereOrNull((e) => e.id == schedule.id)?.toMap().toString();
+          final subItem = fgwSchedules.bridgeAll.firstWhereOrNull((e) => e.id == item.id);
+          final titlePost = subItem != null ? PresentRow.formatItemMap(subItem.toMap()) : null;
           return titlePost.toString();
         },
         routeName: FgwScheduleItemPage.routeName,
         builder: (context) => FgwScheduleItemPage(
-          item: schedule,
+          item: item,
         ),
-      );
-}
-
-class GuardLevelActiveListTile extends SettingsTile {
-  @override
-  String title(BuildContext context) => context.l10n.settingsActiveTitle;
-
-  final FgwGuardLevelRow item;
-
-  GuardLevelActiveListTile({
-    required this.item,
-  });
-
-  @override
-  Widget build(BuildContext context) => ItemSettingsSwitchListTile<GuardLevel>(
-        selector: (context, s) => s.bridgeAll.firstWhereOrNull((e) => e.id == item.id)?.isActive ?? item.isActive,
-        onChanged: (v) async {
-          final newRow = fgwGuardLevels.bridgeAll.firstWhere((e) => e.id == item.id).copyWith(isActive: v);
-          await fgwGuardLevels.setRows({newRow}, type: PresentationRowType.bridgeAll);
-        },
-        title: title(context),
       );
 }

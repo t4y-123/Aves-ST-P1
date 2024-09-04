@@ -11,12 +11,12 @@ import 'package:aves/model/entry/extensions/metadata_edition.dart';
 import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/favourites.dart';
-import 'package:aves/model/filters/album.dart';
-import 'package:aves/model/filters/assign.dart';
-import 'package:aves/model/filters/filters.dart';
-import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/fgw/fgw_used_entry_record.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/filters/assign.dart';
+import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/path.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/model/query.dart';
@@ -393,8 +393,8 @@ class EntrySetActionDelegate
     final entries = _getTargetItems(context);
     final newRecord = await assignRecords.newRow(1, assignType: assignType);
     int orderNum = 1;
-    final newAssignEntries = entries
-        .map((e) => assignEntries.newRow(existMaxOrderNumOffset: orderNum++, assignId: newRecord.id, entryId: e.id));
+    final newAssignEntries = entries.map((e) => assignEntries.newRow(
+        existMaxOrderNumOffset: orderNum++, assignId: newRecord.id, entryId: e.id, context: context));
     debugPrint('$runtimeType makeAssign\n entries ${entries.map((e) => e.toMap())}\n'
         'newRecord ${newRecord.toMap()}\n'
         'newRecordList ${newAssignEntries.map((e) => e.toMap())}');
@@ -563,7 +563,7 @@ class EntrySetActionDelegate
                         settings: const RouteSettings(name: CollectionPage.routeName),
                         builder: (context) => CollectionPage(
                           source: source,
-                          filters: {AlbumFilter(androidFileUtils.avesShareByCopyPath, null)},
+                          filters: {PathFilter(androidFileUtils.avesShareByCopyPath)},
                           highlightTest: highlightTest,
                         ),
                       ),

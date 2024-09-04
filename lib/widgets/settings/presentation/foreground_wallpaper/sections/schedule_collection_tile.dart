@@ -6,7 +6,7 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/collection/filter_bar.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/presentation/foreground_wallpaper/schedule/generic_selection_page.dart';
+import 'package:aves/widgets/settings/presentation/common/generic_selection_page.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sub_page/filter_set_item_page.dart';
 import 'package:flutter/material.dart';
 

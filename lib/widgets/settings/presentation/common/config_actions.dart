@@ -4,10 +4,12 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
 abstract class BridgeConfigActions<T extends PresentRow> with FeedbackMixin {
+  final BuildContext context;
   final Function setState;
   final PresentationRows<T> presentationRows;
 
   BridgeConfigActions({
+    required this.context,
     required this.setState,
     required this.presentationRows,
   });

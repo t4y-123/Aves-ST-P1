@@ -1071,7 +1071,8 @@
   "filePickerUseThisFolder": "Use this folder",
 
 
-  "appExportForegroundWallpaper": "ForegroundWallpaper",
+  "appExportForegroundWallpaper": "Foreground wallpaper",
+  "appExportScenario": "Scenarios",
 
   "entryActionShareByCopy": "share by copy",
   "entryActionShareByDateNow": "set date now",
@@ -1087,7 +1088,7 @@
   "settingsShareByCopyCollectionPageAutoRemove": "Remove expired in launch collection page after copied",
   "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
   "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
-  "settingsShareByCopyExpiredInterval": "Expired Interval",
+  "settingsExpiredInterval": "Expired Interval",
 
   "shareByCopySetDateTypeOnlyThisTime": "only this time copied",
   "shareByCopySetDateTypeAllCopiedEntries": "all copied pre and now",
@@ -1106,16 +1107,15 @@
   "editAsCopiedFirstDialogMessage": "Data is precious.\n\nFor in some phone, it may override the original item without show any info while the user may want to keep the origin same as pre with a edited copied.\n\nSo,always copied and only edit the copied item.\n\n You need to back to collection page to find edited item.This copied will not be auto remove even cancel from edit.",
   "settingsConfirmationEditAsCopiedFirst": "Ask before edit as copied first",
 
-
   "filterFgwUsedLabel": "Fgw used entries",
   "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",
 
 
   "settingsPresentationSectionTitle": "Presentation",
-  "settingsPresentationForegroundWallpaperConfigTile": "Foreground wallpaper edit",
+  "settingsFgwEditSettingsTitle": "Foreground wallpaper edit",
   "settingsPresentationForegroundWallpaperPageTitle": "Foreground wallpaper edit",
   "settingsPresentationWallpaperAddDefaultScheduleTile": "Foreground wallpaper settings",
-  "settingsWallpaperSchedulesManagerTitle": "Foreground wallpaper operation",
+  "settingsFgwOpSettingsTitle": "Foreground wallpaper operation",
 
 
   "fgwScheduleGroupSetType346": "3/4/6,for home and lock screen",
@@ -1133,30 +1133,49 @@
   "settingsSetAllFgwScheduleDisplayType": "Set all schedules display order type",
   "confirmSetAllFgwScheduleDisplayType": "This will set all schedules display type in a same value.Continue?",
 
+  "settingsFgwGuardLevel": "Set cur guard level",
+
    "resetCompletedFeedback": "reset complete.",
    "clearCompletedFeedback": "clear complete.",
    "applyCompletedFeedback": "apply complete.",
+   "inputLabel": "Input value",
+   "enterNumber": "Enter Number",
 
-  "settingsPrivacyGuardLevelTabTypes": "Guard Level",
+
+  "settingsFgwGuardLevelTabTypes": "Guard Level",
   "settingsMultiTabEditPageBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
-  "settingsFgwScheduleBanner": "Can not manually remove schedule unless none guard level using happen (a error).",
+  "settingsFgwScheduleBanner": "Can only remove widget schedule.",
   "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
   "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
   "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
   "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
   "settingsForegroundWallpaperConfigAddItem": "Add Item",
   "settingsMultiTabEditResetChange": "Reset Changes",
-  "settingsFgwScheduleSyncButtonText": "Sync Schedules Now",
+  "settingsFgwScheduleSyncButtonText": "Sync Schedules Now:",
   "settingsFgwScheduleSyncButtonAlert": "Sync Schedules tapped,please wait a few second.",
-  "settingsShowChipFgwButton": "Show foreground wallpaper service on-off button in main page.",
+  "settingsShowChipFgwButton": "Show fgw service on-off button in main page:",
+  "settingsWidgetUpdateWhenOpenPage": "Update widget when open page:",
 
+  "settingsMaxFgwUsedEntryRecord": "Maximum used record for each:\n[Guard level,Update type,Widget id]]",
+  "settingsGuardLevel": "Guard level",
+  "settingsLockFgwNotification": "Lock fgw notification service:",
+
+  "presentInfoTileTitle": "Item info:",
+
+  "curFgwGuardLevelTitle": "current fgw guard Level",
   "guardLevelTitle": "Guard Level",
   "guardLevelNamePrefix": "Level",
+
   "renameLabelNameTileTitle": "Label Name",
   "renameLabelNameDialogLabel": "New name",
   "renameLabelNameDialogLabelAlreadyExistsHelper": "Illegal same name",
+
+  "numberDialogLabelNotValidHelper": "Illegal value",
+
+
+
   "settingsCopySchedulesFromExist": "Copy schedules from exist ",
-  "settingsGuardLevelColor": "Color:",
+  "settingsItemSelectColor": "Color:",
   "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
   "settingsCollectionScheduleUpdateTypeMultiSelectionNone": "None",
   "settingsActiveTitle": "Active:",
@@ -1165,7 +1184,7 @@
   "settingsFilterSetTabTypes": "Filters Set",
   "settingsFilterSetTile": "Filters Set Setting",
   "settingsFilterSetCancelTile": "Cancel this added:",
-
+  "itemEmpty": "No Items",
 
   "settingsWallpaperScheduleTabTypes": "Schedule",
   "settingsScheduleNamePrefix": "Schedule: ",
@@ -1251,7 +1270,7 @@
   "excludeName04": "<3hour DCIM ",
   "excludeName05": "Share Copied Exclude",
   "excludeName06": "Video Exclude",
-
+  "excludeName07": "Fgw Used",
 
   "interjectName01": "Portrait Interject",
   "interjectName02": "Landscape Interject",
@@ -1274,14 +1293,14 @@
   "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
   "settingsScenarioEditSteps": "Edit steps",
 
-  "settingsScenariosConfigPageTile": "Scenarios Edit",
+  "settingsScenariosEditConfigPageTile": "Scenarios Edit",
   "settingsScenariosConfigPageTitle": "Scenarios Edit",
   "scenarioFilterSettingTitle": "Edit Scenario",
   "scenarioFilterAddNewTitle": "Add new scenario",
   "scenarioFilterOpTitle": "Setting scenario",
   "scenarioFilterLockTitle": ".Lock scenario",
   "scenarioFilterUnlockTitle": ".Unlock scenario",
-  "configureScenarioLockTitle": "Configure Scenario Lock",
+  "configureLockTitle": "Configure Lock",
   "pinDialogEnterDefault1234": "Enter PIN (default:1234)",
 
   "settingsUseScenariosTileText": "Use scenarios",
@@ -1291,7 +1310,7 @@
   "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
   "settingsScenarioResetActivePinnedScenarioText": "Reset active scenarios to only first exclude scenario",
   "settingsScenarioResetActivePinnedScenarioAlert": "Reset active scenarios to default to clear some potential mistake in using scenario like miss scenarios.",
-  "settingsScenarioSetScenarioPassDefaultText": "Set scenario unlock password (default 1234)",
+  "settingsSetPassDefaultText": "Set unlock password (default 1234)",
   "settingsScenarioSetScenarioPassDefaultAlert": "The default value 1234",
   "settingsCanScenarioAffectFgwTileText": "Can scenario affect foreground wallpaper",
   "settingsConfirmationRemoveScenario": "Ask before remove scenario",
@@ -1320,6 +1339,7 @@
   "queryHelperTypeMonth": "Month",
   "queryHelperTypeYear": "Year",
   "queryHelperTypeId": "Id",
+  "queryHelperTypeFgwUsed": "FgwUsed",
 
   "queryHelperDialogTitle":"Query helper dialog",
   "queryHelperDialogOperator":"Operator: ",
@@ -1330,6 +1350,11 @@
   "queryHelperDialogMinutes":"Minutes",
   "queryHelperDialogSeconds":"Seconds",
   "queryHelperDialogValueHintText":"Value",
+
+  "widgetId":"Widget id",
+  "updateType":"Update type",
+  "guardLevelId":"Guard level id",
+
 
 
   "assignPageTitle": "Assigns",
@@ -1348,18 +1373,21 @@
   "entryActionAssignPermanent": "Assign permanent",
   "entryActionAssignTemporary": "Assign temporary",
 
+  "searchAssignSectionTitle": "Assign",
+
   "settingsAssignConfigPageTitle": "Assign Edit",
   "settingsTileAssignType": "Assign type",
   "settingsAssignRecordTabTypes": "Assign Records",
   "settingsAssignNamePrefix": "Assign Records",
-  "settingsAssignEntryTabTypes": "Assign Entries",
+  "settingsAssignEntriesTabTypes": "Assign Entries",
   "settingsAssignEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
-  "settingsAssignStepsAllBanner": "Can only remove or inactive entries assigned.",
+  "settingsAssignStepsAllBanner": "Can only remove entries assigned in record page.",
+  "settingsAssignStepsOneBanner": "Can only remove or  assigned in record page.",
   "settingsAssignEntryNotExistWarn": "Can only remove or inactive entries assigned.",
   "settingsAssignEntrySubPagePrefix": "Assign entry :",
   "settingsAssignEditEntries": "Edit assign entries",
 
-
+  "settingsAssignEditTitle": "Assign edit",
   "settingsAssignOperationTitle": "Assign settings",
   "settingsAssignResetDefaultText": "Clear all assign record",
   "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
@@ -1375,6 +1403,10 @@
   "widgetEmpty": "No widgets available.",
   "widgetSettingPageTile": "Widgets settings",
   "widgetSettingPageTitle": "Widgets settings",
+
+
+  "appNameSt": "Aves-ST",
+  "welcomeMessageSt": "Welcome to Aves-ST",
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",

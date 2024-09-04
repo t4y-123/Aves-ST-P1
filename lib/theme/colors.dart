@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:aves/image_providers/app_icon_image_provider.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -17,6 +19,16 @@ class AColors {
     Color(0xff2bc0e4),
     Color(0xffeaecc6),
   ];
+
+  static Color getRandomColor() {
+    final Random random = Random();
+    return Color.fromARGB(
+      255,
+      random.nextInt(256),
+      random.nextInt(256),
+      random.nextInt(256),
+    );
+  }
 }
 
 class AvesColorsProvider extends StatelessWidget {

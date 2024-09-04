@@ -9,13 +9,14 @@ import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:flutter/material.dart';
 
 class AssignOperationPage extends StatelessWidget with FeedbackMixin {
-  static const routeName = '/settings/presentation/scenarios_operation_page';
+  static const routeName = '/settings/presentation/assign/record_op_settings_page';
 
   const AssignOperationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    assignEntries.removeInvalidEntries(context);
     return AvesScaffold(
       appBar: AppBar(
         title: Text(l10n.settingsAssignOperationTitle),
@@ -46,7 +47,7 @@ class AssignOperationPage extends StatelessWidget with FeedbackMixin {
           SettingsDurationListTile(
             selector: (context, s) => s.assignTemporaryExpiredInterval,
             onChanged: (v) => settings.assignTemporaryExpiredInterval = v,
-            title: l10n.settingsSlideshowIntervalTile,
+            title: l10n.settingsExpiredInterval,
           ),
           SettingsSwitchListTile(
             selector: (context, s) => s.canAutoRemoveExpiredTempAssign,

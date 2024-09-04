@@ -180,7 +180,7 @@ class SettingsDefaults {
 
   //
   static const int maxFgwUsedEntryRecord = 10;
-  static const int resetPrivacyGuardLevelDuration = 15; // seconds
+  static const int resetFgwGuardLevelDuration = 15; // seconds
   // diff type share.
   static const confirmSetDateToNow = true;
   static const confirmShareByCopy = true;
@@ -199,9 +199,13 @@ class SettingsDefaults {
   static const confirmEditAsCopiedFirst = true;
 
   static const useScenarios = true;
-  static const scenarioLockType = ScenarioLockType.pin;
+  static const scenarioLockType = CommonLockType.pin;
   static const scenarioLock = false;
-  static const scenarioLockDefaultPass = '1234';
+  static const guardLevelLockType = CommonLockType.pin;
+  static const guardLevelLock = false;
+  static const pinDefaultPass = '1234';
+  static const widgetUpdateWhenOpen = false;
+
   static const useScenarioFeature = true;
   // t4y: to make the scenario change not affect the fore ground wallpaper.
   static const canScenarioAffectFgw = false;

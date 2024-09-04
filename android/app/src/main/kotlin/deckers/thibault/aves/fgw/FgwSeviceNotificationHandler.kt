@@ -73,7 +73,7 @@ object FgwSeviceNotificationHandler {
     const val FOREGROUND_WALLPAPER_NOTIFICATION_CHANNEL_ID = "foreground_wallpaper"
     const val NOTIFICATION_ID = 2
 
-    var canChangeLevel = true
+    var isGuardLevelLocked = true
     var isLevelGroup = false
     var isChangingGuardLevel = false
     var guardLevel: Int = 0
@@ -90,6 +90,7 @@ object FgwSeviceNotificationHandler {
     private val activityButtonResIds = setOf(
         R.drawable.baseline_auto_stories_24,
         R.drawable.baseline_copy_all_24,
+        R.drawable.baseline_lock_24
     )
     // used for unlock screen, easily to make wallpaper next or go into the related collection.
     private val normalLytEntryBtns = listOf(
@@ -103,7 +104,7 @@ object FgwSeviceNotificationHandler {
     private val normalLytLevelBtns = listOf(
         Triple(R.id.iv_normal_lyt_btn_01, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_normal_lyt_btn_02, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
-        Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
+        Triple(R.id.iv_normal_lyt_btn_03, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK),
         Triple(R.id.iv_normal_lyt_btn_04, R.drawable.baseline_next_24, FgwIntentAction.NEXT)
     )
     private val normalLytLevelChangingBtns = listOf(
@@ -127,7 +128,7 @@ object FgwSeviceNotificationHandler {
         Triple(R.id.iv_big_lyt_btn_01, R.drawable.baseline_menu_open_24, FgwIntentAction.SWITCH_GROUP),
         Triple(R.id.iv_big_lyt_btn_02, R.drawable.baseline_arrow_downward_24, FgwIntentAction.DOWNWARD),
         Triple(R.id.iv_big_lyt_btn_03, R.drawable.baseline_arrow_upward_24, FgwIntentAction.UPWARD),
-        Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK_UNLOCK),
+        Triple(R.id.iv_big_lyt_btn_04, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK),
         Triple(R.id.iv_big_lyt_btn_05, R.drawable.baseline_next_24, FgwIntentAction.NEXT)
     )
 
@@ -196,7 +197,7 @@ object FgwSeviceNotificationHandler {
         val minLevel = FgwServiceFlutterHandler.activeLevelsList.minByOrNull { it.level }?.level ?: 1
         val maxLevel = FgwServiceFlutterHandler.activeLevelsList.maxByOrNull { it.level }?.level ?: 1
 
-        if(canChangeLevel){
+        if(!isGuardLevelLocked){
             guardLevel = when {
                 guardLevel >= maxLevel -> {
                     inactiveButtonResIds.add(R.drawable.baseline_arrow_upward_24)
@@ -251,21 +252,33 @@ object FgwSeviceNotificationHandler {
             LayoutType.BIG_LEVEL_CHANGING -> bigLytLevelBtnsChanging
         }.map { Triple(it.first, it.second, it.third) }.toMutableList()
 
-        if (!canChangeLevel) {
+        if (isGuardLevelLocked) {
             inactiveButtonResIds += levelButtonResId
             when (layoutType) {
+                // unlock is main activity , use FgwConstant not FgwIntentAction.
                 LayoutType.NORMAL_LEVEL ->
                     buttonActions[2] =
-                        Triple(buttonActions[2].first, R.drawable.baseline_lock_24, buttonActions[2].third)
+                        Triple(buttonActions[2].first, R.drawable.baseline_lock_24, FgwConstant.FGW_UNLOCK)
 
                 LayoutType.BIG_LEVEL ->
                     buttonActions[3] =
-                        Triple(buttonActions[3].first, R.drawable.baseline_lock_24, buttonActions[3].third)
+                        Triple(buttonActions[3].first, R.drawable.baseline_lock_24, FgwConstant.FGW_UNLOCK)
 
-                else -> Log.i(LOG_TAG, "layoutType($layoutType)")
+                else -> Log.i(LOG_TAG, " {$isGuardLevelLocked} isGuardLevelLocked layoutType($layoutType)")
             }
         } else {
             inactiveButtonResIds -= levelButtonResId
+            when (layoutType) {
+                LayoutType.NORMAL_LEVEL ->
+                    buttonActions[2] =
+                        Triple(buttonActions[2].first, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK)
+
+                LayoutType.BIG_LEVEL ->
+                    buttonActions[3] =
+                        Triple(buttonActions[3].first, R.drawable.baseline_lock_open_24, FgwIntentAction.LOCK)
+
+                else -> Log.i(LOG_TAG, " {$isGuardLevelLocked} isGuardLevelLocked layoutType($layoutType)")
+            }
         }
 
         updateGuardLevel(remoteViews)

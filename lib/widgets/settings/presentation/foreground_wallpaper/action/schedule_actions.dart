@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 class FgwScheduleActions extends BridgeConfigActions<FgwScheduleRow> {
   FgwScheduleActions({
-    required BuildContext context,
+    required super.context,
     required super.setState,
   }) : super(
           presentationRows: fgwSchedules,

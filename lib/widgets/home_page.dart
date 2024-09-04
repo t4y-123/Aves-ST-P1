@@ -8,16 +8,21 @@ import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/fgw/enum/fgw_service_item.dart';
 import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/fgw_service_handler.dart';
 import 'package:aves/services/fgw_widget_service.dart';
 import 'package:aves/services/global_search.dart';
 import 'package:aves/services/intent_service.dart';
@@ -26,6 +31,8 @@ import 'package:aves/theme/themes.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/widgets/collection/collection_page.dart';
 import 'package:aves/widgets/collection/entry_set_action_delegate.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/fgw_aware.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/behaviour/routes.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -66,7 +73,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
   AvesEntry? _viewerEntry;
   int? _widgetId;
   String? _initialRouteName, _initialSearchQuery;
@@ -124,7 +131,7 @@ class _HomePageState extends State<HomePage> {
       switch (intentAction) {
         case IntentActions.view:
         case IntentActions.widgetOpen:
-        case IntentActions.foregroundWallpaperWidgetOpen:
+        case IntentActions.fgwWidgetOpen:
           String? uri, mimeType;
           final widgetId = intentData[IntentDataKeys.widgetId];
           if (widgetId != null) {
@@ -142,9 +149,28 @@ class _HomePageState extends State<HomePage> {
             }
             // t4y: for foreground update diff.
             if (intentAction == IntentActions.widgetOpen) {
-              unawaited(WidgetService.update(widgetId));
-            } else if (intentAction == IntentActions.foregroundWallpaperWidgetOpen) {
-              unawaited(ForegroundWallpaperWidgetService.update(widgetId));
+              if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
+                unawaited(WidgetService.update(widgetId));
+              }
+            } else if (intentAction == IntentActions.fgwWidgetOpen) {
+              final curGuardLevel =
+                  fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+              debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
+
+              if (curGuardLevel != null) {
+                final curWidgetSchedule = fgwSchedules.all
+                    .firstWhereOrNull((e) => e.guardLevelId == curGuardLevel.id && widgetId == widgetId);
+                if (curWidgetSchedule != null) {
+                  final curFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == curWidgetSchedule.filtersSetId);
+                  if (curFiltersSet != null) {
+                    _initialFilters = curFiltersSet.filters;
+                    debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
+                  }
+                }
+              }
+              if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
+                unawaited(ForegroundWallpaperWidgetService.update(widgetId));
+              }
             }
           } else {
             uri = intentData[IntentDataKeys.uri];
@@ -161,7 +187,11 @@ class _HomePageState extends State<HomePage> {
             }
           }
         case IntentActions.fgwUsedRecordOpen:
-        case IntentActions.fgwUsedViewOpen:
+          appMode = AppMode.main;
+          _fgwOpenType = FgwServiceOpenType.usedRecord;
+          _initialFilters = {FgwUsedFilter(guardLevelId: settings.curFgwGuardLevelNum)};
+          _initialRouteName = CollectionPage.routeName;
+        case IntentActions.fgwViewOpen:
         case IntentActions.fgwDuplicateOpen:
           await settings.reload();
           debugPrint('$runtimeType get into IntentActions $intentAction');
@@ -171,16 +201,13 @@ class _HomePageState extends State<HomePage> {
           );
           if (_viewerEntry != null) {
             switch (intentAction) {
-              case IntentActions.fgwUsedRecordOpen:
-                appMode = AppMode.view;
-                _fgwOpenType = FgwServiceOpenType.usedRecord;
-              case IntentActions.fgwUsedViewOpen:
+              case IntentActions.fgwViewOpen:
                 appMode = AppMode.view;
                 _fgwOpenType = FgwServiceOpenType.curFilters;
               case IntentActions.fgwDuplicateOpen:
                 appMode = AppMode.main;
                 _fgwOpenType = FgwServiceOpenType.shareByCopy;
-                _initialFilters = {AlbumFilter(androidFileUtils.avesShareByCopyPath, null)};
+                _initialFilters = {PathFilter(androidFileUtils.avesShareByCopyPath)};
                 _initialRouteName = CollectionPage.routeName;
               default:
                 break;
@@ -223,9 +250,20 @@ class _HomePageState extends State<HomePage> {
         case IntentActions.widgetSettings:
           _initialRouteName = HomeWidgetSettingsPage.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
-        case IntentActions.foregroundWallpaperWidgetSettings:
+        case IntentActions.fgwWidgetSettings:
           _initialRouteName = FgwWidgetSettings.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
+        case IntentActions.fgwUnlock:
+          await settings.reload();
+          debugPrint('$runtimeType await unlockFgw(context)): ${settings.guardLevelLock}');
+          if (!await unlockFgw(context)) {
+            settings.guardLevelLock = true;
+          } else {
+            settings.guardLevelLock = false;
+            await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);
+            debugPrint(
+                '$runtimeType await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);; ${settings.guardLevelLock}');
+          }
         default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
           final extraRoute = intentData[IntentDataKeys.page];
@@ -355,6 +393,7 @@ class _HomePageState extends State<HomePage> {
             await completer.future;
             switch (_fgwOpenType) {
               case null:
+              case FgwServiceOpenType.usedRecord:
               case FgwServiceOpenType.shareByCopy:
                 final album = viewerEntry.directory;
                 if (album != null) {
@@ -368,14 +407,14 @@ class _HomePageState extends State<HomePage> {
                     stackBursts: false,
                   );
                 }
-              case FgwServiceOpenType.usedRecord:
               case FgwServiceOpenType.curFilters:
                 Set<CollectionFilter> filters = {};
-                if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
-                  filters = {FgwUsedFilter.instance};
-                } else {
-                  filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
-                }
+                // if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+                //   final curLevel = await fgwScheduleHelper.getCurGuardLevel();
+                //   filters = {FgwUsedFilter(guardLevelId: curLevel.guardLevel)};
+                // } else {
+                filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
+                // }
                 debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
                 collection = CollectionLens(
                   source: source,
@@ -431,8 +470,8 @@ class _HomePageState extends State<HomePage> {
     final source = context.read<CollectionSource>();
     switch (_fgwOpenType) {
       case null:
-      case FgwServiceOpenType.usedRecord:
       case FgwServiceOpenType.curFilters:
+      case FgwServiceOpenType.usedRecord:
         break;
       case FgwServiceOpenType.shareByCopy:
         if (_viewerEntry != null) {

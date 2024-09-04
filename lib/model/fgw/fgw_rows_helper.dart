@@ -12,10 +12,10 @@ import 'package:aves/model/settings/settings.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 
-final ForegroundWallpaperHelper foregroundWallpaperHelper = ForegroundWallpaperHelper._private();
+final FgwRowsHelper fgwRowsHelper = FgwRowsHelper._private();
 
-class ForegroundWallpaperHelper {
-  ForegroundWallpaperHelper._private();
+class FgwRowsHelper {
+  FgwRowsHelper._private();
   late AppLocalizations? _l10n;
 
   Future<void> initWallpaperSchedules({FgwScheduleSetType? fgwScheduleSetType}) async {
@@ -115,28 +115,37 @@ class ForegroundWallpaperHelper {
     await fgwSchedules.add(type346Schedules.toSet());
   }
 
-  Future<List<FgwScheduleRow>> newSchedulesGroup(FgwGuardLevelRow levelRow,
+  Future<Map<String, List<dynamic>>> newSchedulesGroup(FgwGuardLevelRow levelRow,
       {PresentationRowType rowsType = PresentationRowType.all, FiltersSetRow? filtersRow}) async {
     debugPrint('$runtimeType newSchedulesGroup start:\n$levelRow \n $rowsType \n $filtersRow ');
-    filtersRow ??= filtersSets.all.first;
-    if (filtersRow != null) {
-      List<FgwScheduleRow> newSchedules = [
-        newSchedule(1, levelRow.id, filtersRow.id, WallpaperUpdateType.home, 30, false, rowsType),
-        newSchedule(2, levelRow.id, filtersRow.id, WallpaperUpdateType.lock, 0, false, rowsType),
-        newSchedule(3, levelRow.id, filtersRow.id, WallpaperUpdateType.both, 0, false, rowsType),
-      ];
-      debugPrint('newSchedulesGroup =\n $newSchedules');
-      return newSchedules;
-    }
-    return [];
+
+    List<FiltersSetRow> newFilters = [
+      filtersSets.newRow(1, type: rowsType),
+      filtersSets.newRow(2, type: rowsType),
+      filtersSets.newRow(3, type: rowsType),
+    ];
+    List<FgwScheduleRow> newSchedules = [
+      newSchedule(1, levelRow.id, newFilters[0].id, WallpaperUpdateType.home, 30, false, rowsType),
+      newSchedule(2, levelRow.id, newFilters[1].id, WallpaperUpdateType.lock, 0, false, rowsType),
+      newSchedule(3, levelRow.id, newFilters[2].id, WallpaperUpdateType.both, 0, false, rowsType),
+    ];
+    debugPrint('newFilters =\n ${newFilters.map((e) => e.toMap())}');
+    debugPrint('newSchedules =\n ${newSchedules.map((e) => e.toMap())}');
+    return {
+      FgwRowsHelper.newFilters: newFilters,
+      FgwRowsHelper.newSchedules: newSchedules,
+    };
   }
+
+  static String newFilters = 'newFilters';
+  static String newSchedules = 'newSchedules';
 
   FgwScheduleRow newSchedule(int offset, int levelId, int filtersSetId, updateType,
       [int? interval, bool isActive = true, PresentationRowType type = PresentationRowType.all]) {
     debugPrint('$runtimeType newSchedule start:\n$updateType \n $interval \n $type ');
     return fgwSchedules.newRow(
       existMaxOrderNumOffset: offset,
-      privacyGuardLevelId: levelId,
+      guardLevelId: levelId,
       filtersSetId: filtersSetId,
       updateType: updateType,
       interval: interval,

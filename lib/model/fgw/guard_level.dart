@@ -6,7 +6,7 @@ import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
-import 'package:collection/collection.dart';
+import 'package:aves/theme/colors.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
@@ -56,7 +56,7 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
       Color? newColor,
       bool isActive = true,
       PresentationRowType type = PresentationRowType.all}) async {
-    final targetSet = getTarget(type);
+    final targetSet = getAll(type);
 
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxGuardLevel =
@@ -66,45 +66,9 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
       id: metadataDb.nextId,
       guardLevel: guardLevel,
       labelName: labelName ?? await getLabelName(guardLevel),
-      color: newColor ?? getRandomColor(),
+      color: newColor ?? AColors.getRandomColor(),
       isActive: isActive,
     );
-  }
-
-  Future<void> setExistRows({
-    required Set<FgwGuardLevelRow> rows,
-    required Map<String, dynamic> newValues,
-    PresentationRowType type = PresentationRowType.all,
-  }) async {
-    final targetSet = getTarget(type);
-
-    debugPrint('$runtimeType setExistRows privacyGuardLevels: ${fgwGuardLevels.all}\n'
-        'row.targetSet:[$targetSet]  \n'
-        'newValues $newValues\n');
-    for (var row in rows) {
-      final oldRow = targetSet.firstWhereOrNull((r) => r.id == row.id);
-      if (oldRow != null) {
-        debugPrint('$runtimeType setExistRows:$oldRow');
-        targetSet.remove(oldRow);
-        if (type == PresentationRowType.all) {
-          await metadataDb.removeFgwGuardLevels({oldRow});
-        }
-
-        final updatedRow = FgwGuardLevelRow(
-          id: row.id,
-          guardLevel: newValues[FgwGuardLevelRow.propGuardLevel] ?? row.guardLevel,
-          labelName: newValues[PresentRow.propLabelName] ?? row.labelName,
-          color: newValues[FgwGuardLevelRow.propColor] ?? row.color,
-          isActive: newValues[PresentRow.propIsActive] ?? row.isActive,
-        );
-
-        targetSet.add(updatedRow);
-        if (type == PresentationRowType.all) {
-          await metadataDb.addFgwGuardLevels({updatedRow});
-        }
-      }
-    }
-    notifyListeners();
   }
 
   @override
@@ -174,6 +138,7 @@ class FgwGuardLevelRow extends PresentRow<FgwGuardLevelRow> {
     return id.compareTo(other.id);
   }
 
+  @override
   FgwGuardLevelRow copyWith({
     int? id,
     int? guardLevel,

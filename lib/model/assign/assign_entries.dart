@@ -1,152 +1,68 @@
 import 'dart:convert';
 
 import 'package:aves/model/entry/entry.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:collection/collection.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum AssignEntryRowsType { all, bridgeAll }
 
 final AssignEntries assignEntries = AssignEntries._private();
 
-class AssignEntries with ChangeNotifier {
-  Set<AssignEntryRow> _rows = {};
-  Set<AssignEntryRow> _bridgeRows = {};
-
-//
+class AssignEntries extends PresentationRows<AssignEntryRow> {
   AssignEntries._private();
 
-  Future<void> init() async {
-    _rows = await metadataDb.loadAllAssignEntries();
-    _bridgeRows = await metadataDb.loadAllAssignEntries();
-    await _removeDuplicates();
+  @override
+  Future<Set<AssignEntryRow>> loadAllRows() async {
+    return await metadataDb.loadAllAssignEntries();
   }
 
-  Future<void> refresh() async {
-    _rows.clear();
-    _bridgeRows.clear();
-    _rows = await metadataDb.loadAllAssignEntries();
-    _bridgeRows = await metadataDb.loadAllAssignEntries();
+  @override
+  Future<void> addRowsToDb(Set<AssignEntryRow> newRows) async {
+    await metadataDb.addAssignEntries(newRows);
   }
 
-  int get count => _rows.length;
-
-  Set<AssignEntryRow> get all {
-    _removeDuplicates();
-    return Set.unmodifiable(_rows);
+  @override
+  Future<void> removeRowsFromDb(Set<AssignEntryRow> removedRows) async {
+    await metadataDb.removeAssignEntries(removedRows);
   }
 
-  Set<AssignEntryRow> get bridgeAll {
-    _removeDuplicates();
-    return Set.unmodifiable(_bridgeRows);
+  @override
+  Future<void> clearRowsInDb() async {
+    await metadataDb.clearAssignEntries();
   }
 
-  Set<AssignEntryRow> getAll(AssignEntryRowsType type) {
-    switch (type) {
-      case AssignEntryRowsType.bridgeAll:
-        return bridgeAll;
-      case AssignEntryRowsType.all:
-      default:
-        return all;
-    }
+  @override
+  AssignEntryRow importFromMap(Map<String, dynamic> attributes) {
+    return AssignEntryRow.fromMap(attributes);
   }
 
-  Set<AssignEntryRow> _getTarget(AssignEntryRowsType type) {
-    switch (type) {
-      case AssignEntryRowsType.bridgeAll:
-        return _bridgeRows;
-      case AssignEntryRowsType.all:
-      default:
-        return _rows;
-    }
-  }
-
-  Future<void> add(Set<AssignEntryRow> newRows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
-    if (type == AssignEntryRowsType.all) await metadataDb.addAssignEntries(newRows);
-    targetSet.addAll(newRows);
-    await _removeDuplicates();
-    notifyListeners();
-  }
-
-  Future<void> setRows(Set<AssignEntryRow> newRows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    await removeRows(newRows, type: type);
-    for (var row in newRows) {
-      await set(
-        id: row.id,
-        assignId: row.assignId,
-        entryId: row.entryId,
-        isActive: row.isActive,
-        dateMillis: row.dateMillis,
-        type: type,
-      );
-    }
-    notifyListeners();
-  }
-
-  Future<void> set({
-    required int id,
-    required int assignId,
-    required int entryId,
-    required int dateMillis,
-    required bool isActive,
-    AssignEntryRowsType type = AssignEntryRowsType.all,
-  }) async {
-    final targetSet = _getTarget(type);
-
-    final oldRows = targetSet.where((row) => row.id == id).toSet();
-    targetSet.removeAll(oldRows);
-    if (type == AssignEntryRowsType.all) await metadataDb.removeAssignEntries(oldRows);
-    final row = AssignEntryRow(
-      id: id,
-      assignId: assignId,
-      entryId: entryId,
-      dateMillis: dateMillis,
-      isActive: isActive,
-    );
-
-    debugPrint('$runtimeType set AssignEntryRow $row');
-    targetSet.add(row);
-    if (type == AssignEntryRowsType.all) await metadataDb.addAssignEntries({row});
-    await _removeDuplicates();
-    notifyListeners();
-  }
-
-  Future<void> removeEntries(Set<AvesEntry> entries, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
+  Future<void> removeEntries(Set<AvesEntry> entries,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
     final entryIds = entries.map((entry) => entry.id).toSet();
-    final todoRows = targetSet.where((row) => entryIds.contains(row.entryId)).toSet();
-    await removeRows(todoRows);
+    await removeEntryIds(entryIds, type: type, notify: notify);
   }
 
-  Future<void> removeRows(Set<AssignEntryRow> rows, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    await removeIds(rows.map((row) => row.id).toSet(), type: type);
+  Future<void> removeEntryIds(Set<int> rowIds,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await removeRows(all.where((row) => rowIds.contains(row.entryId)).toSet(), type: type, notify: notify);
   }
 
-  Future<void> removeNumbers(Set<int> rowNums, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    final removedRows = targetSet.where((row) => rowNums.contains(row.id)).toSet();
-    if (type == AssignEntryRowsType.all) await metadataDb.removeAssignEntries(removedRows);
-    removedRows.forEach(targetSet.remove);
-    notifyListeners();
+  @override
+  Future<void> add(Set<AssignEntryRow> newRows,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    await super.add(newRows, type: type, notify: notify);
+    await _removeDuplicates();
   }
 
-  Future<void> removeIds(Set<int> rowIds, {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    final removedRows = targetSet.where((row) => rowIds.contains(row.id)).toSet();
-    // only the all type affect the database.
-    if (type == AssignEntryRowsType.all) await metadataDb.removeAssignEntries(removedRows);
-    removedRows.forEach(targetSet.remove);
-    notifyListeners();
-  }
-
-  Future<void> _removeDuplicates() async {
+  Future<void> _removeDuplicates({PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
     final uniqueRows = <String, AssignEntryRow>{};
     final duplicateRows = <AssignEntryRow>{};
-    for (var row in _rows) {
+    final targetRows = getTarget(type);
+    for (var row in targetRows) {
       String key;
       key = '${row.assignId}-${row.entryId}';
       if (uniqueRows.containsKey(key)) {
@@ -154,28 +70,27 @@ class AssignEntries with ChangeNotifier {
       }
       uniqueRows[key] = row; // This will keep the last occurrence
     }
-    _rows = uniqueRows.values.toSet();
-    if (duplicateRows.isNotEmpty) {
-      await metadataDb.removeAssignEntries(duplicateRows);
-    }
-  }
-
-  Future<void> clear({AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    if (type == AssignEntryRowsType.all) await metadataDb.clearAssignEntries();
-    targetSet.clear();
-    notifyListeners();
+    await removeRows(duplicateRows, type: type, notify: notify);
   }
 
   AssignEntryRow newRow({
+    required BuildContext? context,
     required int existMaxOrderNumOffset,
     required int assignId,
     required int entryId,
     int? dateMillis,
+    int? orderNum = 1,
     bool isActive = true,
     AssignEntryRowsType type = AssignEntryRowsType.all,
   }) {
+    String labelName = '';
+    if (context != null) {
+      final source = context.read<CollectionSource>();
+      final curEntry = source.allEntries.firstWhereOrNull((e) => e.id == entryId);
+      if (curEntry != null) {
+        labelName = curEntry.bestTitle!;
+      }
+    }
     dateMillis = DateTime.now().millisecondsSinceEpoch;
     return AssignEntryRow(
       id: metadataDb.nextId,
@@ -183,101 +98,37 @@ class AssignEntries with ChangeNotifier {
       entryId: entryId,
       dateMillis: dateMillis,
       isActive: isActive,
+      labelName: labelName,
+      orderNum: orderNum ?? 1,
     );
   }
 
-  Future<void> syncRowsToBridge() async {
-    _bridgeRows.clear();
-    _bridgeRows.addAll(_rows);
-  }
+  void removeInvalidEntries(BuildContext context,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) {
+    final source = context.read<CollectionSource>(); // Assuming context is accessible or pass source explicitly
+    final targetRows = getTarget(type);
+    final invalidRows =
+        targetRows.where((row) => source.allEntries.firstWhereOrNull((e) => e.id == row.entryId) == null).toSet();
 
-  Future<void> syncBridgeToRows() async {
-    await clear();
-    _rows.addAll(_bridgeRows);
-    await metadataDb.addAssignEntries(_rows);
-    notifyListeners();
-  }
-
-  Future<void> setExistRows(Set<AssignEntryRow> rows, Map<String, dynamic> newValues,
-      {AssignEntryRowsType type = AssignEntryRowsType.all}) async {
-    final targetSet = _getTarget(type);
-
-    // Make a copy of the targetSet to avoid concurrent modification issues
-    final targetSetCopy = targetSet.toSet();
-
-    for (var row in rows) {
-      final oldRow = targetSetCopy.firstWhereOrNull((r) => r.id == row.id);
-      final updatedRow = AssignEntryRow(
-        id: row.id,
-        assignId: newValues[AssignEntryRow.propAssignId] ?? row.assignId,
-        entryId: newValues[AssignEntryRow.propEntryId] ?? row.entryId,
-        dateMillis: newValues[AssignEntryRow.propDateMills] ?? row.dateMillis,
-        isActive: newValues[AssignEntryRow.propIsActive] ?? row.isActive,
-      );
-      if (oldRow != null) {
-        await removeRows({oldRow}, type: type);
-        await setRows({updatedRow}, type: type);
-      } else {
-        await add({updatedRow}, type: type);
-      }
+    if (invalidRows.isNotEmpty) {
+      removeRows(invalidRows, type: type, notify: notify);
+      metadataDb.removeAssignEntries(invalidRows); // Ensure the database is updated
     }
-    await _removeDuplicates();
-    notifyListeners();
   }
 
-  // import/export
-  Map<String, Map<String, dynamic>>? export() {
-    final rows = assignEntries.all;
-    final jsonMap = Map.fromEntries(rows.map((row) {
-      return MapEntry(
-        row.id.toString(),
-        row.toMap(),
-      );
-    }));
-    return jsonMap.isNotEmpty ? jsonMap : null;
-  }
-
-  Future<void> import(dynamic jsonMap) async {
-    if (jsonMap is! Map) {
-      debugPrint('failed to import wallpaper schedules for jsonMap=$jsonMap');
-      return;
-    }
-
-    final foundRows = <AssignEntryRow>{};
-    jsonMap.forEach((id, attributes) {
-      if (id is String && attributes is Map) {
-        try {
-          final row = AssignEntryRow.fromMap(attributes);
-          foundRows.add(row);
-        } catch (e) {
-          debugPrint('failed to import wallpaper schedule for id=$id, attributes=$attributes, error=$e');
-        }
-      } else {
-        debugPrint('failed to import wallpaper schedule for id=$id, attributes=${attributes.runtimeType}');
-      }
-    });
-
-    if (foundRows.isNotEmpty) {
-      await assignEntries.clear();
-      await assignEntries.add(foundRows);
-    }
+  Future<void> addAvesEntry(AvesEntry entry, int assignId,
+      {PresentationRowType type = PresentationRowType.all, bool notify = true}) async {
+    final newEntryRow = newRow(existMaxOrderNumOffset: 1, assignId: assignId, entryId: entry.id, context: null);
+    await add({newEntryRow}, type: type, notify: notify);
   }
 }
 
 @immutable
-class AssignEntryRow extends Equatable implements Comparable<AssignEntryRow> {
-  final int id;
+class AssignEntryRow extends PresentRow<AssignEntryRow> {
   final int assignId;
   final int entryId;
   final int dateMillis;
-  final bool isActive;
-
-  // Define property name constants
-  static const String propId = 'id';
-  static const String propAssignId = 'assignId';
-  static const String propEntryId = 'entryId';
-  static const String propDateMills = 'dateMillis';
-  static const String propIsActive = 'isActive';
+  final int orderNum;
 
   @override
   List<Object?> get props => [
@@ -289,31 +140,38 @@ class AssignEntryRow extends Equatable implements Comparable<AssignEntryRow> {
       ];
 
   const AssignEntryRow({
-    required this.id,
+    required super.id,
+    required super.labelName,
     required this.assignId,
     required this.entryId,
     required this.dateMillis,
-    required this.isActive,
+    required this.orderNum,
+    required super.isActive,
   });
 
-  static AssignEntryRow fromMap(Map map) {
+  factory AssignEntryRow.fromMap(Map map) {
     return AssignEntryRow(
       id: map['id'] as int,
       assignId: map['assignId'] as int,
       entryId: map['entryId'] as int,
       dateMillis: map['dateMillis'] as int,
       isActive: (map['isActive'] as int? ?? 0) != 0,
+      orderNum: map['orderNum'] as int,
+      labelName: map['labelName'] as String,
     );
   }
 
   String toJson() => jsonEncode(toMap());
 
+  @override
   Map<String, dynamic> toMap() => {
         'id': id,
         'assignId': assignId,
         'entryId': entryId,
         'dateMillis': dateMillis,
+        'orderNum': orderNum,
         'isActive': isActive ? 1 : 0,
+        'labelName': labelName,
       };
 
   @override
@@ -344,12 +202,15 @@ class AssignEntryRow extends Equatable implements Comparable<AssignEntryRow> {
     return id.compareTo(other.id);
   }
 
+  @override
   AssignEntryRow copyWith({
     int? id,
     int? assignId,
     int? entryId,
     int? dateMillis,
+    int? orderNum,
     bool? isActive,
+    String? labelName,
   }) {
     return AssignEntryRow(
       id: id ?? this.id,
@@ -357,6 +218,8 @@ class AssignEntryRow extends Equatable implements Comparable<AssignEntryRow> {
       entryId: entryId ?? this.entryId,
       dateMillis: dateMillis ?? this.dateMillis,
       isActive: isActive ?? this.isActive,
+      labelName: labelName ?? this.labelName,
+      orderNum: orderNum ?? this.orderNum,
     );
   }
 }

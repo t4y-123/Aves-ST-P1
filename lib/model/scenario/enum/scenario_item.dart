@@ -127,16 +127,16 @@ extension ExtraScenarioExportItem on ScenarioExportItem {
   }
 }
 
-enum ScenarioLockType { system, pattern, pin, password }
+enum CommonLockType { system, pattern, pin, password }
 
-extension ExtraScenarioLockTypew on ScenarioLockType {
+extension ExtraScenarioLockTypew on CommonLockType {
   String getText(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
-      ScenarioLockType.system => l10n.settingsSystemDefault,
-      ScenarioLockType.pattern => l10n.vaultLockTypePattern,
-      ScenarioLockType.pin => l10n.vaultLockTypePin,
-      ScenarioLockType.password => l10n.vaultLockTypePassword,
+      CommonLockType.system => l10n.settingsSystemDefault,
+      CommonLockType.pattern => l10n.vaultLockTypePattern,
+      CommonLockType.pin => l10n.vaultLockTypePin,
+      CommonLockType.password => l10n.vaultLockTypePassword,
     };
   }
 }
@@ -151,6 +151,7 @@ enum QueryHelperType {
   keyContentMonth,
   keyContentYear,
   keyContentId,
+  keyContentFgwUsed,
 }
 
 extension ExtraQueryHelperType on QueryHelperType {
@@ -166,6 +167,7 @@ extension ExtraQueryHelperType on QueryHelperType {
       QueryHelperType.keyContentMonth => l10n.queryHelperTypeMonth,
       QueryHelperType.keyContentYear => l10n.queryHelperTypeYear,
       QueryHelperType.keyContentId => l10n.queryHelperTypeId,
+      QueryHelperType.keyContentFgwUsed => l10n.queryHelperTypeFgwUsed, // Added this line
     };
   }
 }

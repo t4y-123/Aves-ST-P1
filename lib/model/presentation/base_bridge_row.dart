@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -25,7 +23,7 @@ abstract class PresentationRows<T extends PresentRow> with ChangeNotifier {
     _rows.clear();
     _bridgeRows.clear();
     _rows = await loadAllRows();
-    _bridgeRows = await loadAllRows();
+    _bridgeRows.addAll(_rows);
     if (notify) notifyListeners();
   }
 
@@ -119,23 +117,13 @@ abstract class PresentationRows<T extends PresentRow> with ChangeNotifier {
       await addRowsToDb({row});
     }
 
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   int get count => _rows.length;
 
   Set<T> get all => Set.unmodifiable(_rows);
   Set<T> get bridgeAll => Set.unmodifiable(_bridgeRows);
-
-  Color getRandomColor() {
-    final Random random = Random();
-    return Color.fromARGB(
-      255,
-      random.nextInt(256),
-      random.nextInt(256),
-      random.nextInt(256),
-    );
-  }
 
   Future<void> syncRowsToBridge({bool notify = true}) async {
     debugPrint('$runtimeType syncRowsToBridge,\n'
@@ -207,16 +195,12 @@ abstract class PresentationRows<T extends PresentRow> with ChangeNotifier {
   }
 }
 
+/// Base class for presentation rows with equatable and comparable functionality.
 @immutable
 abstract class PresentRow<T> extends Equatable implements Comparable<T> {
   final int id;
   final String labelName;
   final bool isActive;
-
-  // Define property name constants
-  static const String propId = 'id';
-  static const String propLabelName = 'labelName';
-  static const String propIsActive = 'isActive';
 
   const PresentRow({
     required this.id,
@@ -235,7 +219,6 @@ abstract class PresentRow<T> extends Equatable implements Comparable<T> {
 
   @override
   int compareTo(T other) {
-    // Sorting logic based on isActive, labelName, and id
     if (isActive != (other as PresentRow).isActive) {
       return isActive ? -1 : 1;
     }
@@ -246,12 +229,19 @@ abstract class PresentRow<T> extends Equatable implements Comparable<T> {
     return id.compareTo(other.id);
   }
 
-  //t4y: shall use copyWith to set rows.
   T copyWith({
     int? id,
     String? labelName,
     bool? isActive,
-  }) {
-    throw UnimplementedError();
+  });
+
+  static String formatItemMap(Map<String, dynamic> map) {
+    return map.entries.map((entry) {
+      if (entry.key == 'dateMillis' && entry.value is int) {
+        final date = DateTime.fromMillisecondsSinceEpoch(entry.value as int);
+        return '${entry.key}: ${date.toLocal()}';
+      }
+      return '${entry.key}: ${entry.value}';
+    }).join('\n');
   }
 }

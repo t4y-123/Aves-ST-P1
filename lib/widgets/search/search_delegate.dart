@@ -1,7 +1,10 @@
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/date.dart';
 import 'package:aves/model/filters/favourite.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/mime.dart';
@@ -31,6 +34,7 @@ import 'package:aves/widgets/common/identity/aves_filter_chip.dart';
 import 'package:aves/widgets/common/search/delegate.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip.dart';
+import 'package:aves/widgets/search/fgw_filter_make_dialog.dart';
 import 'package:aves/widgets/search/query_helper_dialog.dart';
 import 'package:aves/widgets/settings/privacy/file_picker/file_picker_page.dart';
 import 'package:collection/collection.dart';
@@ -148,6 +152,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
                     _buildTagFilters(containQuery),
                     _buildRatingFilters(context, containQuery),
                     _buildMetadataFilters(context, containQuery),
+                    if (assignRecords.all.isNotEmpty) _buildAssignFilters(context, containQuery),
                   ],
                 );
               },
@@ -231,6 +236,20 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
         goBack(context);
         return;
       }
+    } else if (queryKey == QueryHelperType.keyContentFgwUsed.getName(context)) {
+      final FgwUsedFilter? filter = await showDialog<FgwUsedFilter>(
+        context: context,
+        builder: (context) {
+          return const FgwUsedFilterDialog();
+        },
+      );
+
+      if (filter != null) {
+        await _select(context, filter);
+      } else {
+        goBack(context);
+      }
+      return;
     }
     // else, build a real query filter.
     String keyContent;
@@ -284,6 +303,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
       QueryFilter(QueryHelperType.path.getName(context)),
       QueryFilter(QueryHelperType.keyContentTime2Now.getName(context)),
       QueryFilter(QueryHelperType.keyContentSize.getName(context)),
+      QueryFilter(QueryHelperType.keyContentFgwUsed.getName(context)),
       QueryFilter(QueryHelperType.keyContentWidth.getName(context)),
       QueryFilter(QueryHelperType.keyContentHeight.getName(context)),
       QueryFilter(QueryHelperType.keyContentDay.getName(context)),
@@ -311,6 +331,17 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
       context: context,
       title: context.l10n.searchDateSectionTitle,
       filters: filters,
+    );
+  }
+
+  Widget _buildAssignFilters(BuildContext context, _ContainQuery containQuery) {
+    final _assignFilter =
+        assignRecords.all.where((e) => e.isActive).map((item) => AssignFilter(item.id, item.labelName)).toList();
+
+    return _buildFilterRow(
+      context: context,
+      title: context.l10n.searchAssignSectionTitle,
+      filters: _assignFilter,
     );
   }
 

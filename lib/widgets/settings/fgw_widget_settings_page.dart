@@ -29,10 +29,12 @@ class FgwWidgetSettings extends StatefulWidget {
   static const routeName = '/settings/foreground_wallpaper_widget';
 
   final int widgetId;
+  final bool fromSettingsPage;
 
   const FgwWidgetSettings({
     super.key,
     required this.widgetId,
+    this.fromSettingsPage = false,
   });
 
   @override
@@ -113,19 +115,22 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
               final effectiveOutlineColors = outlineColorsByBrightness[Theme.of(context).brightness];
               if (effectiveOutlineColors == null) return const SizedBox();
 
-              // Get active levels from privacyGuardLevels
+              // Get active levels
               final activeLevels = fgwGuardLevels.bridgeAll.where((level) => level.isActive);
               final activeLevelsIds = activeLevels.map((e) => e.id);
               // Create a new widget wallpaper schedule for each active level
               int orderNumOffset = 1;
               final newSchedules = activeLevels.map((level) {
-                return fgwSchedules.newRow(
+                FgwScheduleRow? todoRow = fgwSchedules.bridgeAll
+                    .firstWhereOrNull((e) => e.guardLevelId == level.id && e.widgetId == widgetId);
+                todoRow ??= fgwSchedules.newRow(
                   existMaxOrderNumOffset: orderNumOffset++,
-                  privacyGuardLevelId: level.id,
+                  guardLevelId: level.id,
                   filtersSetId: filtersSets.all.first.id,
                   updateType: WallpaperUpdateType.widget,
                   widgetId: widgetId,
                 );
+                return todoRow;
               }).toList();
 
               // Add new schedules to the existing schedules list
@@ -171,7 +176,7 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
                                   .where((e) => newSchedulesIds.contains(e.id))
                                   .toList()
                                   .sorted()
-                                  .map((e) => ScheduleItemPageTile(schedule: e).build(context))
+                                  .map((e) => ScheduleItemPageTile(item: e).build(context))
                                   .toList(),
                             );
                           },
@@ -246,6 +251,11 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
 
     if (invalidateUri) {
       settings.setWidgetUri(widgetId, null);
+    }
+
+    // Conditionally pop the page based on the source
+    if (widget.fromSettingsPage) {
+      Navigator.of(context).pop();
     }
   }
 }

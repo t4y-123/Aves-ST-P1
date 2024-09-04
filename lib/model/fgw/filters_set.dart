@@ -41,7 +41,7 @@ class FiltersSet extends PresentationRows<FiltersSetRow> {
     bool isActive = true,
     PresentationRowType type = PresentationRowType.all,
   }) {
-    final targetSet = getTarget(type);
+    final targetSet = getAll(type);
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxFilterSetNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
@@ -51,7 +51,7 @@ class FiltersSet extends PresentationRows<FiltersSetRow> {
       id: newId,
       orderNum: filterSetSuqNum,
       labelName: labelName ?? 'F-$filterSetSuqNum-$newId',
-      filters: filters ?? {AspectRatioFilter.portrait, MimeFilter.image},
+      filters: filters ?? {MimeFilter.image, AspectRatioFilter.landscape.reverse()},
       isActive: isActive,
     );
   }

@@ -7,7 +7,7 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/buttons/outlined_button.dart';
-import 'package:aves/widgets/settings/presentation/foreground_wallpaper/foreground_wallpaper_config_banner.dart';
+import 'package:aves/widgets/settings/presentation/common/multi_tab_edit_page_banner.dart';
 import 'package:flutter/material.dart';
 
 typedef ItemWidgetBuilder<T> = Widget Function(T item);
@@ -89,9 +89,9 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
       } else {
         _activeItems.add(item);
       }
-    });
 
-    widget.activeChangeAction?.call(context, item);
+      widget.activeChangeAction?.call(context, item);
+    });
   }
 
   void _removeItem(T item) {
@@ -174,11 +174,11 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (widget.editAction != null) _buildActionIcon(AIcons.edit, 'Edit', () => widget.editAction!(context, item)),
+        if (widget.canRemove && _canRemoveItem(item)) _buildActionIcon(AIcons.clear, 'Remove', () => _removeItem(item)),
         if (widget.useActiveButton)
           _buildActionIcon(isActive ? AIcons.active : AIcons.inactive, isActive ? 'Hide' : 'Show',
               () => _toggleItemVisibility(item)),
-        if (widget.canRemove && _canRemoveItem(item)) _buildActionIcon(AIcons.clear, 'Remove', () => _removeItem(item)),
+        if (widget.editAction != null) _buildActionIcon(AIcons.edit, 'Edit', () => widget.editAction!(context, item)),
       ],
     );
   }

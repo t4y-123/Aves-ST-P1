@@ -5,12 +5,12 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:flutter/cupertino.dart';
 
 // export and import
-enum FgwExportItem { privacyGuardLevel, filtersSet, schedule }
+enum FgwExportItem { guardLevel, filtersSet, schedule }
 
 extension ExtraFgwExportItem on FgwExportItem {
   dynamic export() {
     return switch (this) {
-      FgwExportItem.privacyGuardLevel => fgwGuardLevels.export(),
+      FgwExportItem.guardLevel => fgwGuardLevels.export(),
       FgwExportItem.filtersSet => filtersSets.export(),
       FgwExportItem.schedule => fgwSchedules.export(),
     };
@@ -18,7 +18,7 @@ extension ExtraFgwExportItem on FgwExportItem {
 
   Future<void> import(dynamic jsonMap) async {
     switch (this) {
-      case FgwExportItem.privacyGuardLevel:
+      case FgwExportItem.guardLevel:
         await fgwGuardLevels.import(jsonMap);
       case FgwExportItem.filtersSet:
         await filtersSets.import(jsonMap);

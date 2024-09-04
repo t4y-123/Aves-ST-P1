@@ -6,11 +6,13 @@ import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/assign/enum/assign_item.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/scenario.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
@@ -74,7 +76,7 @@ class ScenariosHelper {
 
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
-    const injNum = exNum + 6;
+    const injNum = exNum + 7;
     const unUum = injNum + 10;
     return {
       //exclude unique
@@ -84,6 +86,7 @@ class ScenariosHelper {
       await scenarios.newRow(exNum + 4, labelName: _l10n.excludeName04),
       await scenarios.newRow(exNum + 5, labelName: _l10n.excludeName05),
       await scenarios.newRow(exNum + 6, labelName: _l10n.excludeName06),
+      await scenarios.newRow(exNum + 7, labelName: _l10n.excludeName07),
       //interject
       await scenarios.newRow(injNum + 1, labelName: _l10n.interjectName01, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 2, labelName: _l10n.interjectName02, loadType: ScenarioLoadType.intersectAnd),
@@ -112,42 +115,47 @@ class ScenariosHelper {
     final sIds = scenarios.all.map((e) => e.id).toList();
     //TODO: only make a group useless scenario and steps for go through the func.
     int orderNum = 1;
+    const exNum = -1;
+    const injNum = exNum + 7;
+    const unUum = injNum + 10;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
       //1/2/3/4 5
       // the 1 is for all entries.
-      newScenarioStep(orderNum++, sIds[0], 1, {}),
+      newScenarioStep(orderNum++, sIds[exNum + 1], 1, {}),
       // the 2  is for all images without video.
-      newScenarioStep(orderNum++, sIds[1], 1, {MimeFilter.image}),
+      newScenarioStep(orderNum++, sIds[exNum + 2], 1, {MimeFilter.image}),
       // the 3 is for all image  without share copied
-      newScenarioStep(orderNum++, sIds[2], 1, {MimeFilter.image}),
-      newScenarioStep(orderNum++, sIds[2], 2, {PathFilter(androidFileUtils.avesShareByCopyPath, reversed: true)}),
+      newScenarioStep(orderNum++, sIds[exNum + 3], 1, {MimeFilter.image}),
+      newScenarioStep(
+          orderNum++, sIds[exNum + 3], 2, {PathFilter(androidFileUtils.avesShareByCopyPath, reversed: true)}),
       //recent 3hours DCIM pic
-      newScenarioStep(orderNum++, sIds[3], 1, {PathFilter(androidFileUtils.dcimPath)}),
-      newScenarioStep(orderNum++, sIds[3], 2, {QueryFilter('TIME2NOW < 3h')}),
+      newScenarioStep(orderNum++, sIds[exNum + 4], 1, {PathFilter(androidFileUtils.dcimPath)}),
+      newScenarioStep(orderNum++, sIds[exNum + 4], 2, {QueryFilter('TIME2NOW < 3h')}),
       // for share by copy exclude
-      newScenarioStep(orderNum++, sIds[4], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(orderNum++, sIds[exNum + 5], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
       // for video only exclude
-      newScenarioStep(orderNum++, sIds[5], 1, {MimeFilter.video}),
+      newScenarioStep(orderNum++, sIds[exNum + 6], 1, {MimeFilter.video}),
+      newScenarioStep(orderNum++, sIds[exNum + 7], 1, {FgwUsedFilter()}),
       ////////////////////////////////////
       //steps for time interject and. 5-12 = 6-13,
       ///////////////////////////////////
-      newScenarioStep(orderNum++, sIds[6], 1, {AspectRatioFilter.portrait}),
-      newScenarioStep(orderNum++, sIds[7], 1, {AspectRatioFilter.landscape}),
-      newScenarioStep(orderNum++, sIds[8], 1, {QueryFilter('TIME2NOW < 30mi')}),
-      newScenarioStep(orderNum++, sIds[9], 1, {QueryFilter('TIME2NOW < 1h')}),
-      newScenarioStep(orderNum++, sIds[10], 1, {QueryFilter('TIME2NOW < 3h')}),
-      newScenarioStep(orderNum++, sIds[11], 1, {QueryFilter('TIME2NOW < 6h')}),
-      newScenarioStep(orderNum++, sIds[12], 1, {QueryFilter('TIME2NOW < 9h')}),
-      newScenarioStep(orderNum++, sIds[13], 1, {QueryFilter('TIME2NOW < 12h')}),
-      newScenarioStep(orderNum++, sIds[14], 1, {QueryFilter('TIME2NOW < 1d')}),
-      newScenarioStep(orderNum++, sIds[15], 1, {QueryFilter('TIME2NOW < 3d')}),
+      newScenarioStep(orderNum++, sIds[injNum + 1], 1, {AspectRatioFilter.portrait}),
+      newScenarioStep(orderNum++, sIds[injNum + 2], 1, {AspectRatioFilter.landscape}),
+      newScenarioStep(orderNum++, sIds[injNum + 3], 1, {QueryFilter('TIME2NOW < 30mi')}),
+      newScenarioStep(orderNum++, sIds[injNum + 4], 1, {QueryFilter('TIME2NOW < 1h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 6], 1, {QueryFilter('TIME2NOW < 6h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 7], 1, {QueryFilter('TIME2NOW < 9h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 8], 1, {QueryFilter('TIME2NOW < 12h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 9], 1, {QueryFilter('TIME2NOW < 1d')}),
+      newScenarioStep(orderNum++, sIds[injNum + 10], 1, {QueryFilter('TIME2NOW < 3d')}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////
-      newScenarioStep(orderNum++, sIds[16], 1, {MimeFilter.video}),
-      newScenarioStep(orderNum++, sIds[17], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
-      newScenarioStep(orderNum++, sIds[18], 1, {PathFilter(androidFileUtils.picturesPath)}),
+      newScenarioStep(orderNum++, sIds[unUum + 1], 1, {MimeFilter.video}),
+      newScenarioStep(orderNum++, sIds[unUum + 2], 1, {PathFilter(androidFileUtils.avesShareByCopyPath)}),
+      newScenarioStep(orderNum++, sIds[unUum + 3], 1, {PathFilter(androidFileUtils.picturesPath)}),
     ];
     await scenarioSteps.add(groupScenarioSteps.toSet());
   }
@@ -155,7 +163,7 @@ class ScenariosHelper {
   ScenarioStepRow newScenarioStep(int orderOffset, int scenarioId, int stepOffset, Set<CollectionFilter>? filters,
       {ScenarioStepLoadType loadType = ScenarioStepLoadType.intersectAnd,
       bool isActive = true,
-      ScenarioStepRowsType type = ScenarioStepRowsType.all}) {
+      PresentationRowType type = PresentationRowType.all}) {
     return scenarioSteps.newRow(
       existMaxOrderNumOffset: orderOffset,
       scenarioId: scenarioId,
@@ -177,7 +185,7 @@ class ScenariosHelper {
   }
 
   Future<List<ScenarioStepRow>> newScenarioStepsGroup(ScenarioRow baseRow,
-      {ScenarioStepRowsType rowsType = ScenarioStepRowsType.all}) async {
+      {PresentationRowType rowsType = PresentationRowType.all}) async {
     debugPrint('$runtimeType newScenarioStepsGroup start:\n$baseRow \n $rowsType ');
     List<ScenarioStepRow> newScenarioSteps = [
       newScenarioStep(1, baseRow.id, 1, {MimeFilter.image}, type: rowsType),
@@ -187,7 +195,7 @@ class ScenariosHelper {
   }
 
   Future<Set<ScenarioStepRow>> getStepsOfScenario(
-      {required ScenarioRow curScenario, ScenarioStepRowsType rowsType = ScenarioStepRowsType.all}) async {
+      {required ScenarioRow curScenario, PresentationRowType rowsType = PresentationRowType.all}) async {
     final targetSet = scenarioSteps.getAll(rowsType);
     final curSteps = targetSet.where((e) => e.scenarioId == curScenario.id).toSet();
     debugPrint('$runtimeType getStepsOfScenario \n curScenario $curScenario \n curSchedules :$curScenario');
@@ -195,8 +203,8 @@ class ScenariosHelper {
   }
 
   Future<ScenarioRow> newScenarioByFilter(Set<CollectionFilter> filters,
-      {ScenarioRowsType rowsType = ScenarioRowsType.all}) async {
-    final stepRowsType = rowsType == ScenarioRowsType.all ? ScenarioStepRowsType.all : ScenarioStepRowsType.bridgeAll;
+      {PresentationRowType rowsType = PresentationRowType.all}) async {
+    final stepRowsType = rowsType == PresentationRowType.all ? PresentationRowType.all : PresentationRowType.bridgeAll;
     final newScenario = await scenarios.newRow(1);
     await scenarios.add({newScenario}, type: rowsType);
 
@@ -208,39 +216,39 @@ class ScenariosHelper {
   }
 
   Future<void> removeTemporaryAssignRows(Set<AssignRecordRow> rows,
-      {AssignRecordRowsType type = AssignRecordRowsType.all}) async {
+      {PresentationRowType type = PresentationRowType.all}) async {
     // remove auto generate scenario of temporary assign.
     if (settings.autoRemoveCorrespondScenarioAsTempAssignRemove) {
       final removeScenarioIds = rows.where((e) => e.assignType == AssignRecordType.temporary).map((e) => e.scenarioId);
       switch (type) {
-        case AssignRecordRowsType.all:
+        case PresentationRowType.all:
           final todoScenarios = scenarios.all.where((e) => removeScenarioIds.contains(e.id)).toSet();
-          await scenarios.removeRows(todoScenarios, type: ScenarioRowsType.all);
-        case AssignRecordRowsType.bridgeAll:
+          await scenarios.removeRows(todoScenarios, type: PresentationRowType.all);
+        case PresentationRowType.bridgeAll:
           final todoScenarios = scenarios.bridgeAll.where((e) => removeScenarioIds.contains(e.id)).toSet();
-          await scenarios.removeRows(todoScenarios, type: ScenarioRowsType.bridgeAll);
+          await scenarios.removeRows(todoScenarios, type: PresentationRowType.bridgeAll);
       }
     }
     await assignRecords.removeRows(rows, type: type);
   }
 
   Future<void> removeTemporaryAssignScenarioRows(Set<ScenarioRow> rows,
-      {ScenarioRowsType type = ScenarioRowsType.all}) async {
+      {PresentationRowType type = PresentationRowType.all}) async {
     // remove auto generate scenario of temporary assign.
     if (settings.autoRemoveTempAssignAsCorrespondScenarioRemove) {
       final candidateScenarioIds = rows.map((e) => e.id);
 
       switch (type) {
-        case ScenarioRowsType.all:
+        case PresentationRowType.all:
           final toDoItems = assignRecords.all
               .where((e) => e.assignType == AssignRecordType.temporary && candidateScenarioIds.contains(e.scenarioId))
               .toSet();
-          await assignRecords.removeRows(toDoItems, type: AssignRecordRowsType.all);
-        case ScenarioRowsType.bridgeAll:
+          await assignRecords.removeRows(toDoItems, type: PresentationRowType.all);
+        case PresentationRowType.bridgeAll:
           final toDoItems = assignRecords.bridgeAll
               .where((e) => e.assignType == AssignRecordType.temporary && candidateScenarioIds.contains(e.scenarioId))
               .toSet();
-          await assignRecords.removeRows(toDoItems, type: AssignRecordRowsType.bridgeAll);
+          await assignRecords.removeRows(toDoItems, type: PresentationRowType.bridgeAll);
       }
     }
     await scenarios.removeRows(rows, type: type);

@@ -1,109 +1,82 @@
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/assign_record.dart';
+import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
-import 'package:aves/widgets/settings/presentation/assign/sub_page/assign_record_edit_page.dart';
+import 'package:aves/widgets/settings/presentation/assign/sub_page/assign_record_item_page.dart';
+import 'package:aves/widgets/settings/presentation/common/config_actions.dart';
 import 'package:flutter/material.dart';
 
-class AssignRecordActions with FeedbackMixin {
-  final BuildContext context;
-  final Function setState;
+class AssignRecordActions extends BridgeConfigActions<AssignRecordRow> {
+  Set<AssignEntryRow>? relateItems;
 
   AssignRecordActions({
-    required this.context,
-    required this.setState,
-  });
+    required super.context,
+    required super.setState,
+  }) : super(
+          presentationRows: assignRecords,
+        );
 
-  Color privacyItemColor(AssignRecordRow? item) {
-    return item?.color ?? Theme.of(context).primaryColor;
+  @override
+  void applyChanges(BuildContext context, List<AssignRecordRow?> allItems, Set<AssignRecordRow?> activeItems) {
+    // First, remove relate schedules too.
+    final currentItems = assignRecords.bridgeAll;
+    final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
+    final removeLevelIds = itemsToRemove.map((e) => e.id).toSet();
+    assignRecords.removeRows(itemsToRemove, type: PresentationRowType.bridgeAll);
+    //
+    final removedSchedules = assignEntries.bridgeAll.where((e) => removeLevelIds.contains(e.assignId)).toSet();
+    assignEntries.removeRows(removedSchedules, type: PresentationRowType.bridgeAll);
+    // then call the super to apply changes to guard level
+    super.applyChanges(context, allItems, activeItems);
   }
 
-  // AssignRecord
-  void applyScenarioBaseReorder(
-      BuildContext context, List<AssignRecordRow?> allItems, Set<AssignRecordRow?> activeItems) {
+  @override
+  void resetChanges(BuildContext context, List<AssignRecordRow?> allItems, Set<AssignRecordRow?> activeItems) {
     setState(() {
-      // First, remove items not exist.      // remove relate schedules too.
-      final currentItems = assignRecords.bridgeAll;
-      final itemsToRemove = currentItems.where((item) => !allItems.contains(item)).toSet();
-      // remove assignRecords
-      final removeBaseIds = itemsToRemove.map((e) => e.id).toSet();
-      assignRecords.removeRows(itemsToRemove, type: AssignRecordRowsType.bridgeAll);
-      // remove assign entries record
-      final removeEntries = assignEntries.bridgeAll.where((e) => removeBaseIds.contains(e.assignId)).toSet();
-      assignEntries.removeRows(removeEntries, type: AssignEntryRowsType.bridgeAll);
-
-      // according to order in allItems, reorder the data .active items first.
-      int starOrderNum = 1;
-      allItems.where((item) => activeItems.contains(item)).forEach((item) {
-        assignRecords.set(
-          id: item!.id,
-          orderNum: starOrderNum++,
-          labelName: item.labelName,
-          assignType: item.assignType,
-          color: item.color!,
-          isActive: true,
-          dateMillis: item.dateMillis,
-          type: AssignRecordRowsType.bridgeAll,
-        );
-      });
-      // Process reordered items that are not in active items
-      allItems.where((item) => !activeItems.contains(item)).forEach((item) {
-        assignRecords.set(
-          id: item!.id,
-          orderNum: starOrderNum++,
-          labelName: item.labelName,
-          assignType: item.assignType,
-          color: item.color!,
-          isActive: false,
-          dateMillis: item.dateMillis,
-          type: AssignRecordRowsType.bridgeAll,
-        );
-      });
-      //sync bridgeRows to privacy
-      assignRecords.syncBridgeToRows();
-      assignEntries.syncBridgeToRows();
+      // First, reset Rows
+      assignRecords.syncRowsToBridge();
+      assignEntries.syncRowsToBridge();
       allItems.sort();
-      //
       showFeedback(context, FeedbackType.info, context.l10n.applyCompletedFeedback);
     });
   }
 
-  // when add a new item, temp add to bridge. in add process,
-  // it should not effect the real value, but a bridge value.
-  // the bridge value will be sync to real value after tap the apply button call above apply action.
+  @override
+  AssignRecordRow incrementRowWithActive(int incrementNum, AssignRecordRow srcItem, bool active) {
+    return srcItem.copyWith(orderNum: incrementNum, isActive: active);
+  }
 
-  Future<void> editSelectedItem(BuildContext context, AssignRecordRow? item, List<AssignRecordRow?> allItems,
-      Set<AssignRecordRow?> activeItems) async {
-    //t4y: for the all items in Config page will not be the latest data.
-    final AssignRecordRow curItem = assignRecords.bridgeAll.firstWhere((i) => i.id == item!.id);
+  @override
+  Widget getItemPage(AssignRecordRow item) {
+    return AssignRecordItemPage(item: item);
+  }
 
-    final subItems = assignEntries.bridgeAll.where((e) => e.assignId == curItem.id).toSet();
-    // add a new group of schedule to schedules bridge.
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AssignRecordSettingPage(
-          item: curItem,
-          subItems: subItems,
-        ),
-      ),
-    ).then((updatedItem) async {
-      if (updatedItem != null) {
-        setState(() {
-          final index = allItems.indexWhere((i) => i?.id == updatedItem.id);
-          if (index != -1) {
-            allItems[index] = updatedItem;
-          } else {
-            allItems.add(updatedItem);
-          }
-          if (updatedItem.isActive) {
-            activeItems.add(updatedItem);
-          } else {
-            activeItems.remove(updatedItem);
-          }
-          assignRecords.setRows({updatedItem}, type: AssignRecordRowsType.bridgeAll);
-        });
-      }
-    });
+  @override
+  Future<void> opItem(BuildContext context, [AssignRecordRow? item]) async {
+    if (item != null) {
+      relateItems = assignEntries.bridgeAll.where((e) => e.assignId == item.id).toSet();
+    }
+    await super.opItem(context, item);
+  }
+
+  @override
+  Future<void> removeRelateRow(AssignRecordRow item) async {
+    if (relateItems != null) {
+      await assignEntries.removeRows(relateItems!, type: PresentationRowType.bridgeAll);
+    }
+  }
+
+  @override
+  Future<void> resetRelateRow(AssignRecordRow item) async {
+    if (relateItems != null) {
+      await assignEntries.setRows(relateItems!, type: PresentationRowType.bridgeAll);
+    }
+  }
+
+  @override
+  Future<AssignRecordRow> makeNewRow() {
+    // TODO: implement makeNewRow
+    throw UnimplementedError();
   }
 }

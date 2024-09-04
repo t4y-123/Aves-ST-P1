@@ -2,6 +2,7 @@ import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/widgets/settings/presentation/common/item_page.dart';
+import 'package:aves/widgets/settings/presentation/common/section.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/sections/filter_set_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,15 +25,19 @@ class FiltersSetItemPage extends StatelessWidget {
         ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
         ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
       ],
-      child: PresentRowItemPage<FiltersSetRow>(
-        item: item,
-        buildTiles: (item) {
-          return [
-            FiltersSetTitleTile(item: item),
-            FiltersSetLabelNameModifiedTile(item: item),
-            FiltersCollectionTile(item: item),
-            FiltersSetActiveListTile(item: item),
-          ];
+      child: Builder(
+        builder: (context) {
+          return PresentRowItemPage<FiltersSetRow>(
+            item: item,
+            buildTiles: (item) {
+              return [
+                PresentInfoTile<FiltersSetRow, FiltersSet>(item: item, items: filtersSets),
+                PresentLabelNameTile<FiltersSetRow, FiltersSet>(item: item, items: filtersSets),
+                FiltersCollectionTile(item: item),
+                PresentActiveListTile<FiltersSetRow, FiltersSet>(item: item, items: filtersSets),
+              ];
+            },
+          );
         },
       ),
     );

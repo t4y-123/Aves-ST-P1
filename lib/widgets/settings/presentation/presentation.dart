@@ -7,18 +7,17 @@ import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/tile_leading.dart';
 import 'package:aves/widgets/settings/common/tiles.dart';
 import 'package:aves/widgets/settings/navigation/drawer.dart';
-import 'package:aves/widgets/settings/presentation/assign/assign_edit_config_page.dart';
+import 'package:aves/widgets/settings/presentation/assign/assign_edit_page.dart';
 import 'package:aves/widgets/settings/presentation/assign/assign_operation_page.dart';
-import 'package:aves/widgets/settings/presentation/foreground_wallpaper/default_schedules_manage_page.dart';
 import 'package:aves/widgets/settings/presentation/foreground_wallpaper/fgw_edit_setting_page.dart';
-import 'package:aves/widgets/settings/presentation/scenario/scenario_config_page.dart';
+import 'package:aves/widgets/settings/presentation/foreground_wallpaper/fgw_op_settings_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/scenario_edit_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/scenario_operation_page.dart';
 import 'package:aves/widgets/settings/presentation/share_by_copy.dart';
+import 'package:aves/widgets/settings/presentation/widget/wdiget_edit_setting_page.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'package:aves/widgets/settings/presentation/widget/wdiget_edit_setting_page.dart';
 
 class PresentationSection extends SettingsSection {
   @override
@@ -37,7 +36,7 @@ class PresentationSection extends SettingsSection {
   FutureOr<List<SettingsTile>> tiles(BuildContext context) => [
         SettingsTileForegroundWallpaperDrawer(),
         SettingsTileAddDefaultGroupsSchedules(),
-        if (!settings.scenarioLock) SettingsTileScenariosConfigPage(),
+        if (!settings.scenarioLock) SettingsTileScenarioEditSettingPage(),
         if (!settings.scenarioLock) SettingsScenariosOperationPage(),
         SettingsAssignEditConfigPage(),
         SettingsAssignOperationPage(),
@@ -48,7 +47,7 @@ class PresentationSection extends SettingsSection {
 
 class SettingsTileForegroundWallpaperDrawer extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsPresentationForegroundWallpaperConfigTile;
+  String title(BuildContext context) => context.l10n.settingsFgwEditSettingsTitle;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
@@ -66,7 +65,7 @@ class SettingsTileAddDefaultGroupsSchedules extends SettingsTile {
   Widget build(BuildContext context) => SettingsSubPageTile(
         title: title(context),
         routeName: NavigationDrawerEditorPage.routeName,
-        builder: (context) => const ForegroundWallpaperDefaultSchedulesManagerPage(),
+        builder: (context) => const FgwOpSettingsPage(),
       );
 }
 
@@ -82,15 +81,15 @@ class SettingsTileShareByCopy extends SettingsTile {
       );
 }
 
-class SettingsTileScenariosConfigPage extends SettingsTile {
+class SettingsTileScenarioEditSettingPage extends SettingsTile {
   @override
-  String title(BuildContext context) => context.l10n.settingsScenariosConfigPageTile;
+  String title(BuildContext context) => context.l10n.settingsScenariosEditConfigPageTile;
 
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
         title: title(context),
-        routeName: ScenarioConfigPage.routeName,
-        builder: (context) => const ScenarioConfigPage(),
+        routeName: ScenarioEditSettingPage.routeName,
+        builder: (context) => const ScenarioEditSettingPage(),
       );
 }
 
@@ -113,8 +112,8 @@ class SettingsAssignEditConfigPage extends SettingsTile {
   @override
   Widget build(BuildContext context) => SettingsSubPageTile(
         title: title(context),
-        routeName: AssignEditConfigPage.routeName,
-        builder: (context) => const AssignEditConfigPage(),
+        routeName: AssignRecordEditSettingPage.routeName,
+        builder: (context) => const AssignRecordEditSettingPage(),
       );
 }
 

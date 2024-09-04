@@ -18,7 +18,10 @@ import android.content.Intent
 import android.os.Build
 import android.os.Process
 import androidx.core.content.ContextCompat
+import android.appwidget.AppWidgetManager
+
 import kotlin.system.exitProcess
+
 
 
 inline fun <reified A : Activity> Context.startActivity(configIntent: Intent.() -> Unit = {}) {
@@ -62,6 +65,25 @@ inline fun <reified T : Service> Context.servicePendingIntent(
     return getService(this, requestCode, intent, flags)
 }
 
+@SuppressLint("UnspecifiedImmutableFlag")
+inline fun <reified T : BroadcastReceiver> Context.widgetPendingIntent(
+    widgetId: Int,
+    requestCode: Int = 0,
+    configIntent: Intent.() -> Unit = {}
+): PendingIntent? {
+    val intent = Intent(this, T::class.java)
+    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+    configIntent.invoke(intent)
+
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+    } else {
+        PendingIntent.FLAG_UPDATE_CURRENT
+    }
+
+    return PendingIntent.getBroadcast(this, requestCode, intent, flags)
+}
 
 @SuppressLint("UnspecifiedImmutableFlag")
 inline fun <reified T : Service> Context.getExistingPendingIntent(

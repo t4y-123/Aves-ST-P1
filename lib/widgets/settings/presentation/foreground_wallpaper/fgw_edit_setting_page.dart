@@ -30,12 +30,11 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
   @override
   void initState() {
     super.initState();
+
     // first sync the rows data to the bridge data.
     // then all data shall modify in the bridgeAll data.
     fgwGuardLevels.syncRowsToBridge();
-    _guardLevelActions = GuardLevelActions(
-      setState: setState,
-    );
+    _guardLevelActions = GuardLevelActions(context: context, setState: setState);
 
     fgwSchedules.syncRowsToBridge();
     _fgwSchedulesActions = FgwScheduleActions(context: context, setState: setState);
@@ -60,10 +59,10 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
         child: AvesScaffold(
           appBar: AppBar(
             automaticallyImplyLeading: !settings.useTvLayout,
-            title: Text(l10n.settingsPresentationForegroundWallpaperConfigTile),
+            title: Text(l10n.settingsFgwEditSettingsTitle),
             bottom: TabBar(
               tabs: [
-                Tab(text: l10n.settingsPrivacyGuardLevelTabTypes),
+                Tab(text: l10n.settingsFgwGuardLevelTabTypes),
                 Tab(text: l10n.settingsWallpaperScheduleTabTypes),
                 Tab(text: l10n.settingsFilterSetTabTypes),
               ],
@@ -122,20 +121,6 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
                           );
                         },
                       ),
-                      // Selector<FilterSet, List<FiltersSetRow?>>(
-                      //   selector: (_, provider) => provider.bridgeAll.toList().sorted(),
-                      //   builder: (context, filterSet, _) {
-                      //     return MultiEditBridgeListTab<FiltersSetRow?>(
-                      //       items: filterSet,
-                      //       activeItems: filterSet.where((v) => v?.isActive ?? false).toSet(),
-                      //       title: (item) => Text(item?.labelName ?? 'Empty'),
-                      //       applyAction: _filterSetActions.applyChanges,
-                      //       editAction: _filterSetActions.editItem,
-                      //       addItemAction: _filterSetActions.addItem,
-                      //       bannerString: l10n.settingsFgwFiltersSetBanner,
-                      //     );
-                      //   },
-                      // ),
                     ],
                   ),
                 ),

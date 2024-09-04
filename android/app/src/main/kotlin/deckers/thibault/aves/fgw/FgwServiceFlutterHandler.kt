@@ -43,7 +43,7 @@ object FgwServiceFlutterHandler {
     var curWidgetId: Int = FgwConstant.NOT_WIDGET_ID
     var curGuardLevel: Int = -1
     var entryFilename = ""
-    var activeLevelsList: List<PrivacyGuardLevelRow> = listOf()
+    var activeLevelsList: List<FgwGuardLevelRow> = listOf()
     var scheduleList: List<WallpaperScheduleRow> = listOf()
 
     private suspend fun initFlutterEngine(context: Context) {
@@ -170,6 +170,9 @@ object FgwServiceFlutterHandler {
                     //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Current entry file name\n")
                     entryFilename = tmpEntryFileName
                 }
+                call.argument<Boolean>(FgwConstant.GUARD_LEVEL_LOCK)?.let { tmpGuardLevelLock ->
+                    FgwSeviceNotificationHandler.isGuardLevelLocked = tmpGuardLevelLock;
+                }
                 // Schedules
                 call.argument<ArrayList<String>>(FgwConstant.SCHEDULES)?.let { schedulesString ->
                     //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
@@ -180,6 +183,7 @@ object FgwServiceFlutterHandler {
                 Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel \n"+
                         "handleSyncFromDartToNative:activeLevelsList $activeLevelsList \n"+
                         "handleSyncFromDartToNative:entryFilename $entryFilename \n" +
+                        "handleSyncFromDartToNative:isGuardLevelLocked ${FgwSeviceNotificationHandler.isGuardLevelLocked} \n" +
                         "handleSyncFromDartToNative:scheduleList $scheduleList")
 
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
@@ -191,8 +195,8 @@ object FgwServiceFlutterHandler {
         }
     }
 
-    fun parseActiveLevelsString(activeLevelsString: ArrayList<String>): List<PrivacyGuardLevelRow> {
-        val parsedItems = mutableListOf<PrivacyGuardLevelRow>()
+    fun parseActiveLevelsString(activeLevelsString: ArrayList<String>): List<FgwGuardLevelRow> {
+        val parsedItems = mutableListOf<FgwGuardLevelRow>()
         try {
             //val jsonArray = JSONArray(activeLevelsString)
             for (i in 0 until activeLevelsString.size) {
@@ -203,8 +207,8 @@ object FgwServiceFlutterHandler {
                 val name = jsonObject.getString("labelName")
                 val color = parseColorString(jsonObject.getString("color")) ?: 0
                 val active = jsonObject.getInt("isActive") == 1
-                val privacyGuardLevelRow = PrivacyGuardLevelRow(id, level, name, color, active)
-                parsedItems.add(privacyGuardLevelRow)
+                val fgwGuardLevelRow = FgwGuardLevelRow(id, level, name, color, active)
+                parsedItems.add(fgwGuardLevelRow)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -243,7 +247,7 @@ object FgwServiceFlutterHandler {
                 val id = jsonObject.getInt("id")
                 val order = jsonObject.getInt("orderNum")
                 val label = jsonObject.getString("labelName")
-                val guardLevelId = jsonObject.getInt("privacyGuardLevelId")
+                val guardLevelId = jsonObject.getInt("fgwGuardLevelId")
                 val filterSetId = jsonObject.getInt("filtersSetId")
                 val updateType = jsonObject.getString("updateType")
                 val widgetId = jsonObject.getInt("widgetId")

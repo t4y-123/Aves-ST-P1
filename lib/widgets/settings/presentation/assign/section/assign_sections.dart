@@ -86,7 +86,7 @@ class AssignEntryItemPageTile extends ItemSettingsTile<AssignEntryRow> {
   }
 
   @override
-  Widget build(BuildContext context) => ItemSettingsSubPageTile<AssignEntryRow>(
+  Widget build(BuildContext context) => ItemSettingsSubPageTile<AssignEntries>(
       title: title(context),
       subtitleSelector: (context, s) {
         final subItem = assignEntries.bridgeAll.firstWhereOrNull((e) => e.id == item.id);

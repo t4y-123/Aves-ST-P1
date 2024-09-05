@@ -72,7 +72,6 @@ class _SingleScenarioStepsEditSettingPageState extends State<SingleScenarioSteps
                             activeItems: allItems.where((v) => v?.isActive ?? false).toSet(),
                             title: (item) => Text(item?.labelName ?? 'Empty'),
                             applyAction: _singleScenarioStepsActions.applyChanges,
-                            resetAction: _singleScenarioStepsActions.resetChanges,
                             editAction: _singleScenarioStepsActions.opItem,
                             addItemAction: _singleScenarioStepsActions.opItem,
                             activeChangeAction: _singleScenarioStepsActions.activeItem,

@@ -106,7 +106,7 @@ class ScenarioListPage extends StatelessWidget {
     filters.add(ScenarioFilter(ScenarioFilter.scenarioOpId, context.l10n.scenarioFilterOpTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioLockUnlockId,
         settings.scenarioLock ? context.l10n.scenarioFilterUnlockTitle : context.l10n.scenarioFilterLockTitle));
-    debugPrint('getScenarioGridItems filters $filters');
+    //debugPrint('getScenarioGridItems filters $filters');
     return FilterNavigationPage.sort(settings.scenarioSortFactor, settings.scenarioSortReverse, source, filters);
   }
 
@@ -118,7 +118,7 @@ class ScenarioListPage extends StatelessWidget {
       ...settings.scenarioPinnedIntersectFilters.whereType<ScenarioFilter>(),
       ...settings.scenarioPinnedUnionFilters.whereType<ScenarioFilter>(),
     ];
-    debugPrint('getScenarioGridItems pinned $pinned');
+    //debugPrint('getScenarioGridItems pinned $pinned');
     final List<FilterGridItem<ScenarioFilter>> newMapEntries = [],
         funcMapEntries = [],
         pinnedMapEntries = [],
@@ -138,8 +138,8 @@ class ScenarioListPage extends StatelessWidget {
       }
       //t4y: in scenario, use pinned to well-marked that what scenarios is active.
     }
-    debugPrint('getScenarioGridItems unpinnedMapEntries $unpinnedMapEntries');
-    debugPrint('getScenarioGridItems pinnedMapEntries $pinnedMapEntries');
+    //debugPrint('getScenarioGridItems unpinnedMapEntries $unpinnedMapEntries');
+    //debugPrint('getScenarioGridItems pinnedMapEntries $pinnedMapEntries');
     var sections = <ChipSectionKey, List<FilterGridItem<ScenarioFilter>>>{};
     final funcPinnedKey = ScenarioImportanceSectionKey.funcPinned(context);
     final activePinnedKey = ScenarioImportanceSectionKey.activePinned(context);
@@ -194,7 +194,7 @@ class ScenarioListPage extends StatelessWidget {
       ]);
     }
 
-    debugPrint('getScenarioGridItems sections $sections');
+    //debugPrint('getScenarioGridItems sections $sections');
     return sections;
   }
 }

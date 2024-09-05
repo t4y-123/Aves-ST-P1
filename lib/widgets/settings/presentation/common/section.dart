@@ -165,14 +165,18 @@ class PresentCollectionFiltersTile<T extends PresentRow<T>, S extends Presentati
           return curRow;
         },
         builder: (context, current, child) {
-          final curFilters = (current as dynamic).filters;
-          return SettingsCollectionTile(
-              filters: curFilters ?? {MimeFilter.image},
-              onSelection: (v) async {
-                final curRow = items.bridgeAll.firstWhere((e) => e.id == item.id) as dynamic;
-                final newRow = curRow.copyWith(filters: v);
-                await items.setRows({newRow}, type: PresentationRowType.bridgeAll);
-              });
+          if (current != null) {
+            final curFilters = (current as dynamic).filters;
+            return SettingsCollectionTile(
+                filters: curFilters ?? {MimeFilter.image},
+                onSelection: (v) async {
+                  final curRow = items.bridgeAll.firstWhere((e) => e.id == item.id) as dynamic;
+                  final newRow = curRow.copyWith(filters: v);
+                  await items.setRows({newRow}, type: PresentationRowType.bridgeAll);
+                });
+          } else {
+            return const Text('null');
+          }
         },
       );
 

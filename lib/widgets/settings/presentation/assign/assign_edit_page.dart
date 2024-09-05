@@ -75,9 +75,10 @@ class _AssignRecordEditSettingPageState extends State<AssignRecordEditSettingPag
                             applyAction: _tab1Actions.applyChanges,
                             resetAction: _tab1Actions.resetChanges,
                             editAction: _tab1Actions.opItem,
-                            addItemAction: _tab1Actions.opItem,
                             activeChangeAction: _tab1Actions.activeItem,
                             bannerString: l10n.settingsAssignEditBanner,
+                            canBeEmpty: true,
+                            canBeActiveEmpty: true,
                           );
                         },
                       ),
@@ -91,7 +92,9 @@ class _AssignRecordEditSettingPageState extends State<AssignRecordEditSettingPag
                             applyAction: _tab2Actions.applyChanges,
                             editAction: _tab2Actions.opItem,
                             activeChangeAction: _tab2Actions.activeItem,
-                            bannerString: l10n.settingsAssignStepsAllBanner,
+                            bannerString: l10n.settingsAssignEditBanner,
+                            canBeEmpty: true,
+                            canBeActiveEmpty: true,
                           );
                         },
                       ),

@@ -127,7 +127,7 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
             shrinkWrap: true,
           ),
         ),
-        const Divider(height: 8),
+        if (widget.useSyncScheduleButton || widget.addItemAction != null) const Divider(height: 8),
         _buildActionButtons(context),
         if (widget.resetAction != null || widget.applyAction != null) const Divider(height: 8),
         if (widget.resetAction != null || widget.applyAction != null) _buildResetApplyButtons(context),

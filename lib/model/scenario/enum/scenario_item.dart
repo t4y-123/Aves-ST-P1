@@ -1,3 +1,5 @@
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/filter_grids/common/section_keys.dart';
@@ -107,13 +109,16 @@ class ScenarioImportanceSectionKey extends ChipSectionKey {
 }
 
 // export and import
-enum ScenarioExportItem { scenario, step }
+enum ScenarioExportItem { scenario, step, assignRecord, aaisgnEntries }
 
 extension ExtraScenarioExportItem on ScenarioExportItem {
   dynamic export() {
     return switch (this) {
       ScenarioExportItem.scenario => scenarios.export(),
       ScenarioExportItem.step => scenarioSteps.export(),
+      // TODO: Handle this case.
+      ScenarioExportItem.assignRecord => assignRecords.export(),
+      ScenarioExportItem.aaisgnEntries => assignEntries.export(),
     };
   }
 
@@ -123,6 +128,10 @@ extension ExtraScenarioExportItem on ScenarioExportItem {
         await scenarios.import(jsonMap);
       case ScenarioExportItem.step:
         await scenarioSteps.import(jsonMap);
+      case ScenarioExportItem.assignRecord:
+        await assignRecords.import(jsonMap);
+      case ScenarioExportItem.aaisgnEntries:
+        await assignEntries.import(jsonMap);
     }
   }
 }

@@ -1,7 +1,5 @@
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/assign_record.dart';
-import 'package:aves/model/scenario/scenario.dart';
-import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
@@ -44,8 +42,8 @@ class _SingleAssignRecordEditEntriesPageState extends State<SingleAssignRecordEd
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<Scenario>.value(value: scenarios),
-        ChangeNotifierProvider<ScenarioSteps>.value(value: scenarioSteps),
+        ChangeNotifierProvider<AssignRecord>.value(value: assignRecords),
+        ChangeNotifierProvider<AssignEntries>.value(value: assignEntries),
       ],
       child: DefaultTabController(
         length: 1,
@@ -76,7 +74,9 @@ class _SingleAssignRecordEditEntriesPageState extends State<SingleAssignRecordEd
                             applyAction: _tab1Actions.applyChanges,
                             editAction: _tab1Actions.opItem,
                             activeChangeAction: _tab1Actions.activeItem,
-                            bannerString: l10n.settingsAssignStepsOneBanner,
+                            bannerString: l10n.settingsAssignEditBanner,
+                            canBeEmpty: true,
+                            canBeActiveEmpty: true,
                           );
                         },
                       ),

@@ -1,3 +1,4 @@
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
@@ -62,6 +63,7 @@ class ScenarioListPage extends StatelessWidget {
         return StreamBuilder(
           stream: source.eventBus.on<ScenariosChangedEvent>(),
           builder: (context, snapshot) {
+            assignRecords.removeExpiredRecord();
             final gridItems = getScenarioGridItems(context, source);
             return StreamBuilder<Set<CollectionFilter>?>(
               // to update sections by tier

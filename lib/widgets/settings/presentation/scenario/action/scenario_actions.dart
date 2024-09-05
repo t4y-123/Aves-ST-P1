@@ -30,6 +30,7 @@ class ScenarioActions extends BridgeConfigActions<ScenarioRow> {
     scenarioSteps.removeRows(removedSchedules, type: PresentationRowType.bridgeAll);
     // then call the super to apply changes to guard level
     super.applyChanges(context, allItems, activeItems);
+    scenarioSteps.syncBridgeToRows();
   }
 
   @override

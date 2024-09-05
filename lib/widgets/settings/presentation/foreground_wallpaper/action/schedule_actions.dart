@@ -23,6 +23,8 @@ class FgwScheduleActions extends BridgeConfigActions<FgwScheduleRow> {
     filtersSets.syncBridgeToRows();
     // then call the super to apply changes to guard level
     super.applyChanges(context, allItems, activeItems);
+    filtersSets.syncBridgeToRows();
+    fgwSchedules.syncBridgeToRows();
   }
 
   @override

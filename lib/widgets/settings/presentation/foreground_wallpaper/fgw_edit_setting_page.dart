@@ -34,12 +34,11 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
     // first sync the rows data to the bridge data.
     // then all data shall modify in the bridgeAll data.
     fgwGuardLevels.syncRowsToBridge();
-    _guardLevelActions = GuardLevelActions(context: context, setState: setState);
-
     fgwSchedules.syncRowsToBridge();
-    _fgwSchedulesActions = FgwScheduleActions(context: context, setState: setState);
-
     filtersSets.syncRowsToBridge();
+
+    _guardLevelActions = GuardLevelActions(context: context, setState: setState);
+    _fgwSchedulesActions = FgwScheduleActions(context: context, setState: setState);
     _filterSetActions = FiltersSetConfigActions(context: context, setState: setState);
     // Add listeners to track modifications
   }
@@ -88,6 +87,7 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
                             activeChangeAction: _guardLevelActions.activeItem,
                             bannerString: l10n.settingsMultiTabEditPageBanner,
                             avatarColor: _guardLevelActions.privacyItemColor,
+                            useSyncScheduleButton: true,
                           );
                         },
                       ),
@@ -102,6 +102,7 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
                             editAction: _fgwSchedulesActions.opItem,
                             activeChangeAction: _fgwSchedulesActions.activeItem,
                             bannerString: l10n.settingsFgwScheduleBanner,
+                            useSyncScheduleButton: true,
                           );
                         },
                       ),
@@ -118,6 +119,7 @@ class _FgwEditSettingPageState extends State<FgwEditSettingPage> with FeedbackMi
                             activeChangeAction: _filterSetActions.activeItem,
                             removeItemAction: _filterSetActions.removeItem,
                             bannerString: l10n.settingsFgwFiltersSetBanner,
+                            useSyncScheduleButton: true,
                           );
                         },
                       ),

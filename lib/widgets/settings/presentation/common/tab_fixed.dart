@@ -46,7 +46,7 @@ class MultiEditBridgeListTab<T> extends StatefulWidget {
     this.removeItemAction,
     this.useActiveButton = true,
     this.canRemove = true,
-    this.useSyncScheduleButton = true,
+    this.useSyncScheduleButton = false,
     this.canBeEmpty = false,
     this.canBeActiveEmpty = false,
     this.applyAction,
@@ -204,29 +204,32 @@ class _MultiEditBridgeListTabState<T> extends State<MultiEditBridgeListTab<T>> w
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        if (widget.useSyncScheduleButton) const SizedBox(width: 8),
-        if (widget.useSyncScheduleButton)
-          AvesOutlinedButton(
-            icon: const Icon(AIcons.refresh),
-            label: context.l10n.settingsFgwScheduleSyncButtonText,
-            onPressed: () async {
-              await ForegroundWallpaperService.syncFgwScheduleChanges();
-              await _showSyncDialog();
-            },
-          ),
-        if (widget.addItemAction != null)
-          AvesOutlinedButton(
-            icon: const Icon(AIcons.add),
-            label: context.l10n.settingsForegroundWallpaperConfigAddItem,
-            onPressed: () async {
-              widget.addItemAction?.call(context);
-              setState(() {});
-            },
-          ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (widget.useSyncScheduleButton) const SizedBox(width: 8),
+          if (widget.useSyncScheduleButton)
+            AvesOutlinedButton(
+              icon: const Icon(AIcons.refresh),
+              label: context.l10n.settingsFgwScheduleSyncButtonText,
+              onPressed: () async {
+                await ForegroundWallpaperService.syncFgwScheduleChanges();
+                await _showSyncDialog();
+              },
+            ),
+          if (widget.addItemAction != null)
+            AvesOutlinedButton(
+              icon: const Icon(AIcons.add),
+              label: context.l10n.settingsForegroundWallpaperConfigAddItem,
+              onPressed: () async {
+                widget.addItemAction?.call(context);
+                setState(() {});
+              },
+            ),
+        ],
+      ),
     );
   }
 

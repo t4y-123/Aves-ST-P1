@@ -58,7 +58,6 @@ class _PresentRowItemPageState<T extends PresentRow<T>> extends State<PresentRow
   }
 
   Widget _buildSettingsList(BuildContext context) {
-    final theme = Theme.of(context);
     final durations = context.watch<DurationsData>();
 
     return Selector<MediaQueryData, double>(

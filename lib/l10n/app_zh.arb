@@ -1550,10 +1550,10 @@
   "@renameLabelNameTileTitle": {},
   "renameLabelNameDialogLabel": "新名称",
   "@renameLabelNameDialogLabel": {},
-  "renameLabelNameDialogLabelAlreadyExistsHelper": "名称非法或与之前重复",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "不可用名称或与之前重复",
   "@renameLabelNameDialogLabelAlreadyExistsHelper": {},
 
-  "numberDialogLabelNotValidHelper": "非法值",
+  "numberDialogLabelNotValidHelper": "不可用值",
   "@numberDialogLabelNotValidHelper": {},
 
   "settingsCopySchedulesFromExist": "从现有级别复制计划",

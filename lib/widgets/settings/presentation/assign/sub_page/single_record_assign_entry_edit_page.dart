@@ -22,7 +22,7 @@ class SingleAssignRecordEditEntriesPage extends StatefulWidget {
 }
 
 class _SingleAssignRecordEditEntriesPageState extends State<SingleAssignRecordEditEntriesPage> with FeedbackMixin {
-  late AssignEntriesActions _tab1Actions;
+  late SingleAssignEntriesActions _tab1Actions;
 
   AssignRecordRow get _item => widget.item;
   @override
@@ -31,7 +31,8 @@ class _SingleAssignRecordEditEntriesPageState extends State<SingleAssignRecordEd
 
     // t4y: not need to sync it this page as synced pre.
     // scenarioSteps.syncRowsToBridge();
-    _tab1Actions = AssignEntriesActions(
+    _tab1Actions = SingleAssignEntriesActions(
+      item: _item,
       context: context,
       setState: setState,
     );

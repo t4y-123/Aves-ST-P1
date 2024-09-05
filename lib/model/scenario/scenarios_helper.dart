@@ -39,6 +39,7 @@ class ScenariosHelper {
     }
     await assignRecords.init();
     await assignEntries.init();
+    assignRecords.removeExpiredRecord();
   }
 
   void setExcludeDefaultFirst() {

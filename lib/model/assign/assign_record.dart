@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/enum/assign_item.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/utils/collection_utils.dart';
@@ -19,6 +20,28 @@ final AssignRecord assignRecords = AssignRecord._private();
 
 class AssignRecord extends PresentationRows<AssignRecordRow> {
   AssignRecord._private();
+
+  @override
+  Set<AssignRecordRow> get all {
+    removeExpiredRecord();
+    return getAll(PresentationRowType.all);
+  }
+
+  void removeExpiredRecord() {
+    if (settings.canAutoRemoveExpiredTempAssign) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final expirationTime = settings.assignTemporaryExpiredInterval * 1000; // Convert to milliseconds
+      final expiredRows = getAll(PresentationRowType.all)
+          .where((row) => (now - row.dateMillis) > expirationTime && row.assignType == AssignRecordType.temporary)
+          .toSet();
+
+      if (expiredRows.isNotEmpty) {
+        removeRows(expiredRows, type: PresentationRowType.all); // Remove expired records
+        scenariosHelper.removeTemporaryAssignRows(expiredRows, type: PresentationRowType.all); // Remove expired records
+      }
+    }
+    notifyListeners();
+  }
 
   @override
   Future<Set<AssignRecordRow>> loadAllRows() async {

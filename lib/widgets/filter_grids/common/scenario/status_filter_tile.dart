@@ -80,6 +80,8 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                     if (!await unlockScenarios(context)) return;
                     tapUnlock = true;
                   }
+                  await scenarios.syncRowsToBridge();
+                  await scenarioSteps.syncRowsToBridge();
                   if (filter.scenarioId >= 0) {
                     switch (filter.scenario!.loadType) {
                       case ScenarioLoadType.excludeUnique:

@@ -29,6 +29,7 @@ class AssignRecordActions extends BridgeConfigActions<AssignRecordRow> {
     assignEntries.removeRows(removedSchedules, type: PresentationRowType.bridgeAll);
     // then call the super to apply changes to guard level
     super.applyChanges(context, allItems, activeItems);
+    assignEntries.syncBridgeToRows();
   }
 
   @override

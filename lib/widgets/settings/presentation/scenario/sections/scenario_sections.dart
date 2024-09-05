@@ -29,7 +29,7 @@ class ScenarioCopyStepsFromExistListTile extends ItemSettingsTile<ScenarioRow> w
           final fromItems = scenarioSteps.bridgeAll.where((e) => e.scenarioId == v.id);
 
           if (fromItems.isNotEmpty) {
-            debugPrint('$runtimeType  ScenarioCopyStepsFromExistListTile\n fromItems $fromItems \n'
+            debugPrint('$runtimeType  le\n fromItems $fromItems \n'
                 'all ${scenarioSteps.all}\n bridgeAll: ${scenarioSteps.bridgeAll}\n');
 
             // copy every srcRow value to curRow diff in key: updateType-widgetId,
@@ -40,15 +40,23 @@ class ScenarioCopyStepsFromExistListTile extends ItemSettingsTile<ScenarioRow> w
               final ScenarioStepRow newRow;
               if (curRow != null) {
                 newRow = fromRow.copyWith(
-                    id: curRow.id, scenarioId: item.id, orderNum: curRow.orderNum, stepNum: curRow.stepNum);
+                    id: curRow.id,
+                    scenarioId: item.id,
+                    orderNum: curRow.orderNum,
+                    stepNum: curRow.stepNum,
+                    labelName: curRow.labelName);
               } else {
                 final tmpRow = scenarioSteps.newRow(
                     existMaxOrderNumOffset: 1,
                     scenarioId: item.id,
-                    existMaxStepNumOffset: fromRow.stepNum,
+                    existMaxStepNumOffset: 1,
                     type: PresentationRowType.bridgeAll);
                 newRow = fromRow.copyWith(
-                    id: tmpRow.id, scenarioId: item.id, orderNum: tmpRow.orderNum, stepNum: tmpRow.stepNum);
+                    id: tmpRow.id,
+                    scenarioId: item.id,
+                    orderNum: tmpRow.orderNum,
+                    stepNum: tmpRow.stepNum,
+                    labelName: tmpRow.labelName);
               }
               debugPrint('$runtimeType  ScenarioCopyStepsFromExistListTile\n curRow $curRow \n'
                   'newRow $newRow\n fromRow: $fromRow\n');

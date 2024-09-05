@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:aves/app_mode.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/query.dart';
@@ -124,6 +125,7 @@ class _CollectionAppBarState extends State<CollectionAppBar>
   @override
   void didUpdateWidget(covariant CollectionAppBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    assignRecords.removeExpiredRecord();
     _unregisterWidget(oldWidget);
     _registerWidget(widget);
   }

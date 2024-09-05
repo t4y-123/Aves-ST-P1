@@ -1,31 +1,6 @@
-<div align="center">
-
-<img src="https://raw.githubusercontent.com/deckerst/aves/develop/aves_logo.svg" alt='Aves logo' width="200" />
-
-## Aves
-
-![Version badge][Version badge]
-![Build badge][Build badge]
-
-Aves is a gallery and metadata explorer app. It is built for Android, with Flutter.
-
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-      alt='Get it on Google Play'
-      height="80">](https://play.google.com/store/apps/details?id=deckers.thibault.aves&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-      alt='Get it on IzzyOnDroid'
-      height="80">](https://apt.izzysoft.de/fdroid/index/apk/deckers.thibault.aves)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-      alt='Get it on F-Droid'
-      height="80">](https://f-droid.org/packages/deckers.thibault.aves.libre)
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png"
-      alt='Get it on GitHub'
-      height="80">](https://github.com/deckerst/aves/releases/latest)
+## Aves-st, 收图浏览
 
 
-[Compare versions](https://github.com/deckerst/aves/wiki/App-Versions)
-      
-<div align="left">
 
 ## Features
 
@@ -39,33 +14,6 @@ Aves integrates with Android (from KitKat to Android 14, including Android TV) w
 
 ## Screenshots
 
-<div align="center">
-
-[<img src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/1.png"
-      alt='Collection screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/1.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/2.png"
-      alt='Image screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/2.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/5.png"
-      alt='Stats screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/5.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/3.png"
-      alt='Info (basic) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/3.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/4.png"
-      alt='Info (metadata) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/4.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/6.png"
-      alt='Countries screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/6.png)
-
-<div align="left">
 
 ## Changelog
 
@@ -79,48 +27,23 @@ Aves requires a few permissions to do its job:
 - **have network access**: necessary for the map view, and most likely for precise reverse geocoding too,
 - **view network connections**: checking for connection states allows Aves to gracefully degrade features that depend on internet.
 
-## Contributing
-
-### Issues
-
-[Bug reports](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Abug&template=bug_report.md&title=) and [feature requests](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Afeature&template=feature_request.md&title=) are welcome, but read the [guidelines](https://github.com/deckerst/aves/issues/234) first. If you have questions, check out the [discussions](https://github.com/deckerst/aves/discussions).
-
-### Code
-
-At this stage this project does *not* accept PRs.
-
-### Translations
-
-Translations are powered by [Weblate](https://hosted.weblate.org/engage/aves/) and the effort of wonderfully generous volunteers.
-<a href="https://hosted.weblate.org/engage/aves/">
-<img src="https://hosted.weblate.org/widgets/aves/-/multi-auto.svg" alt="Translation status" />
-</a>
-
-If you want to translate this app in your language and share the result, [there is a guide](https://github.com/deckerst/aves/wiki/Contributing-to-Translations).
-
-### Donations
-
-Some users have expressed the wish to financially support the project. Thanks! ❤️
-
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/paypal-badge-cropped.png"
-      alt='Donate with PayPal'
-      height="40">](https://www.paypal.com/donate/?hosted_button_id=RWKQ4J7D8USX6)
-[<img src="https://liberapay.com/assets/widgets/donate.svg"
-      alt='Donate using Liberapay'
-      height="40">](https://liberapay.com/deckerst/donate)
 
 ## Project Setup
 
 Before running or building the app, update the dependencies for the desired flavor:
 ```
-# scripts/apply_flavor_play.sh
+# scripts/apply_flavor_t4play.sh
 ```
 
 To build the project, create a file named `<app dir>/android/key.properties`. It should contain a reference to a keystore for app signing, and other necessary credentials. See [key_template.properties](https://github.com/deckerst/aves/blob/develop/android/key_template.properties) for the expected keys.
 
 To run the app:
 ```
-# ./flutterw run -t lib/main_play.dart --flavor play
+# ./flutterw run -t lib/main_play.dart --flavor t4play
+```
+To make release app:
+```
+# ./flutterw build apk --flavor t4play -t lib/main_t4play.dart
 ```
 
 [Version badge]: https://img.shields.io/github/v/release/deckerst/aves?include_prereleases&sort=semver

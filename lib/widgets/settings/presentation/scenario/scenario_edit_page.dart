@@ -1,3 +1,4 @@
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
@@ -32,9 +33,9 @@ class _ScenarioEditSettingPageState extends State<ScenarioEditSettingPage> with 
     // first sync the rows data to the bridge data.
     // then all data shall modify in the bridgeAll data.
     scenarios.syncRowsToBridge();
-    _scenarioActions = ScenarioActions(context: context, setState: setState);
-
     fgwSchedules.syncRowsToBridge();
+    assignRecords.removeExpiredRecord();
+    _scenarioActions = ScenarioActions(context: context, setState: setState);
     _allScenarioStepsAction = AllScenarioStepsActions(context: context, setState: setState);
     // Add listeners to track modifications
   }

@@ -1,7 +1,5 @@
 import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/assign/assign_record.dart';
-import 'package:aves/model/fgw/wallpaper_schedule.dart';
-import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
@@ -32,10 +30,9 @@ class _AssignRecordEditSettingPageState extends State<AssignRecordEditSettingPag
 
     // first sync the rows data to the bridge data.
     // then all data shall modify in the bridgeAll data.
-    scenarios.syncRowsToBridge();
+    assignRecords.syncRowsToBridge();
+    assignEntries.syncRowsToBridge();
     _tab1Actions = AssignRecordActions(context: context, setState: setState);
-
-    fgwSchedules.syncRowsToBridge();
     _tab2Actions = AssignEntriesActions(context: context, setState: setState);
     // Add listeners to track modifications
   }

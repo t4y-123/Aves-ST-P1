@@ -149,7 +149,7 @@ class _QueryFilterDialogState extends State<QueryFilterDialog> {
             var queryResult = keyContent + operator;
             if (keyContent == QueryFilter.keyContentTime2Now) {
               queryResult +=
-                  '${_years ?? 0}Y${_months ?? 0}M${_days ?? 0}D ${_hours ?? 0}HH${_minutes ?? 0}MM${_seconds ?? 0}SS';
+                  '${_years ?? 0}Y${_months ?? 0}MO${_days ?? 0}D ${_hours ?? 0}H${_minutes ?? 0}MI${_seconds ?? 0}S';
             } else {
               queryResult += (value != null ? value.toString() : '');
               if (keyContent == QueryFilter.keyContentSize && unit != null) {

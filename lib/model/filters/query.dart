@@ -21,7 +21,7 @@ class QueryFilter extends CollectionFilter {
 
   static final _fieldPattern = RegExp(r'(.+)([=<>])(.+)');
   static final _fileSizePattern = RegExp(r'(\d+)([KMG])?');
-  static final _timePattern = RegExp(r'(\d+)(Y|MO|D|HH|MI|S)');
+  static final _timePattern = RegExp(r'(\d+)(Y|MO|D|H|MI|S)');
   static const keyContentId = 'ID';
   static const keyContentYear = 'YEAR';
   static const keyContentMonth = 'MONTH';
@@ -221,7 +221,7 @@ class QueryFilter extends CollectionFilter {
               targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day - amount, targetTime.hour,
                   targetTime.minute, targetTime.second);
               break;
-            case 'HH':
+            case 'H':
               targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour - amount,
                   targetTime.minute, targetTime.second);
               break;
@@ -229,7 +229,7 @@ class QueryFilter extends CollectionFilter {
               targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour,
                   targetTime.minute - amount, targetTime.second);
               break;
-            case 'SS':
+            case 'S':
               targetTime = DateTime(targetTime.year, targetTime.month, targetTime.day, targetTime.hour,
                   targetTime.minute, targetTime.second - amount);
               break;

@@ -1437,7 +1437,7 @@
   "settingsConfirmationSetDateToNowItems": "设置项目日期为当前日期前询问",
   "@settingsConfirmationSetDateToNowItems": {},
 
-  "shareByCopyDialogMessage": "将项目复制到路径进行分享：\n{dirFullPath}\n使其在其他应用的最近项目中更容易显示。\n\n每次复制后，位于: \n{dirName}\n中超过 {time} 的项目将被删除（如果启用了回收站，则删至回收站）除了查看器或通知调用，具体请查看设置。\n\n您随时更改设置。\n\n确定继续吗？",
+  "shareByCopyDialogMessage": "将项目复制到路径进行分享：\n{dirFullPath}\n使其在其他应用的最近项目中更容易显示。\n\n每次复制后，位于: \n{dirName}\n中超过 {time} 中被记录为复制的项目将被删除（若启用回收站，则删至回收站），具体请查看设置。\n\n您可以随时更改设置。\n\n确定继续吗？",
   "@shareByCopyDialogMessage": {},
   "settingsConfirmationShareByCopy": "复制分享项目前询问",
   "@settingsConfirmationShareByCopy": {},
@@ -1524,7 +1524,7 @@
   "@settingsFgwScheduleSyncButtonText": {},
   "settingsFgwScheduleSyncButtonAlert": "同步计划已应用，请稍等几秒钟。",
   "@settingsFgwScheduleSyncButtonAlert": {},
-  "settingsShowChipFgwButton": "在主页面显示前台壁纸服务开关按钮。建议关闭）：",
+  "settingsShowChipFgwButton": "在主页面显示前台壁纸服务开关按钮，建议关闭",
   "@settingsShowChipFgwButton": {},
   "settingsWidgetUpdateWhenOpenPage": "前台壁纸小部件打开页面时更新小部件：",
   "@settingsWidgetUpdateWhenOpenPage": {},

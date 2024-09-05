@@ -15,9 +15,9 @@ import 'enums/presentation.dart';
 
 class SettingsDefaults {
   // app
-  static const hasAcceptedTerms = false; // t4y temp set true accept for test
+  static const hasAcceptedTerms = true; // t4y temp set true accept for test
 
-  static const canUseAnalysisService = false; // t4y temp set false accept for test
+  static const canUseAnalysisService = false;
   static const isInstalledAppAccessAllowed = false;
   static const isErrorReportingAllowed = false;
   static const tileLayout = TileLayout.grid;

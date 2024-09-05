@@ -129,7 +129,7 @@ abstract class PresentationRows<T extends PresentRow> with ChangeNotifier {
     debugPrint('$runtimeType syncRowsToBridge,\n'
         'all:[$_rows]'
         'before bridget:[$_bridgeRows]');
-
+    await refresh(notify: false);
     _bridgeRows.clear();
     _bridgeRows.addAll(_rows);
 

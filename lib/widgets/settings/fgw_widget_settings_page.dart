@@ -95,6 +95,7 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
@@ -109,6 +110,12 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
           child: FutureBuilder<Map<Brightness, Map<WidgetOutline, Color?>>>(
             future: _outlineColorsByBrightness,
             builder: (context, snapshot) {
+              () async {
+                await fgwGuardLevels.syncRowsToBridge();
+                await filtersSets.syncRowsToBridge();
+                await fgwSchedules.syncRowsToBridge();
+              };
+
               final outlineColorsByBrightness = snapshot.data;
               if (outlineColorsByBrightness == null) return const SizedBox();
 
@@ -117,7 +124,6 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
 
               // Get active levels
               final activeLevels = fgwGuardLevels.bridgeAll.where((level) => level.isActive);
-              final activeLevelsIds = activeLevels.map((e) => e.id);
               // Create a new widget wallpaper schedule for each active level
               int orderNumOffset = 1;
               final newSchedules = activeLevels.map((level) {

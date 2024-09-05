@@ -293,7 +293,7 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
         return ValueListenableBuilder<String>(
           valueListenable: context.select<Query, ValueNotifier<String>>((query) => query.queryNotifier),
           builder: (context, query, child) {
-            debugPrint('$runtimeType _FilterGridContentState widget.sections ${widget.sections}');
+            //debugPrint('$runtimeType _FilterGridContentState widget.sections ${widget.sections}');
             Map<ChipSectionKey, List<FilterGridItem<T>>> visibleSections;
             if (queryEnabled && query.isNotEmpty) {
               visibleSections = {};

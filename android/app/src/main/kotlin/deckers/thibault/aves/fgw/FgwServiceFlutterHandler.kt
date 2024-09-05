@@ -150,6 +150,7 @@ object FgwServiceFlutterHandler {
     private fun handleSyncFromDartToNative(context: Context, call: MethodCall, result: MethodChannel.Result) {
         Log.d(LOG_TAG, "handleSyncFromDartToNative:start $call \n"+
                 "handleSyncFromDartToNative:start call.arguments ${call.arguments}")
+
         defaultScope.launch {
             try {
                 // Current guard level

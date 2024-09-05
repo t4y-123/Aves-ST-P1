@@ -58,6 +58,7 @@ object FgwServiceActionHandler {
 //                showToast(context,if (FgwSeviceNotificationHandler.isGuardLevelLocked) "Locked" else "Unlocked")
             }
             FgwIntentAction.SYNC_FGW_SCHEDULE_CHANGES -> {
+                WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(context)
                 FgwServiceFlutterHandler.callDartNoArgsMethod(context,FgwConstant.SYNC_FGW_SCHEDULE_CHANGES)
             }
             Intent.ACTION_SCREEN_ON -> handleScreenOn(context)

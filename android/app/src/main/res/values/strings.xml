@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Aves</string>
+    <string name="app_name">Aves-ST</string>
     <string name="app_widget_label">Photo Frame</string>
     <string name="foreground_wallpaper_widget_label">Foreground Wallpaper</string>
     <string name="foreground_wallpaper_channel_name">Foreground Wallpaper</string>

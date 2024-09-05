@@ -10,7 +10,7 @@
 -----
 其余功能请联系原项目作者：Thibault Deckers，见此页底：
 
-## Aves-st, t4y： 
+## Aves-ST, t4y： 
 This application is modified from an open-source project on GitHub and make additional \[Present\] features. Please confirm in the application settings.
 
 The developer of this application only has the network account name of the original project author, so: 

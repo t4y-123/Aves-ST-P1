@@ -31,7 +31,7 @@ dependencies:
   aves_report:
     path: plugins/aves_report
   aves_report_platform:
-    path: plugins/aves_report_crashlytics
+    path: plugins/aves_report_console
   aves_screen_state:
     path: plugins/aves_screen_state
   aves_services:
@@ -114,6 +114,8 @@ dependencies:
   vector_math:
   volume_controller:
   xml:
+  wallpaper_handler:
+
 
 dependency_overrides:
   # media_kit_video v1.2.4 depends on a specific old version of screen_brightness

@@ -37,11 +37,31 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'modules/foreground_wallpaer.dart';
+import 'modules/scenario.dart';
+
 final Settings settings = Settings._private();
 
-class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings, NavigationSettings, SearchSettings, CollectionSettings, FilterGridsSettings, PrivacySettings, ViewerSettings, VideoSettings, SubtitlesSettings, InfoSettings {
+class Settings
+    with
+        ChangeNotifier,
+        SettingsAccess,
+        AppSettings,
+        DisplaySettings,
+        NavigationSettings,
+        SearchSettings,
+        CollectionSettings,
+        FilterGridsSettings,
+        PrivacySettings,
+        ViewerSettings,
+        VideoSettings,
+        SubtitlesSettings,
+        InfoSettings,
+        ForegroundWallpaperSettings,
+        ScenarioSettings {
   final List<StreamSubscription> _subscriptions = [];
-  final EventChannel _platformSettingsChangeChannel = const OptionalEventChannel('deckers.thibault/aves/settings_change');
+  final EventChannel _platformSettingsChangeChannel =
+      const OptionalEventChannel('deckers.thibault/aves/settings_change');
   final StreamController<SettingsChangedEvent> _updateStreamController = StreamController.broadcast();
   final StreamController<SettingsChangedEvent> _updateTileExtentStreamController = StreamController.broadcast();
 
@@ -65,7 +85,9 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
       _subscriptions
         ..forEach((sub) => sub.cancel())
         ..clear();
-      _subscriptions.add(_platformSettingsChangeChannel.receiveBroadcastStream().listen((event) => _onPlatformSettingsChanged(event as Map?)));
+      _subscriptions.add(_platformSettingsChangeChannel
+          .receiveBroadcastStream()
+          .listen((event) => _onPlatformSettingsChanged(event as Map?)));
     }
   }
 
@@ -152,9 +174,12 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
 
   // tag editor
 
-  bool get tagEditorCurrentFilterSectionExpanded => getBool(SettingKeys.tagEditorCurrentFilterSectionExpandedKey) ?? SettingsDefaults.tagEditorCurrentFilterSectionExpanded;
+  bool get tagEditorCurrentFilterSectionExpanded =>
+      getBool(SettingKeys.tagEditorCurrentFilterSectionExpandedKey) ??
+      SettingsDefaults.tagEditorCurrentFilterSectionExpanded;
 
-  set tagEditorCurrentFilterSectionExpanded(bool newValue) => set(SettingKeys.tagEditorCurrentFilterSectionExpandedKey, newValue);
+  set tagEditorCurrentFilterSectionExpanded(bool newValue) =>
+      set(SettingKeys.tagEditorCurrentFilterSectionExpandedKey, newValue);
 
   String? get tagEditorExpandedSection => getString(SettingKeys.tagEditorExpandedSectionKey);
 
@@ -170,7 +195,8 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
 
   set convertQuality(int newValue) => set(SettingKeys.convertQualityKey, newValue);
 
-  bool get convertWriteMetadata => getBool(SettingKeys.convertWriteMetadataKey) ?? SettingsDefaults.convertWriteMetadata;
+  bool get convertWriteMetadata =>
+      getBool(SettingKeys.convertWriteMetadataKey) ?? SettingsDefaults.convertWriteMetadata;
 
   set convertWriteMetadata(bool newValue) => set(SettingKeys.convertWriteMetadataKey, newValue);
 
@@ -191,7 +217,8 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
     return json != null ? LatLng.fromJson(jsonDecode(json)) : null;
   }
 
-  set mapDefaultCenter(LatLng? newValue) => set(SettingKeys.mapDefaultCenterKey, newValue != null ? jsonEncode(newValue.toJson()) : null);
+  set mapDefaultCenter(LatLng? newValue) =>
+      set(SettingKeys.mapDefaultCenterKey, newValue != null ? jsonEncode(newValue.toJson()) : null);
 
   // bin
 
@@ -201,51 +228,67 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
 
   // accessibility
 
-  bool get showPinchGestureAlternatives => getBool(SettingKeys.showPinchGestureAlternativesKey) ?? SettingsDefaults.showPinchGestureAlternatives;
+  bool get showPinchGestureAlternatives =>
+      getBool(SettingKeys.showPinchGestureAlternativesKey) ?? SettingsDefaults.showPinchGestureAlternatives;
 
   set showPinchGestureAlternatives(bool newValue) => set(SettingKeys.showPinchGestureAlternativesKey, newValue);
 
-  AccessibilityAnimations get accessibilityAnimations => getEnumOrDefault(SettingKeys.accessibilityAnimationsKey, SettingsDefaults.accessibilityAnimations, AccessibilityAnimations.values);
+  AccessibilityAnimations get accessibilityAnimations => getEnumOrDefault(
+      SettingKeys.accessibilityAnimationsKey, SettingsDefaults.accessibilityAnimations, AccessibilityAnimations.values);
 
   bool get animate => accessibilityAnimations.animate;
 
-  set accessibilityAnimations(AccessibilityAnimations newValue) => set(SettingKeys.accessibilityAnimationsKey, newValue.toString());
+  set accessibilityAnimations(AccessibilityAnimations newValue) =>
+      set(SettingKeys.accessibilityAnimationsKey, newValue.toString());
 
-  AccessibilityTimeout get timeToTakeAction => getEnumOrDefault(SettingKeys.timeToTakeActionKey, SettingsDefaults.timeToTakeAction, AccessibilityTimeout.values);
+  AccessibilityTimeout get timeToTakeAction =>
+      getEnumOrDefault(SettingKeys.timeToTakeActionKey, SettingsDefaults.timeToTakeAction, AccessibilityTimeout.values);
 
   set timeToTakeAction(AccessibilityTimeout newValue) => set(SettingKeys.timeToTakeActionKey, newValue.toString());
 
   // file picker
 
-  bool get filePickerShowHiddenFiles => getBool(SettingKeys.filePickerShowHiddenFilesKey) ?? SettingsDefaults.filePickerShowHiddenFiles;
+  bool get filePickerShowHiddenFiles =>
+      getBool(SettingKeys.filePickerShowHiddenFilesKey) ?? SettingsDefaults.filePickerShowHiddenFiles;
 
   set filePickerShowHiddenFiles(bool newValue) => set(SettingKeys.filePickerShowHiddenFilesKey, newValue);
 
   // screen saver
 
-  bool get screenSaverFillScreen => getBool(SettingKeys.screenSaverFillScreenKey) ?? SettingsDefaults.slideshowFillScreen;
+  bool get screenSaverFillScreen =>
+      getBool(SettingKeys.screenSaverFillScreenKey) ?? SettingsDefaults.slideshowFillScreen;
 
   set screenSaverFillScreen(bool newValue) => set(SettingKeys.screenSaverFillScreenKey, newValue);
 
-  bool get screenSaverAnimatedZoomEffect => getBool(SettingKeys.screenSaverAnimatedZoomEffectKey) ?? SettingsDefaults.slideshowAnimatedZoomEffect;
+  bool get screenSaverAnimatedZoomEffect =>
+      getBool(SettingKeys.screenSaverAnimatedZoomEffectKey) ?? SettingsDefaults.slideshowAnimatedZoomEffect;
 
   set screenSaverAnimatedZoomEffect(bool newValue) => set(SettingKeys.screenSaverAnimatedZoomEffectKey, newValue);
 
-  ViewerTransition get screenSaverTransition => getEnumOrDefault(SettingKeys.screenSaverTransitionKey, SettingsDefaults.slideshowTransition, ViewerTransition.values);
+  ViewerTransition get screenSaverTransition => getEnumOrDefault(
+      SettingKeys.screenSaverTransitionKey, SettingsDefaults.slideshowTransition, ViewerTransition.values);
 
-  set screenSaverTransition(ViewerTransition newValue) => set(SettingKeys.screenSaverTransitionKey, newValue.toString());
+  set screenSaverTransition(ViewerTransition newValue) =>
+      set(SettingKeys.screenSaverTransitionKey, newValue.toString());
 
-  SlideshowVideoPlayback get screenSaverVideoPlayback => getEnumOrDefault(SettingKeys.screenSaverVideoPlaybackKey, SettingsDefaults.slideshowVideoPlayback, SlideshowVideoPlayback.values);
+  SlideshowVideoPlayback get screenSaverVideoPlayback => getEnumOrDefault(
+      SettingKeys.screenSaverVideoPlaybackKey, SettingsDefaults.slideshowVideoPlayback, SlideshowVideoPlayback.values);
 
-  set screenSaverVideoPlayback(SlideshowVideoPlayback newValue) => set(SettingKeys.screenSaverVideoPlaybackKey, newValue.toString());
+  set screenSaverVideoPlayback(SlideshowVideoPlayback newValue) =>
+      set(SettingKeys.screenSaverVideoPlaybackKey, newValue.toString());
 
   int get screenSaverInterval => getInt(SettingKeys.screenSaverIntervalKey) ?? SettingsDefaults.slideshowInterval;
 
   set screenSaverInterval(int newValue) => set(SettingKeys.screenSaverIntervalKey, newValue);
 
-  Set<CollectionFilter> get screenSaverCollectionFilters => (getStringList(SettingKeys.screenSaverCollectionFiltersKey) ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
+  Set<CollectionFilter> get screenSaverCollectionFilters =>
+      (getStringList(SettingKeys.screenSaverCollectionFiltersKey) ?? [])
+          .map(CollectionFilter.fromJson)
+          .whereNotNull()
+          .toSet();
 
-  set screenSaverCollectionFilters(Set<CollectionFilter> newValue) => set(SettingKeys.screenSaverCollectionFiltersKey, newValue.map((filter) => filter.toJson()).toList());
+  set screenSaverCollectionFilters(Set<CollectionFilter> newValue) =>
+      set(SettingKeys.screenSaverCollectionFiltersKey, newValue.map((filter) => filter.toJson()).toList());
 
   // slideshow
 
@@ -261,17 +304,21 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
 
   set slideshowFillScreen(bool newValue) => set(SettingKeys.slideshowFillScreenKey, newValue);
 
-  bool get slideshowAnimatedZoomEffect => getBool(SettingKeys.slideshowAnimatedZoomEffectKey) ?? SettingsDefaults.slideshowAnimatedZoomEffect;
+  bool get slideshowAnimatedZoomEffect =>
+      getBool(SettingKeys.slideshowAnimatedZoomEffectKey) ?? SettingsDefaults.slideshowAnimatedZoomEffect;
 
   set slideshowAnimatedZoomEffect(bool newValue) => set(SettingKeys.slideshowAnimatedZoomEffectKey, newValue);
 
-  ViewerTransition get slideshowTransition => getEnumOrDefault(SettingKeys.slideshowTransitionKey, SettingsDefaults.slideshowTransition, ViewerTransition.values);
+  ViewerTransition get slideshowTransition => getEnumOrDefault(
+      SettingKeys.slideshowTransitionKey, SettingsDefaults.slideshowTransition, ViewerTransition.values);
 
   set slideshowTransition(ViewerTransition newValue) => set(SettingKeys.slideshowTransitionKey, newValue.toString());
 
-  SlideshowVideoPlayback get slideshowVideoPlayback => getEnumOrDefault(SettingKeys.slideshowVideoPlaybackKey, SettingsDefaults.slideshowVideoPlayback, SlideshowVideoPlayback.values);
+  SlideshowVideoPlayback get slideshowVideoPlayback => getEnumOrDefault(
+      SettingKeys.slideshowVideoPlaybackKey, SettingsDefaults.slideshowVideoPlayback, SlideshowVideoPlayback.values);
 
-  set slideshowVideoPlayback(SlideshowVideoPlayback newValue) => set(SettingKeys.slideshowVideoPlaybackKey, newValue.toString());
+  set slideshowVideoPlayback(SlideshowVideoPlayback newValue) =>
+      set(SettingKeys.slideshowVideoPlaybackKey, newValue.toString());
 
   int get slideshowInterval => getInt(SettingKeys.slideshowIntervalKey) ?? SettingsDefaults.slideshowInterval;
 
@@ -279,25 +326,40 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
 
   // widget
 
-  WidgetOutline getWidgetOutline(int widgetId) => getEnumOrDefault('${SettingKeys.widgetOutlinePrefixKey}$widgetId', WidgetOutline.none, WidgetOutline.values);
+  WidgetOutline getWidgetOutline(int widgetId) =>
+      getEnumOrDefault('${SettingKeys.widgetOutlinePrefixKey}$widgetId', WidgetOutline.none, WidgetOutline.values);
 
-  void setWidgetOutline(int widgetId, WidgetOutline newValue) => set('${SettingKeys.widgetOutlinePrefixKey}$widgetId', newValue.toString());
+  void setWidgetOutline(int widgetId, WidgetOutline newValue) =>
+      set('${SettingKeys.widgetOutlinePrefixKey}$widgetId', newValue.toString());
 
-  WidgetShape getWidgetShape(int widgetId) => getEnumOrDefault('${SettingKeys.widgetShapePrefixKey}$widgetId', SettingsDefaults.widgetShape, WidgetShape.values);
+  WidgetShape getWidgetShape(int widgetId) => getEnumOrDefault(
+      '${SettingKeys.widgetShapePrefixKey}$widgetId', SettingsDefaults.widgetShape, WidgetShape.values);
 
-  void setWidgetShape(int widgetId, WidgetShape newValue) => set('${SettingKeys.widgetShapePrefixKey}$widgetId', newValue.toString());
+  void setWidgetShape(int widgetId, WidgetShape newValue) =>
+      set('${SettingKeys.widgetShapePrefixKey}$widgetId', newValue.toString());
 
-  Set<CollectionFilter> getWidgetCollectionFilters(int widgetId) => (getStringList('${SettingKeys.widgetCollectionFiltersPrefixKey}$widgetId') ?? []).map(CollectionFilter.fromJson).whereNotNull().toSet();
+  Set<CollectionFilter> getWidgetCollectionFilters(int widgetId) =>
+      (getStringList('${SettingKeys.widgetCollectionFiltersPrefixKey}$widgetId') ?? [])
+          .map(CollectionFilter.fromJson)
+          .whereNotNull()
+          .toSet();
 
-  void setWidgetCollectionFilters(int widgetId, Set<CollectionFilter> newValue) => set('${SettingKeys.widgetCollectionFiltersPrefixKey}$widgetId', newValue.map((filter) => filter.toJson()).toList());
+  void setWidgetCollectionFilters(int widgetId, Set<CollectionFilter> newValue) => set(
+      '${SettingKeys.widgetCollectionFiltersPrefixKey}$widgetId', newValue.map((filter) => filter.toJson()).toList());
 
-  WidgetOpenPage getWidgetOpenPage(int widgetId) => getEnumOrDefault('${SettingKeys.widgetOpenPagePrefixKey}$widgetId', SettingsDefaults.widgetOpenPage, WidgetOpenPage.values);
+  WidgetOpenPage getWidgetOpenPage(int widgetId) => getEnumOrDefault(
+      '${SettingKeys.widgetOpenPagePrefixKey}$widgetId', SettingsDefaults.widgetOpenPage, WidgetOpenPage.values);
 
-  void setWidgetOpenPage(int widgetId, WidgetOpenPage newValue) => set('${SettingKeys.widgetOpenPagePrefixKey}$widgetId', newValue.toString());
+  void setWidgetOpenPage(int widgetId, WidgetOpenPage newValue) =>
+      set('${SettingKeys.widgetOpenPagePrefixKey}$widgetId', newValue.toString());
 
-  WidgetDisplayedItem getWidgetDisplayedItem(int widgetId) => getEnumOrDefault('${SettingKeys.widgetDisplayedItemPrefixKey}$widgetId', SettingsDefaults.widgetDisplayedItem, WidgetDisplayedItem.values);
+  WidgetDisplayedItem getWidgetDisplayedItem(int widgetId) => getEnumOrDefault(
+      '${SettingKeys.widgetDisplayedItemPrefixKey}$widgetId',
+      SettingsDefaults.widgetDisplayedItem,
+      WidgetDisplayedItem.values);
 
-  void setWidgetDisplayedItem(int widgetId, WidgetDisplayedItem newValue) => set('${SettingKeys.widgetDisplayedItemPrefixKey}$widgetId', newValue.toString());
+  void setWidgetDisplayedItem(int widgetId, WidgetDisplayedItem newValue) =>
+      set('${SettingKeys.widgetDisplayedItemPrefixKey}$widgetId', newValue.toString());
 
   String? getWidgetUri(int widgetId) => getString('${SettingKeys.widgetUriPrefixKey}$widgetId');
 
@@ -320,11 +382,13 @@ class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings
     });
   }
 
-  bool get isRotationLocked => getBool(SettingKeys.platformAccelerometerRotationKey) ?? SettingsDefaults.isRotationLocked;
+  bool get isRotationLocked =>
+      getBool(SettingKeys.platformAccelerometerRotationKey) ?? SettingsDefaults.isRotationLocked;
 
   set isRotationLocked(bool newValue) => set(SettingKeys.platformAccelerometerRotationKey, newValue);
 
-  bool get areAnimationsRemoved => getBool(SettingKeys.platformTransitionAnimationScaleKey) ?? SettingsDefaults.areAnimationsRemoved;
+  bool get areAnimationsRemoved =>
+      getBool(SettingKeys.platformTransitionAnimationScaleKey) ?? SettingsDefaults.areAnimationsRemoved;
 
   set areAnimationsRemoved(bool newValue) => set(SettingKeys.platformTransitionAnimationScaleKey, newValue);
 

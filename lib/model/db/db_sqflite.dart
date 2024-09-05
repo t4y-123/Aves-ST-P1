@@ -1,14 +1,23 @@
 import 'dart:io';
 
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/db/db.dart';
 import 'package:aves/model/db/db_sqflite_upgrade.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/metadata/address.dart';
 import 'package:aves/model/metadata/catalog.dart';
 import 'package:aves/model/metadata/trash.dart';
+import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/viewer/video_playback.dart';
 import 'package:aves/services/common/services.dart';
@@ -31,8 +40,30 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
   static const trashTable = 'trash';
   static const videoPlaybackTable = 'videoPlayback';
 
-  static int _lastId = 0;
+  // t4y for foreground Wallpaper
+  static const fgwGuardLevelTable = 'fgwGuardLevel';
+  static const filtersSetTable = 'filtersSet';
+  static const fgwScheduleTable = 'fgwSchedule';
+  static const fgwUsedEntryTable = 'fgwUsedEntry';
 
+  //t4y share by copy:
+  static const shareCopiedEntryTable = 'shareCopiedEntry';
+
+  // t4y: presentation: scenario presentation
+  static const scenarioTable = 'scenarioPresent';
+  static const scenarioStepTable = 'scenarioStep';
+  static const assignRecordTable = 'assignRecord';
+  static const assignEntryTable = 'assignEntry';
+  //End
+
+  static int _lastId = 0;
+  // In dart ,the int is 64-bit.
+  // The 64-bit signed integer records the number of ticks from a certain era to the present.
+  // Some systems (such as the Java standard library) agree that 1 tick is equal to 1 millisecond.
+  // This agreed time system can be used until about 292 million years later.
+  // Other systems (such as Win32) agree that 1 tick is equal to 100 nanoseconds.
+  // The time range covered by this system is 29227 years before and after the era.
+  // https://zh.wikipedia.org/wiki/9223372036854775807
   @override
   int get nextId => ++_lastId;
 
@@ -45,7 +76,7 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
             'id INTEGER PRIMARY KEY'
             ', contentId INTEGER'
             ', uri TEXT'
-            ', path TEXT'
+            ', path TEXT UNIQUE'
             ', sourceMimeType TEXT'
             ', width INTEGER'
             ', height INTEGER'
@@ -106,6 +137,86 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
         await db.execute('CREATE TABLE $videoPlaybackTable('
             'id INTEGER PRIMARY KEY'
             ', resumeTimeMillis INTEGER'
+            ')');
+        //T4y: Foreground Wallpaper tables
+        await db.execute('CREATE TABLE $fgwGuardLevelTable('
+            'id INTEGER PRIMARY KEY'
+            ', guardLevel INTEGER'
+            ', labelName TEXT'
+            ', color INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $filtersSetTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', filters TEXT'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $fgwScheduleTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', fgwGuardLevelId INTEGER'
+            ', filtersSetId INTEGER'
+            ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
+            ', displayType TEXT' // Values can be 'random'  or 'most recent not used'
+            ', interval INTEGER DEFAULT 0' // 0 will be update when the phone is locked
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $fgwUsedEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', fgwGuardLevelId INTEGER'
+            ', updateType TEXT' // Values can be 'home', 'lock', or 'widget'
+            ', widgetId INTEGER DEFAULT 0' // Default to 0 for 'home' or 'lock'
+            ', entryId INTEGER'
+            ', dateMillis INTEGER'
+            ')');
+        await db.execute('CREATE TABLE $shareCopiedEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', dateMillis INTEGER'
+            ')');
+        //T4y: Scenario Presentation
+        await db.execute('CREATE TABLE $scenarioTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', loadType TEXT'
+            ', color INTEGER'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $scenarioStepTable('
+            'id INTEGER PRIMARY KEY'
+            ', scenarioId INTEGER'
+            ', stepNum INTEGER'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', loadType TEXT'
+            ', filters TEXT'
+            ', dateMillis INTEGER'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        //T4y: Assign entries Presentation
+        await db.execute('CREATE TABLE $assignRecordTable('
+            'id INTEGER PRIMARY KEY'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', assignType TEXT'
+            ', color INTEGER'
+            ', dateMillis INTEGER'
+            ', scenarioId INTEGER DEFAULT 0'
+            ', isActive INTEGER DEFAULT 0'
+            ')');
+        await db.execute('CREATE TABLE $assignEntryTable('
+            'id INTEGER PRIMARY KEY'
+            ', assignId INTEGER'
+            ', entryId INTEGER'
+            ', dateMillis INTEGER'
+            ', orderNum INTEGER'
+            ', labelName TEXT'
+            ', isActive INTEGER DEFAULT 0'
             ')');
       },
       onUpgrade: LocalMediaDbUpgrader.upgradeDb,
@@ -215,7 +326,8 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
     final batch = _db.batch();
     entries.forEach((entry) => _batchInsertEntry(batch, entry));
     await batch.commit(noResult: true);
-    debugPrint('$runtimeType saveEntries complete in ${stopwatch.elapsed.inMilliseconds}ms for ${entries.length} entries');
+    debugPrint(
+        '$runtimeType saveEntries complete in ${stopwatch.elapsed.inMilliseconds}ms for ${entries.length} entries');
   }
 
   @override
@@ -297,7 +409,8 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
   }
 
   @override
-  Future<Set<CatalogMetadata>> loadCatalogMetadataById(Set<int> ids) => _getByIds(ids, metadataTable, CatalogMetadata.fromMap);
+  Future<Set<CatalogMetadata>> loadCatalogMetadataById(Set<int> ids) =>
+      _getByIds(ids, metadataTable, CatalogMetadata.fromMap);
 
   @override
   Future<void> saveCatalogMetadata(Set<CatalogMetadata> metadataEntries) async {
@@ -307,7 +420,8 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
       final batch = _db.batch();
       metadataEntries.forEach((metadata) => _batchInsertMetadata(batch, metadata));
       await batch.commit(noResult: true);
-      debugPrint('$runtimeType saveMetadata complete in ${stopwatch.elapsed.inMilliseconds}ms for ${metadataEntries.length} entries');
+      debugPrint(
+          '$runtimeType saveMetadata complete in ${stopwatch.elapsed.inMilliseconds}ms for ${metadataEntries.length} entries');
     } catch (error, stack) {
       debugPrint('$runtimeType failed to save metadata with error=$error\n$stack');
     }
@@ -365,7 +479,8 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
     final batch = _db.batch();
     addresses.forEach((address) => _batchInsertAddress(batch, address));
     await batch.commit(noResult: true);
-    debugPrint('$runtimeType saveAddresses complete in ${stopwatch.elapsed.inMilliseconds}ms for ${addresses.length} entries');
+    debugPrint(
+        '$runtimeType saveAddresses complete in ${stopwatch.elapsed.inMilliseconds}ms for ${addresses.length} entries');
   }
 
   @override
@@ -637,5 +752,446 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
       where: 'id IN (${ids.join(',')})',
     );
     return rows.map(mapRow).toSet();
+  }
+
+  // Privacy Guard LevelS
+  @override
+  Future<void> clearFgwGuardLevel() async {
+    final count = await _db.delete(fgwGuardLevelTable, where: '1');
+    debugPrint('clearFgwGuardLevel deleted $count rows');
+  }
+
+  @override
+  Future<Set<FgwGuardLevelRow>> loadAllFgwGuardLevels() async {
+    final rows = await _db.query(fgwGuardLevelTable);
+    return rows.map(FgwGuardLevelRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFgwGuardLevels(Set<FgwGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFgwGuardLevel(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFgwGuardLevelId(int id, FgwGuardLevelRow row) async {
+    final batch = _db.batch();
+    batch.delete(fgwGuardLevelTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFgwGuardLevel(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFgwGuardLevels(Set<FgwGuardLevelRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(fgwGuardLevelTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFgwGuardLevel(Batch batch, FgwGuardLevelRow row) {
+    batch.insert(
+      fgwGuardLevelTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Filter Set for wallpaper,
+  @override
+  Future<void> clearFilterSet() async {
+    final count = await _db.delete(filtersSetTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FiltersSetRow>> loadAllFilterSet() async {
+    final rows = await _db.query(filtersSetTable);
+    return rows.map(FiltersSetRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFilterSet(Set<FiltersSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFilterSet(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFilterSetId(int id, FiltersSetRow row) async {
+    final batch = _db.batch();
+    batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFilterSet(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFilterSet(Set<FiltersSetRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(filtersSetTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFilterSet(Batch batch, FiltersSetRow row) {
+    batch.insert(
+      filtersSetTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // wallpaper Schedule Table
+  @override
+  Future<void> clearFgwSchedules() async {
+    final count = await _db.delete(fgwScheduleTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FgwScheduleRow>> loadAllFgwSchedules() async {
+    final rows = await _db.query(fgwScheduleTable);
+    return rows.map(FgwScheduleRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFgwSchedules(Set<FgwScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertWallpaperSchedule(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFgwSchedules(int id, FgwScheduleRow row) async {
+    final batch = _db.batch();
+    batch.delete(fgwScheduleTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertWallpaperSchedule(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFgwSchedules(Set<FgwScheduleRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(fgwScheduleTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertWallpaperSchedule(Batch batch, FgwScheduleRow row) {
+    batch.insert(
+      fgwScheduleTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // foreground wallpaper used entry record Table
+  @override
+  Future<void> clearFgwUsedEntryRecord() async {
+    final count = await _db.delete(fgwUsedEntryTable, where: '1');
+    debugPrint('clearFilterSet deleted $count rows');
+  }
+
+  @override
+  Future<Set<FgwUsedEntryRecordRow>> loadAllFgwUsedEntryRecord() async {
+    final rows = await _db.query(fgwUsedEntryTable);
+    return rows.map(FgwUsedEntryRecordRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertFgwUsedEntryRecord(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateFgwUsedEntryRecord(int id, FgwUsedEntryRecordRow row) async {
+    final batch = _db.batch();
+    batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertFgwUsedEntryRecord(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeFgwUsedEntryRecord(Set<FgwUsedEntryRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(fgwUsedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertFgwUsedEntryRecord(Batch batch, FgwUsedEntryRecordRow row) {
+    batch.insert(
+      fgwUsedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  //t4y: share by copy copied entries
+  @override
+  Future<void> clearShareCopiedEntries() async {
+    final count = await _db.delete(shareCopiedEntryTable, where: '1');
+    debugPrint('clearShareCopiedEntries $shareCopiedEntryTable deleted $count rows');
+  }
+
+  @override
+  Future<Set<ShareCopiedEntryRow>> loadAllShareCopiedEntries() async {
+    final rows = await _db.query(shareCopiedEntryTable);
+    return rows.map(ShareCopiedEntryRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    debugPrint('addShareCopiedEntries.add(_db:\n$rows');
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertShareCopiedEntries(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateShareCopiedEntries(int id, ShareCopiedEntryRow row) async {
+    final batch = _db.batch();
+    batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertShareCopiedEntries(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(shareCopiedEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertShareCopiedEntries(Batch batch, ShareCopiedEntryRow row) {
+    debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
+    batch.insert(
+      shareCopiedEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Scenario
+  @override
+  Future<void> clearScenarios() async {
+    final count = await _db.delete(scenarioTable, where: '1');
+    debugPrint('clearScenarios deleted $count rows');
+  }
+
+  @override
+  Future<Set<ScenarioRow>> loadAllScenarios() async {
+    final rows = await _db.query(scenarioTable);
+    return rows.map(ScenarioRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addScenarios(Set<ScenarioRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertScenarios(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateScenarioById(int id, ScenarioRow row) async {
+    final batch = _db.batch();
+    batch.delete(scenarioTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertScenarios(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeScenarios(Set<ScenarioRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(scenarioTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertScenarios(Batch batch, ScenarioRow row) {
+    batch.insert(
+      scenarioTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // Scenario step
+  @override
+  Future<void> clearScenarioSteps() async {
+    final count = await _db.delete(scenarioStepTable, where: '1');
+    debugPrint('clearScenarioSteps deleted $count rows');
+  }
+
+  @override
+  Future<Set<ScenarioStepRow>> loadAllScenarioSteps() async {
+    final rows = await _db.query(scenarioStepTable);
+    return rows.map(ScenarioStepRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addScenarioSteps(Set<ScenarioStepRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertScenarioSteps(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateScenarioStepById(int id, ScenarioStepRow row) async {
+    final batch = _db.batch();
+    batch.delete(scenarioStepTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertScenarioSteps(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeScenarioSteps(Set<ScenarioStepRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(scenarioStepTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertScenarioSteps(Batch batch, ScenarioStepRow row) {
+    batch.insert(
+      scenarioStepTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // AssignRecord
+  @override
+  Future<void> clearAssignRecords() async {
+    final count = await _db.delete(assignRecordTable, where: '1');
+    debugPrint('clearAssignRecords deleted $count rows');
+  }
+
+  @override
+  Future<Set<AssignRecordRow>> loadAllAssignRecords() async {
+    final rows = await _db.query(assignRecordTable);
+    return rows.map(AssignRecordRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addAssignRecords(Set<AssignRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertAssignRecords(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateAssignRecordById(int id, AssignRecordRow row) async {
+    final batch = _db.batch();
+    batch.delete(assignRecordTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertAssignRecords(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeAssignRecords(Set<AssignRecordRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(assignRecordTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertAssignRecords(Batch batch, AssignRecordRow row) {
+    batch.insert(
+      assignRecordTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  //t4y: share by copy copied entries
+  @override
+  Future<void> clearAssignEntries() async {
+    final count = await _db.delete(assignEntryTable, where: '1');
+    debugPrint('clearAssignEntries $assignEntryTable deleted $count rows');
+  }
+
+  @override
+  Future<Set<AssignEntryRow>> loadAllAssignEntries() async {
+    final rows = await _db.query(assignEntryTable);
+    return rows.map(AssignEntryRow.fromMap).where((row) => row != null).toSet();
+  }
+
+  @override
+  Future<void> addAssignEntries(Set<AssignEntryRow> rows) async {
+    debugPrint('addAssignEntries.add(_db:\n$rows');
+    if (rows.isEmpty) return;
+    final batch = _db.batch();
+    rows.forEach((row) => _batchInsertAssignEntries(batch, row));
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> updateAssignEntries(int id, AssignEntryRow row) async {
+    final batch = _db.batch();
+    batch.delete(assignEntryTable, where: 'id = ?', whereArgs: [id]);
+    _batchInsertAssignEntries(batch, row);
+    await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<void> removeAssignEntries(Set<AssignEntryRow> rows) async {
+    if (rows.isEmpty) return;
+
+    final batch = _db.batch();
+    rows.forEach((row) {
+      batch.delete(assignEntryTable, where: 'id = ?', whereArgs: [row.id]);
+    });
+    await batch.commit(noResult: true);
+  }
+
+  void _batchInsertAssignEntries(Batch batch, AssignEntryRow row) {
+    debugPrint('addAssignEntries.add(_batchInsertAssignEntries:\n$batch \n $row');
+    batch.insert(
+      assignEntryTable,
+      row.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 }

@@ -23,10 +23,12 @@ class HomeWidgetSettingsPage extends StatefulWidget {
   static const routeName = '/settings/home_widget';
 
   final int widgetId;
+  final bool fromSettingsPage;
 
   const HomeWidgetSettingsPage({
     super.key,
     required this.widgetId,
+    this.fromSettingsPage = false,
   });
 
   @override
@@ -187,7 +189,8 @@ class _HomeWidgetSettingsPageState extends State<HomeWidgetSettingsPage> {
   }
 
   void _saveSettings() {
-    final invalidateUri = _displayedItem != settings.getWidgetDisplayedItem(widgetId) || !const SetEquality().equals(_collectionFilters, settings.getWidgetCollectionFilters(widgetId));
+    final invalidateUri = _displayedItem != settings.getWidgetDisplayedItem(widgetId) ||
+        !const SetEquality().equals(_collectionFilters, settings.getWidgetCollectionFilters(widgetId));
 
     settings.setWidgetShape(widgetId, _shape);
     settings.setWidgetOutline(widgetId, _outline);
@@ -197,6 +200,10 @@ class _HomeWidgetSettingsPageState extends State<HomeWidgetSettingsPage> {
 
     if (invalidateUri) {
       settings.setWidgetUri(widgetId, null);
+      // Conditionally pop the page based on the source
+    }
+    if (widget.fromSettingsPage) {
+      Navigator.of(context).pop();
     }
   }
 }

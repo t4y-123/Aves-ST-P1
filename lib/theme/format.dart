@@ -1,4 +1,6 @@
 import 'package:aves/theme/text.dart';
+import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 String formatDay(DateTime date, String locale) => DateFormat.yMMMd(locale).format(date);
@@ -24,4 +26,26 @@ String formatPreciseDuration(Duration d) {
   final minutes = (d.inMinutes.remainder(Duration.minutesPerHour)).toString().padLeft(2, '0');
   final hours = (d.inHours).toString().padLeft(2, '0');
   return '$hours:$minutes:$seconds.$millis';
+}
+
+String formatToLocalDuration(BuildContext context,Duration d) {
+  final seconds =d.inSeconds;
+  if (seconds == 0) {
+    return '0 ${context.l10n.durationDialogSeconds}';
+  }
+  final int _hours = seconds ~/ Duration.secondsPerHour;
+  final int _minutes = (seconds - _hours * Duration.secondsPerHour) ~/
+      Duration.secondsPerMinute;
+  final int _seconds = seconds % Duration.secondsPerMinute;
+  List<String> parts = [];
+  if (_hours > 0) {
+    parts.add('$_hours ${context.l10n.durationDialogHours}');
+  }
+  if (_minutes > 0) {
+    parts.add('$_minutes ${context.l10n.durationDialogMinutes}');
+  }
+  if (_seconds > 0) {
+    parts.add('$_seconds ${context.l10n.durationDialogSeconds}');
+  }
+  return parts.join('\n');
 }

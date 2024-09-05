@@ -31,7 +31,10 @@ class AlbumListPage extends StatelessWidget {
       shouldRebuild: (t1, t2) {
         // `Selector` by default uses `DeepCollectionEquality`, which does not go deep in collections within records
         const eq = DeepCollectionEquality();
-        return !(eq.equals(t1.$1, t2.$1) && eq.equals(t1.$2, t2.$2) && eq.equals(t1.$3, t2.$3) && eq.equals(t1.$4, t2.$4));
+        return !(eq.equals(t1.$1, t2.$1) &&
+            eq.equals(t1.$2, t2.$2) &&
+            eq.equals(t1.$3, t2.$3) &&
+            eq.equals(t1.$4, t2.$4));
       },
       builder: (context, s, child) {
         return ValueListenableBuilder<bool>(
@@ -69,17 +72,22 @@ class AlbumListPage extends StatelessWidget {
 
   // common with album selection page to move/copy entries
 
-  static List<FilterGridItem<AlbumFilter>> applyQuery(BuildContext context, List<FilterGridItem<AlbumFilter>> filters, String query) {
-    return filters.where((item) => (item.filter.displayName ?? item.filter.album).toUpperCase().contains(query)).toList();
+  static List<FilterGridItem<AlbumFilter>> applyQuery(
+      BuildContext context, List<FilterGridItem<AlbumFilter>> filters, String query) {
+    return filters
+        .where((item) => (item.filter.displayName ?? item.filter.album).toUpperCase().contains(query))
+        .toList();
   }
 
   static List<FilterGridItem<AlbumFilter>> getAlbumGridItems(BuildContext context, CollectionSource source) {
-    final filters = source.rawAlbums.map((album) => AlbumFilter(album, source.getAlbumDisplayName(context, album))).toSet();
+    final filters =
+        source.rawAlbums.map((album) => AlbumFilter(album, source.getAlbumDisplayName(context, album))).toSet();
 
     return FilterNavigationPage.sort(settings.albumSortFactor, settings.albumSortReverse, source, filters);
   }
 
-  static Map<ChipSectionKey, List<FilterGridItem<AlbumFilter>>> groupToSections(BuildContext context, CollectionSource source, Iterable<FilterGridItem<AlbumFilter>> sortedMapEntries) {
+  static Map<ChipSectionKey, List<FilterGridItem<AlbumFilter>>> groupToSections(
+      BuildContext context, CollectionSource source, Iterable<FilterGridItem<AlbumFilter>> sortedMapEntries) {
     final newFilters = source.getNewAlbumFilters(context);
     final pinned = settings.pinnedFilters.whereType<AlbumFilter>();
 

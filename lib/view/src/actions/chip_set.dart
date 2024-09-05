@@ -35,6 +35,12 @@ extension ExtraChipSetActionView on ChipSetAction {
       ChipSetAction.rename => l10n.chipActionRename,
       ChipSetAction.setCover => l10n.chipActionSetCover,
       ChipSetAction.configureVault => l10n.chipActionConfigureVault,
+
+      //t4y added.
+      ChipSetAction.foregroundWallpaperService => l10n.foregroundWallpaperService,
+      // ChipSetAction.lockScenario => l10n.chipActionLockScenario,
+      // ChipSetAction.unlockScenario => l10n.chipActionUnlockScenario,
+      // ChipSetAction.settingScenario => l10n.chipActionSettingScenario,
     };
   }
 
@@ -70,6 +76,11 @@ extension ExtraChipSetActionView on ChipSetAction {
       ChipSetAction.rename => AIcons.rename,
       ChipSetAction.setCover => AIcons.setCover,
       ChipSetAction.configureVault => AIcons.vaultConfigure,
+      // t4y
+      ChipSetAction.foregroundWallpaperService => AIcons.setAs,
+      // ChipSetAction.lockScenario => AIcons.lockScenario,
+      // ChipSetAction.unlockScenario => AIcons.unlockScenario,
+      // ChipSetAction.settingScenario => AIcons.settingScenario,
     };
   }
 }

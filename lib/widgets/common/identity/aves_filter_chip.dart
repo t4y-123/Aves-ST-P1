@@ -425,7 +425,14 @@ class _AvesFilterChipState extends State<AvesFilterChip> {
     final animate = context.select<Settings, bool>((v) => v.animate);
     if (animate && (widget.heroType == HeroType.always || widget.heroType == HeroType.onTap && _tapped)) {
       chip = Hero(
-        tag: filter,
+        //tag: filter,
+        tag: '$filter ${DateTime.now()}',
+        // t4y: to fix Exception:
+        // ` There are multiple heroes that share the same tag within a subtree.`
+        // After all ,The tag is not displayed in the UI;
+        // it is used internally by Flutter to match Hero widgets across different routes.
+        // When you navigate from one screen to another,
+        // Flutter looks for Hero widgets with matching tags on both screens and animates the transition between them.
         transitionOnUserGestures: true,
         child: MediaQueryDataProvider(
           child: DefaultTextStyle(

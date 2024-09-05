@@ -1,16 +1,21 @@
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/aspect_ratio.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/date.dart';
 import 'package:aves/model/filters/favourite.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/mime.dart';
 import 'package:aves/model/filters/missing.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/rating.dart';
 import 'package:aves/model/filters/recent.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/type.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -29,6 +34,9 @@ import 'package:aves/widgets/common/identity/aves_filter_chip.dart';
 import 'package:aves/widgets/common/search/delegate.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/filter_grids/common/action_delegates/chip.dart';
+import 'package:aves/widgets/search/fgw_filter_make_dialog.dart';
+import 'package:aves/widgets/search/query_helper_dialog.dart';
+import 'package:aves/widgets/settings/privacy/file_picker/file_picker_page.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -135,6 +143,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
                         title: context.l10n.searchRecentSectionTitle,
                         filters: history,
                       ),
+                    _buildHelperQueryFilters(context, containQuery),
                     _buildDateFilters(context, containQuery),
                     _buildAlbumFilters(containQuery),
                     _buildCountryFilters(containQuery),
@@ -143,6 +152,7 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
                     _buildTagFilters(containQuery),
                     _buildRatingFilters(context, containQuery),
                     _buildMetadataFilters(context, containQuery),
+                    if (assignRecords.all.isNotEmpty) _buildAssignFilters(context, containQuery),
                   ],
                 );
               },
@@ -179,6 +189,138 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
           );
   }
 
+  Widget _buildQueryHelpDialogFilterRow({
+    required BuildContext context,
+    String? title,
+    required List<CollectionFilter> filters,
+    HeroType Function(CollectionFilter filter)? heroTypeBuilder,
+  }) {
+    void onTap(filter) => _makeRealQuery(context, filter.query);
+    return title != null
+        ? TitledExpandableFilterRow(
+            title: title,
+            filters: filters,
+            expandedNotifier: _expandedSectionNotifier,
+            heroTypeBuilder: heroTypeBuilder,
+            onTap: onTap,
+            onLongPress: null,
+          )
+        : ExpandableFilterRow(
+            filters: filters,
+            isExpanded: false,
+            heroTypeBuilder: heroTypeBuilder,
+            onTap: onTap,
+            onLongPress: null,
+          );
+  }
+
+  Future<void> _makeRealQuery(BuildContext context, String? queryKey) async {
+    if (queryKey == null) {
+      goBack(context);
+      return;
+    }
+    //display the FilePickerPage as a modal bottom sheet.
+    // To keeps the search page alive in the background
+    // and allows the user to interact with the subpage as if it were a dialog.
+    if (queryKey == QueryHelperType.path.getName(context)) {
+      final path = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) => const FilePickerPage(),
+        isScrollControlled: true,
+      );
+
+      if (path != null && path.isNotEmpty) {
+        await _select(context, PathFilter(path));
+        return;
+      } else {
+        goBack(context);
+        return;
+      }
+    } else if (queryKey == QueryHelperType.keyContentFgwUsed.getName(context)) {
+      final FgwUsedFilter? filter = await showDialog<FgwUsedFilter>(
+        context: context,
+        builder: (context) {
+          return const FgwUsedFilterDialog();
+        },
+      );
+
+      if (filter != null) {
+        await _select(context, filter);
+      } else {
+        goBack(context);
+      }
+      return;
+    }
+    // else, build a real query filter.
+    String keyContent;
+
+    if (queryKey == QueryHelperType.keyContentTime2Now.getName(context)) {
+      keyContent = QueryFilter.keyContentTime2Now;
+    } else if (queryKey == QueryHelperType.keyContentSize.getName(context)) {
+      keyContent = QueryFilter.keyContentSize;
+    } else if (queryKey == QueryHelperType.keyContentWidth.getName(context)) {
+      keyContent = QueryFilter.keyContentWidth;
+    } else if (queryKey == QueryHelperType.keyContentHeight.getName(context)) {
+      keyContent = QueryFilter.keyContentHeight;
+    } else if (queryKey == QueryHelperType.keyContentDay.getName(context)) {
+      keyContent = QueryFilter.keyContentDay;
+    } else if (queryKey == QueryHelperType.keyContentMonth.getName(context)) {
+      keyContent = QueryFilter.keyContentMonth;
+    } else if (queryKey == QueryHelperType.keyContentYear.getName(context)) {
+      keyContent = QueryFilter.keyContentYear;
+    } else if (queryKey == QueryHelperType.keyContentId.getName(context)) {
+      keyContent = QueryFilter.keyContentId;
+    } else {
+      keyContent = '';
+      goBack(context);
+      return;
+    }
+
+    String operator = '<';
+    if (keyContent == QueryFilter.keyContentSize ||
+        keyContent == QueryFilter.keyContentHeight ||
+        keyContent == QueryFilter.keyContentWidth) {
+      operator = '>';
+    }
+    final finalQuery = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return QueryFilterDialog(
+          queryKey: keyContent,
+          operator: operator,
+        );
+      },
+    );
+
+    if (finalQuery == null) return;
+
+    final realQueryFilter = QueryFilter(finalQuery);
+    await _select(context, realQueryFilter);
+  }
+
+  Widget _buildHelperQueryFilters(BuildContext context, _ContainQuery containQuery) {
+    final _helperQueryFilters = [
+      QueryFilter(QueryHelperType.path.getName(context)),
+      QueryFilter(QueryHelperType.keyContentTime2Now.getName(context)),
+      QueryFilter(QueryHelperType.keyContentSize.getName(context)),
+      QueryFilter(QueryHelperType.keyContentFgwUsed.getName(context)),
+      QueryFilter(QueryHelperType.keyContentWidth.getName(context)),
+      QueryFilter(QueryHelperType.keyContentHeight.getName(context)),
+      QueryFilter(QueryHelperType.keyContentDay.getName(context)),
+      QueryFilter(QueryHelperType.keyContentMonth.getName(context)),
+      QueryFilter(QueryHelperType.keyContentYear.getName(context)),
+      QueryFilter(QueryHelperType.keyContentId.getName(context)),
+    ];
+    final filters = [
+      ..._helperQueryFilters,
+    ].where((f) => containQuery(f.getLabel(context))).toList();
+    return _buildQueryHelpDialogFilterRow(
+      context: context,
+      title: context.l10n.searchQueryHelperSectionTitle,
+      filters: filters,
+    );
+  }
+
   Widget _buildDateFilters(BuildContext context, _ContainQuery containQuery) {
     final filters = [
       DateFilter.onThisDay,
@@ -189,6 +331,17 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
       context: context,
       title: context.l10n.searchDateSectionTitle,
       filters: filters,
+    );
+  }
+
+  Widget _buildAssignFilters(BuildContext context, _ContainQuery containQuery) {
+    final _assignFilter =
+        assignRecords.all.where((e) => e.isActive).map((item) => AssignFilter(item.id, item.labelName)).toList();
+
+    return _buildFilterRow(
+      context: context,
+      title: context.l10n.searchAssignSectionTitle,
+      filters: _assignFilter,
     );
   }
 
@@ -220,7 +373,8 @@ class CollectionSearchDelegate extends AvesSearchDelegate with FeedbackMixin, Va
         return _buildFilterRow(
           context: context,
           title: context.l10n.searchCountriesSectionTitle,
-          filters: source.sortedCountries.where(containQuery).map((s) => LocationFilter(LocationLevel.country, s)).toList(),
+          filters:
+              source.sortedCountries.where(containQuery).map((s) => LocationFilter(LocationLevel.country, s)).toList(),
         );
       },
     );

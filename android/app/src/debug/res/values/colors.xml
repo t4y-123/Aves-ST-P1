@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_flavour">#815AFA</color>
+    <string name="foreground_wallpaper_tile_service_label">FgW Debug</string>
 </resources>

@@ -6,7 +6,17 @@ enum AvesThemeBrightness { system, light, dark, black }
 
 enum AvesThemeColorMode { monochrome, polychrome }
 
-enum ConfirmationDialog { createVault, deleteForever, moveToBin, moveUndatedItems }
+enum ConfirmationDialog {
+  createVault,
+  deleteForever,
+  moveToBin,
+  moveUndatedItems,
+  setDateToNow,
+  shareByCopy,
+  editAsCopiedFirst,
+  chipRemoveScenario,
+  chipRemoveAssign,
+}
 
 enum CoordinateFormat { dms, decimal }
 
@@ -14,7 +24,7 @@ enum DisplayRefreshRateMode { auto, highest, lowest }
 
 enum EntryBackground { black, white, checkered }
 
-enum HomePageSetting { collection, albums, tags, explorer }
+enum HomePageSetting { collection, albums, tags, explorer, scenario }
 
 enum KeepScreenOn { never, videoPlayback, viewerOnly, always }
 

@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:aves/app_mode.dart';
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
+import 'package:aves/model/assign/enum/assign_item.dart';
 import 'package:aves/model/device.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/favourites.dart';
@@ -8,10 +11,16 @@ import 'package:aves/model/entry/extensions/metadata_edition.dart';
 import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/path.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/model/query.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
@@ -24,6 +33,7 @@ import 'package:aves/services/common/services.dart';
 import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/themes.dart';
+import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:aves/utils/mime_utils.dart';
 import 'package:aves/widgets/common/action_mixins/entry_editor.dart';
@@ -47,10 +57,14 @@ import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, EntryEditorMixin, EntryStorageMixin {
+import 'collection_page.dart';
+
+class EntrySetActionDelegate
+    with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, EntryEditorMixin, EntryStorageMixin {
   bool isVisible(
     EntrySetAction action, {
     required AppMode appMode,
@@ -69,7 +83,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.select:
         return appMode.canSelectMedia && !isSelecting;
       case EntrySetAction.selectAll:
-        return (isSelecting && selectedItemCount < itemCount) || (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
+        return (isSelecting && selectedItemCount < itemCount) ||
+            (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
       case EntrySetAction.selectNone:
         return isSelecting && selectedItemCount == itemCount;
       // browsing
@@ -109,6 +124,10 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
+      case EntrySetAction.assignPermanent:
+      case EntrySetAction.assignTemporary:
         return canWrite && isMain && isSelecting && !isTrash;
       case EntrySetAction.restore:
         return canWrite && isMain && isSelecting && isTrash;
@@ -130,7 +149,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.select:
         return hasItems;
       case EntrySetAction.selectAll:
-        return selectedItemCount < itemCount || (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
+        return selectedItemCount < itemCount ||
+            (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
       case EntrySetAction.selectNone:
         return hasSelection;
       case EntrySetAction.searchCollection:
@@ -163,6 +183,10 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
+      case EntrySetAction.assignPermanent:
+      case EntrySetAction.assignTemporary:
         return hasSelection;
     }
   }
@@ -230,6 +254,14 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         _editTags(context);
       case EntrySetAction.removeMetadata:
         _removeMetadata(context);
+      case EntrySetAction.shareByCopy:
+        _move(context, moveType: MoveType.shareByCopy);
+      case EntrySetAction.shareByDateNow:
+        setDateToNow(context);
+      case EntrySetAction.assignPermanent:
+        makeAssign(context, assignType: AssignRecordType.permanent);
+      case EntrySetAction.assignTemporary:
+        makeAssign(context, assignType: AssignRecordType.temporary);
     }
   }
 
@@ -239,7 +271,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
 
   Set<AvesEntry> _getTargetItems(BuildContext context) {
     final selection = context.read<Selection<AvesEntry>>();
-    final groupedEntries = (selection.isSelecting ? selection.selectedItems : context.read<CollectionLens>().sortedEntries);
+    final groupedEntries =
+        (selection.isSelecting ? selection.selectedItems : context.read<CollectionLens>().sortedEntries);
     return groupedEntries.expand((entry) => entry.stackedEntries ?? {entry}).toSet();
   }
 
@@ -285,6 +318,10 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
               enableBin: kv.key,
             ));
 
+    await shareCopiedEntries.removeEntries(entries);
+    await assignEntries.removeEntries(entries);
+    await fgwUsedEntryRecord.removeEntries(entries);
+
     _browse(context);
   }
 
@@ -292,10 +329,11 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     required BuildContext context,
     required Set<AvesEntry> entries,
     required bool enableBin,
+    bool isShareByCopyDelete = false,
   }) async {
     final pureTrash = entries.every((entry) => entry.trashed);
     if (enableBin && !pureTrash) {
-      await doMove(context, moveType: MoveType.toBin, entries: entries);
+      await doMove(context, moveType: MoveType.toBin, entries: entries, isShareByCopyDelete: isShareByCopyDelete);
       return;
     }
 
@@ -304,12 +342,15 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     final storageDirs = entries.map((e) => e.storageDirectory).whereNotNull().toSet();
     final todoCount = entries.length;
 
-    if (!await showSkippableConfirmationDialog(
-      context: context,
-      type: ConfirmationDialog.deleteForever,
-      message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
-      confirmationButtonLabel: l10n.deleteButtonLabel,
-    )) return;
+    // in remove the share by copy delete, should not ask confirm.
+    if (!isShareByCopyDelete) {
+      if (!await showSkippableConfirmationDialog(
+        context: context,
+        type: ConfirmationDialog.deleteForever,
+        message: l10n.deleteEntriesConfirmationDialogMessage(todoCount),
+        confirmationButtonLabel: l10n.deleteButtonLabel,
+      )) return;
+    }
 
     if (!await checkStoragePermissionForAlbums(context, storageDirs, entries: entries)) return;
 
@@ -341,9 +382,44 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
 
   Future<void> _move(BuildContext context, {required MoveType moveType}) async {
     final entries = _getTargetItems(context);
-    await doMove(context, moveType: moveType, entries: entries);
-
+    await doMove(context,
+        moveType: moveType,
+        entries: entries,
+        shareByCopyNeedRemove: (settings.shareByCopyExpiredAutoRemove && settings.shareByCopyCollectionPageAutoRemove));
     _browse(context);
+  }
+
+  Future<void> makeAssign(BuildContext context, {required AssignRecordType assignType}) async {
+    final entries = _getTargetItems(context);
+    final newRecord = await assignRecords.newRow(1, assignType: assignType);
+    int orderNum = 1;
+    final newAssignEntries = entries.map((e) => assignEntries.newRow(
+        existMaxOrderNumOffset: orderNum++, assignId: newRecord.id, entryId: e.id, context: context));
+    debugPrint('$runtimeType makeAssign\n entries ${entries.map((e) => e.toMap())}\n'
+        'newRecord ${newRecord.toMap()}\n'
+        'newRecordList ${newAssignEntries.map((e) => e.toMap())}');
+    await assignRecords.add({newRecord});
+    await assignEntries.add(newAssignEntries.toSet());
+
+    if (assignType == AssignRecordType.temporary) {
+      if (settings.assignTemporaryFollowAction != AssignTemporaryFollowAction.none) {
+        final newAssignScenario =
+            await scenariosHelper.newScenarioByFilter({AssignFilter(newRecord.id, newRecord.labelName)});
+        // set the scenario id to be used as correspond remove with tmp scenario.
+        await assignRecords.setRows({newRecord.copyWith(scenarioId: newAssignScenario.id)});
+        if ({AssignTemporaryFollowAction.activeExclude, AssignTemporaryFollowAction.activeExcludeAndLock}
+            .contains(settings.assignTemporaryFollowAction)) {
+          scenariosHelper
+              .setExcludeScenarioFilterSetting(ScenarioFilter(newAssignScenario.id, newAssignScenario.labelName));
+        }
+        if (settings.assignTemporaryFollowAction == AssignTemporaryFollowAction.activeExcludeAndLock) {
+          settings.scenarioLock = true;
+        }
+      }
+    }
+
+    var collection = context.read<CollectionLens>();
+    collection.addFilter(AssignFilter(newRecord.id, newRecord.labelName));
   }
 
   Future<void> _rename(BuildContext context) async {
@@ -406,6 +482,7 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     Set<AvesEntry> todoItems,
     Future<Set<EntryDataType>> Function(AvesEntry entry) op, {
     bool showResult = true,
+    bool isShareByCopy = false,
   }) async {
     final selectionDirs = todoItems.map((e) => e.directory).whereNotNull().toSet();
     final todoCount = todoItems.length;
@@ -413,8 +490,16 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     if (!await checkStoragePermissionForAlbums(context, selectionDirs, entries: todoItems)) return;
 
     Set<String> obsoleteTags = todoItems.expand((entry) => entry.tags).toSet();
-    Set<String> obsoleteCountryCodes = todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.countryCode).whereNotNull().toSet();
-    Set<String> obsoleteStateCodes = todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.stateCode).whereNotNull().toSet();
+    Set<String> obsoleteCountryCodes = todoItems
+        .where((entry) => entry.hasAddress)
+        .map((entry) => entry.addressDetails?.countryCode)
+        .whereNotNull()
+        .toSet();
+    Set<String> obsoleteStateCodes = todoItems
+        .where((entry) => entry.hasAddress)
+        .map((entry) => entry.addressDetails?.stateCode)
+        .whereNotNull()
+        .toSet();
 
     final dataTypes = <EntryDataType>{};
     final source = context.read<CollectionSource>();
@@ -456,7 +541,6 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
         if (dataTypes.contains(EntryDataType.aspectRatio)) {
           source.onAspectRatioChanged();
         }
-
         if (showResult) {
           final l10n = context.l10n;
           final successCount = successOps.length;
@@ -465,7 +549,33 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
             showFeedback(context, FeedbackType.warn, l10n.collectionEditFailureFeedback(count));
           } else {
             final count = editedOps.length;
-            showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count));
+            // for the move feedback will dismiss in 3seconds,
+            // add a edit feed back action to jump to the copied dir.
+            if (isShareByCopy) {
+              final navigator = Navigator.maybeOf(context);
+              bool highlightTest(AvesEntry entry) => todoItems.contains(entry);
+              SnackBarAction action = SnackBarAction(
+                label: l10n.showButtonLabel,
+                onPressed: () {
+                  if (navigator != null) {
+                    unawaited(Navigator.maybeOf(context)?.pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        settings: const RouteSettings(name: CollectionPage.routeName),
+                        builder: (context) => CollectionPage(
+                          source: source,
+                          filters: {PathFilter(androidFileUtils.avesShareByCopyPath)},
+                          highlightTest: highlightTest,
+                        ),
+                      ),
+                      (route) => false,
+                    ));
+                  }
+                },
+              );
+              showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count), action);
+            } else {
+              showFeedback(context, FeedbackType.info, l10n.collectionEditSuccessFeedback(count));
+            }
           }
         }
       },
@@ -490,7 +600,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
 
     if (unsupported.isEmpty) return supported;
 
-    final unsupportedTypes = unsupported.map((entry) => entry.mimeType).toSet().map(MimeUtils.displayType).toList()..sort();
+    final unsupportedTypes = unsupported.map((entry) => entry.mimeType).toSet().map(MimeUtils.displayType).toList()
+      ..sort();
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -528,7 +639,34 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     await _edit(context, entries, (entry) => entry.flip());
   }
 
-  Future<void> editDate(BuildContext context, {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {
+  Future<void> setDateToNow(BuildContext context,
+      {Set<AvesEntry>? entries,
+      DateModifier? modifier,
+      bool showResult = true,
+      bool showConfirm = true,
+      bool isShareByCopy = false}) async {
+    entries ??= await _getEditableTargetItems(context, canEdit: (entry) => entry.canEditDate);
+    if (entries == null || entries.isEmpty) return;
+
+    final dateTime = DateTime.now();
+    final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(dateTime); // Format the date as needed
+
+    if (showConfirm &&
+        !await showSkippableConfirmationDialog(
+          context: context,
+          type: ConfirmationDialog.setDateToNow,
+          message: context.l10n.setDateToNowDialogMessage(formattedDateTime),
+          confirmationButtonLabel: context.l10n.continueButtonLabel,
+        )) return;
+
+    final modifier = DateModifier.setCustom(const {}, dateTime);
+    if (modifier == null) return;
+    await _edit(context, entries, (entry) => entry.editDate(modifier!),
+        showResult: showResult, isShareByCopy: isShareByCopy);
+  }
+
+  Future<void> editDate(BuildContext context,
+      {Set<AvesEntry>? entries, DateModifier? modifier, bool showResult = true}) async {
     entries ??= await _getEditableTargetItems(context, canEdit: (entry) => entry.canEditDate);
     if (entries == null || entries.isEmpty) return;
 
@@ -552,7 +690,8 @@ class EntrySetActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAware
     await _edit(context, entries, (entry) => entry.editLocation(location));
   }
 
-  Future<LatLng?> editLocationByMap(BuildContext context, Set<AvesEntry> entries, LatLng clusterLocation, CollectionLens mapCollection) async {
+  Future<LatLng?> editLocationByMap(
+      BuildContext context, Set<AvesEntry> entries, LatLng clusterLocation, CollectionLens mapCollection) async {
     final editableEntries = await _getEditableItems(context, entries, canEdit: (entry) => entry.canEditLocation);
     if (editableEntries == null || editableEntries.isEmpty) return null;
 

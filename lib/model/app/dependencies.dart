@@ -184,11 +184,16 @@ class Dependencies {
     ),
   ];
 
+  static const List<Dependency> _flutterPluginsT4PlayOnly = [
+    ..._googleMobileServices,
+  ];
+
   static List<Dependency> flutterPlugins(AppFlavor flavor) => [
         ..._flutterPluginsCommon,
         if (flavor == AppFlavor.izzy) ..._flutterPluginsIzzyOnly,
         if (flavor == AppFlavor.libre) ..._flutterPluginsLibreOnly,
         if (flavor == AppFlavor.play) ..._flutterPluginsPlayOnly,
+        if (flavor == AppFlavor.t4play) ..._flutterPluginsT4PlayOnly,
       ];
 
   static const List<Dependency> flutterPackages = [

@@ -7,10 +7,12 @@ class PinDialog extends StatefulWidget {
   static const routeName = '/dialog/pin';
 
   final bool needConfirmation;
+  final String? titleTxt;
 
   const PinDialog({
     super.key,
     required this.needConfirmation,
+    this.titleTxt,
   });
 
   @override
@@ -35,7 +37,9 @@ class _PinDialogState extends State<PinDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_confirming ? context.l10n.pinDialogConfirm : context.l10n.pinDialogEnter),
+          widget.titleTxt == null
+              ? Text(_confirming ? context.l10n.pinDialogConfirm : context.l10n.pinDialogEnter)
+              : Text(widget.titleTxt!),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: PinCodeTextField(

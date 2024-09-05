@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:aves/app_mode.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/query.dart';
@@ -55,7 +56,8 @@ class CollectionAppBar extends StatefulWidget {
   State<CollectionAppBar> createState() => _CollectionAppBarState();
 }
 
-class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+class _CollectionAppBarState extends State<CollectionAppBar>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final List<StreamSubscription> _subscriptions = [];
   final EntrySetActionDelegate _actionDelegate = EntrySetActionDelegate();
   late AnimationController _browseToSelectAnimation;
@@ -70,7 +72,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
 
   CollectionSource get source => collection.source;
 
-  Set<CollectionFilter> get visibleFilters => collection.filters.where((v) => !(v is QueryFilter && v.live) && v is! TrashFilter).toSet();
+  Set<CollectionFilter> get visibleFilters =>
+      collection.filters.where((v) => !(v is QueryFilter && v.live) && v is! TrashFilter).toSet();
 
   bool get showFilterBar => visibleFilters.isNotEmpty;
 
@@ -123,6 +126,7 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
   @override
   void didUpdateWidget(covariant CollectionAppBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    assignRecords.removeExpiredRecord();
     _unregisterWidget(oldWidget);
     _registerWidget(widget);
   }
@@ -289,7 +293,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
     } else {
       final appMode = context.watch<ValueNotifier<AppMode>>().value;
       Widget title = Text(
-        appMode.isPickingMedia ? l10n.collectionPickPageTitle : (isTrash ? l10n.binPageTitle : l10n.collectionPageTitle),
+        appMode.isPickingMedia
+            ? l10n.collectionPickPageTitle
+            : (isTrash ? l10n.binPageTitle : l10n.collectionPageTitle),
         softWrap: false,
         overflow: TextOverflow.fade,
         maxLines: 1,
@@ -395,7 +401,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
 
     final browsingQuickActions = settings.collectionBrowsingQuickActions;
     final selectionQuickActions = isTrash ? _trashSelectionQuickActions : settings.collectionSelectionQuickActions;
-    final quickActions = (isSelecting ? selectionQuickActions : browsingQuickActions).take(max(0, availableCount - 1)).toList();
+    final quickActions =
+        (isSelecting ? selectionQuickActions : browsingQuickActions).take(max(0, availableCount - 1)).toList();
     final quickActionButtons = quickActions.where(isVisible).map(
           (action) => _buildButtonIcon(context, action, enabled: canApply(action), selection: selection),
         );
@@ -413,7 +420,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
               );
 
           final allContextualActions = isSelecting ? EntrySetActions.pageSelection : EntrySetActions.pageBrowsing;
-          final contextualMenuActions = allContextualActions.where(_isValidForMenu).fold(<EntrySetAction?>[], (prev, v) {
+          final contextualMenuActions =
+              allContextualActions.where(_isValidForMenu).fold(<EntrySetAction?>[], (prev, v) {
             if (v == null && (prev.isEmpty || prev.last == null)) return prev;
             return [...prev, v];
           });
@@ -436,7 +444,9 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
                 title: context.l10n.collectionActionEdit,
                 items: [
                   _buildRotateAndFlipMenuItems(context, canApply: canApply),
-                  ...EntrySetActions.edit.where((v) => isVisible(v) && !quickActions.contains(v)).map((action) => _toMenuItem(action, enabled: canApply(action), selection: selection)),
+                  ...EntrySetActions.edit
+                      .where((v) => isVisible(v) && !quickActions.contains(v))
+                      .map((action) => _toMenuItem(action, enabled: canApply(action), selection: selection)),
                 ],
               ),
           ];
@@ -522,7 +532,8 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
     }
   }
 
-  PopupMenuItem<EntrySetAction> _toMenuItem(EntrySetAction action, {required bool enabled, required Selection<AvesEntry> selection}) {
+  PopupMenuItem<EntrySetAction> _toMenuItem(EntrySetAction action,
+      {required bool enabled, required Selection<AvesEntry> selection}) {
     late Widget child;
     switch (action) {
       case EntrySetAction.toggleTitleSearch:
@@ -663,6 +674,10 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
       case EntrySetAction.editRating:
       case EntrySetAction.editTags:
       case EntrySetAction.removeMetadata:
+      case EntrySetAction.shareByCopy:
+      case EntrySetAction.shareByDateNow:
+      case EntrySetAction.assignPermanent:
+      case EntrySetAction.assignTemporary:
         _actionDelegate.onActionSelected(context, action);
     }
   }
@@ -680,9 +695,14 @@ class _CollectionAppBarState extends State<CollectionAppBar> with SingleTickerPr
       builder: (context) {
         return TileViewDialog<EntrySortFactor, EntryGroupFactor, TileLayout>(
           initialValue: initialValue,
-          sortOptions: _sortOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
-          groupOptions: _groupOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
-          layoutOptions: _layoutOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
+          sortOptions:
+              _sortOptions.map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon)).toList(),
+          groupOptions: _groupOptions
+              .map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon))
+              .toList(),
+          layoutOptions: _layoutOptions
+              .map((v) => TileViewDialogOption(value: v, title: v.getName(context), icon: v.icon))
+              .toList(),
           sortOrder: (factor, reverse) => factor.getOrderName(context, reverse),
           canGroup: (s, g, l) => s == EntrySortFactor.date,
           tileExtentController: extentController,

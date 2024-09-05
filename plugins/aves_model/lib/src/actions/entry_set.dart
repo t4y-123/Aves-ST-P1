@@ -33,6 +33,12 @@ enum EntrySetAction {
   editRating,
   editTags,
   removeMetadata,
+  // t4y, add for some special share.
+  shareByCopy,
+  shareByDateNow,
+  //t4y, add for assign filter.
+  assignPermanent,
+  assignTemporary,
 }
 
 class EntrySetActions {
@@ -79,6 +85,11 @@ class EntrySetActions {
     EntrySetAction.rename,
     EntrySetAction.convert,
     EntrySetAction.toggleFavourite,
+    //t4y
+    EntrySetAction.shareByCopy,
+    EntrySetAction.shareByDateNow,
+    EntrySetAction.assignPermanent,
+    EntrySetAction.assignTemporary,
     null,
     EntrySetAction.map,
     EntrySetAction.slideshow,

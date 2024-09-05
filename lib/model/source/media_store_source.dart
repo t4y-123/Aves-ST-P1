@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_rows_helper.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -61,6 +65,13 @@ class MediaStoreSource extends CollectionSource {
     await vaults.init();
     await favourites.init();
     await covers.init();
+
+    //t4y: for foreground wallpaper initialize.
+    await fgwRowsHelper.initWallpaperSchedules();
+    await shareCopiedEntries.init();
+    //t4y: for scenario
+    await scenariosHelper.initScenarios();
+
     final currentTimeZoneOffset = await deviceService.getDefaultTimeZoneRawOffsetMillis();
     if (currentTimeZoneOffset != null) {
       final catalogTimeZoneOffset = settings.catalogTimeZoneRawOffsetMillis;
@@ -220,6 +231,7 @@ class MediaStoreSource extends CollectionSource {
         // as the initial addition of entries is silent,
         // so we manually notify change for potential home screen filters
         notifyAlbumsChanged();
+        notifyScenariosChanged();
 
         unawaited(reportService.log('$runtimeType load done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${newEntries.length} new, ${removedEntries.length} removed'));
       },

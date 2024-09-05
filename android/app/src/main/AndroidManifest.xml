@@ -252,6 +252,30 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/app_widget_info" />
         </receiver>
+        <receiver
+            android:name=".ForegroundWallpaperWidgetProvider"
+            android:enabled="true"
+            android:exported="false"
+            android:label="@string/foreground_wallpaper_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/foreground_wallpaper_widget_info" />
+        </receiver>
+
+        <activity
+            android:name=".ForegroundWallpaperWidgetSettingsActivity"
+            android:exported="true"
+            android:theme="@style/NormalTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+
 
         <receiver
             android:name="androidx.media.session.MediaButtonReceiver"
@@ -296,6 +320,24 @@
                 android:resource="@xml/screen_saver" />
         </service>
 
+        <service android:name=".ForegroundWallpaperService"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <service
+            android:name=".ForegroundWallpaperTileService"
+            android:icon="@drawable/fgw_tile_icon"
+            android:label="@string/foreground_wallpaper_tile_service_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+            <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
         <!-- file provider to share files having a file:// URI -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -305,6 +347,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
+
         </provider>
 
         <provider

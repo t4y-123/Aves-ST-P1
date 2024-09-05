@@ -5,8 +5,17 @@ import 'package:aves/model/app/permissions.dart';
 import 'package:aves/model/app_inventory.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
+import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
+import 'package:aves/model/fgw/enum/fgw_service_item.dart';
+import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/filters_set.dart';
+import 'package:aves/model/fgw/guard_level.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
+import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/app/intent.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -14,12 +23,17 @@ import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/fgw_service_handler.dart';
+import 'package:aves/services/fgw_widget_service.dart';
 import 'package:aves/services/global_search.dart';
 import 'package:aves/services/intent_service.dart';
 import 'package:aves/services/widget_service.dart';
 import 'package:aves/theme/themes.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/widgets/collection/collection_page.dart';
+import 'package:aves/widgets/collection/entry_set_action_delegate.dart';
+import 'package:aves/widgets/common/action_mixins/feedback.dart';
+import 'package:aves/widgets/common/action_mixins/fgw_aware.dart';
 import 'package:aves/widgets/common/basic/scaffold.dart';
 import 'package:aves/widgets/common/behaviour/routes.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -28,8 +42,11 @@ import 'package:aves/widgets/common/search/route.dart';
 import 'package:aves/widgets/editor/entry_editor_page.dart';
 import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
+import 'package:aves/widgets/filter_grids/assign_page.dart';
+import 'package:aves/widgets/filter_grids/scenario_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
+import 'package:aves/widgets/settings/fgw_widget_settings_page.dart';
 import 'package:aves/widgets/settings/home_widget_settings_page.dart';
 import 'package:aves/widgets/settings/screen_saver_settings_page.dart';
 import 'package:aves/widgets/viewer/entry_viewer_page.dart';
@@ -56,19 +73,21 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
   AvesEntry? _viewerEntry;
   int? _widgetId;
   String? _initialRouteName, _initialSearchQuery;
   Set<CollectionFilter>? _initialFilters;
   String? _initialExplorerPath;
   List<String>? _secureUris;
+  FgwServiceOpenType? _fgwOpenType;
 
   static const allowedShortcutRoutes = [
     AlbumListPage.routeName,
     CollectionPage.routeName,
     ExplorerPage.routeName,
     SearchPage.routeName,
+    AssignListPage.routeName,
   ];
 
   @override
@@ -117,6 +136,91 @@ class _HomePageState extends State<HomePage> {
         case IntentActions.view:
           appMode = AppMode.view;
           _secureUris = (intentData[IntentDataKeys.secureUris] as List?)?.cast<String>();
+
+        case IntentActions.widgetOpen:
+        case IntentActions.fgwWidgetOpen:
+          String? uri, mimeType;
+          final widgetId = intentData[IntentDataKeys.widgetId];
+          if (widgetId != null) {
+            // widget settings may be modified in a different process after channel setup
+            await settings.reload();
+            final page = settings.getWidgetOpenPage(widgetId);
+            switch (page) {
+              case WidgetOpenPage.home:
+              case WidgetOpenPage.updateWidget:
+                break;
+              case WidgetOpenPage.collection:
+                _initialFilters = settings.getWidgetCollectionFilters(widgetId);
+              case WidgetOpenPage.viewer:
+                uri = settings.getWidgetUri(widgetId);
+            }
+            // t4y: for foreground update diff.
+            if (intentAction == IntentActions.widgetOpen) {
+              if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
+                unawaited(WidgetService.update(widgetId));
+              }
+            } else if (intentAction == IntentActions.fgwWidgetOpen) {
+              final curGuardLevel =
+                  fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+              debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
+
+              if (curGuardLevel != null) {
+                final curWidgetSchedule = fgwSchedules.all
+                    .firstWhereOrNull((e) => e.guardLevelId == curGuardLevel.id && widgetId == widgetId);
+                if (curWidgetSchedule != null) {
+                  final curFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == curWidgetSchedule.filtersSetId);
+                  if (curFiltersSet != null) {
+                    _initialFilters = curFiltersSet.filters;
+                    debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
+                  }
+                }
+              }
+              if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
+                unawaited(ForegroundWallpaperWidgetService.update(widgetId));
+              }
+            }
+          } else {
+            uri = intentData[IntentDataKeys.uri];
+            mimeType = intentData[IntentDataKeys.mimeType];
+          }
+          _secureUris = intentData[IntentDataKeys.secureUris];
+          if (uri != null) {
+            _viewerEntry = await _initViewerEntry(
+              uri: uri,
+              mimeType: mimeType,
+            );
+            if (_viewerEntry != null) {
+              appMode = AppMode.view;
+            }
+          }
+        case IntentActions.fgwUsedRecordOpen:
+          appMode = AppMode.main;
+          _fgwOpenType = FgwServiceOpenType.usedRecord;
+          _initialFilters = {FgwUsedFilter(guardLevelId: settings.curFgwGuardLevelNum)};
+          _initialRouteName = CollectionPage.routeName;
+        case IntentActions.fgwViewOpen:
+        case IntentActions.fgwDuplicateOpen:
+          await settings.reload();
+          debugPrint('$runtimeType get into IntentActions $intentAction');
+          _viewerEntry = await _initViewerEntry(
+            uri: settings.getFgwCurEntryUri(WallpaperUpdateType.home, 0),
+            mimeType: settings.getFgwCurEntryMime(WallpaperUpdateType.home, 0),
+          );
+          if (_viewerEntry != null) {
+            switch (intentAction) {
+              case IntentActions.fgwViewOpen:
+                appMode = AppMode.view;
+                _fgwOpenType = FgwServiceOpenType.curFilters;
+              case IntentActions.fgwDuplicateOpen:
+                appMode = AppMode.main;
+                _fgwOpenType = FgwServiceOpenType.shareByCopy;
+                _initialFilters = {PathFilter(androidFileUtils.avesShareByCopyPath)};
+                _initialRouteName = CollectionPage.routeName;
+              default:
+                break;
+            }
+          }
+          debugPrint('$runtimeType fgw intentActions $intentAction appMode $appMode');
         case IntentActions.edit:
           appMode = AppMode.edit;
         case IntentActions.setWallpaper:
@@ -139,7 +243,9 @@ class _HomePageState extends State<HomePage> {
           _initialSearchQuery = intentData[IntentDataKeys.query] as String?;
         case IntentActions.widgetSettings:
           _initialRouteName = HomeWidgetSettingsPage.routeName;
+          _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
           _widgetId = (intentData[IntentDataKeys.widgetId] as int?) ?? 0;
+
         case IntentActions.widgetOpen:
           final widgetId = intentData[IntentDataKeys.widgetId] as int?;
           if (widgetId == null) {
@@ -160,7 +266,21 @@ class _HomePageState extends State<HomePage> {
             }
             unawaited(WidgetService.update(widgetId));
           }
-        default:
+        case IntentActions.fgwWidgetSettings:
+          _initialRouteName = FgwWidgetSettings.routeName;
+          _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
+        case IntentActions.fgwUnlock:
+          await settings.reload();
+          debugPrint('$runtimeType await unlockFgw(context)): ${settings.guardLevelLock}');
+          if (!await unlockFgw(context)) {
+            settings.guardLevelLock = true;
+          } else {
+            settings.guardLevelLock = false;
+            await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);
+            debugPrint(
+                '$runtimeType await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);; ${settings.guardLevelLock}');
+          }
+          default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
           final extraRoute = intentData[IntentDataKeys.page] as String?;
           if (allowedShortcutRoutes.contains(extraRoute)) {
@@ -209,7 +329,8 @@ class _HomePageState extends State<HomePage> {
         source.safeMode = safeMode;
         if (source.initState != SourceInitializationState.full) {
           await source.init(
-            loadTopEntriesFirst: settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty,
+            loadTopEntriesFirst:
+                settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty,
           );
         }
       case AppMode.screenSaver:
@@ -254,7 +375,11 @@ class _HomePageState extends State<HomePage> {
   bool _isViewerSourceable(AvesEntry? viewerEntry) {
     return viewerEntry != null && viewerEntry.directory != null && !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
   }
-
+  bool _isViewerSourceable2(AvesEntry? viewerEntry) {
+    return viewerEntry != null &&
+        viewerEntry.directory != null &&
+        !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
+  }
   Future<AvesEntry?> _initViewerEntry({required String uri, required String? mimeType}) async {
     if (uri.startsWith('/')) {
       // convert this file path to a proper URI
@@ -303,6 +428,42 @@ class _HomePageState extends State<HomePage> {
 
             source.stateNotifier.addListener(_onSourceStateChanged);
             await completer.future;
+            switch (_fgwOpenType) {
+              case null:
+              case FgwServiceOpenType.usedRecord:
+              case FgwServiceOpenType.shareByCopy:
+                final album = viewerEntry.directory;
+                if (album != null) {
+                  collection = CollectionLens(
+                    source: source,
+                    filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
+                    listenToSource: false,
+                    // if we group bursts, opening a burst sub-entry should:
+                    // - identify and select the containing main entry,
+                    // - select the sub-entry in the Viewer page.
+                    stackBursts: false,
+                  );
+                }
+              case FgwServiceOpenType.curFilters:
+                Set<CollectionFilter> filters = {};
+                // if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+                //   final curLevel = await fgwScheduleHelper.getCurGuardLevel();
+                //   filters = {FgwUsedFilter(guardLevelId: curLevel.guardLevel)};
+                // } else {
+                filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
+                // }
+                debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
+                collection = CollectionLens(
+                  source: source,
+                  filters: filters,
+                  listenToSource: false,
+                  // if we group bursts, opening a burst sub-entry should:
+                  // - identify and select the containing main entry,
+                  // - select the sub-entry in the Viewer page.
+                  stackBursts: false,
+                );
+                debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
+            }
 
             collection = CollectionLens(
               source: source,
@@ -344,7 +505,8 @@ class _HomePageState extends State<HomePage> {
         );
       default:
         routeName = _initialRouteName ?? settings.homePage.routeName;
-        filters = _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
+        filters =
+            _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
     }
     Route buildRoute(WidgetBuilder builder) => DirectMaterialPageRoute(
           settings: RouteSettings(name: routeName),
@@ -352,11 +514,39 @@ class _HomePageState extends State<HomePage> {
         );
 
     final source = context.read<CollectionSource>();
+    switch (_fgwOpenType) {
+      case null:
+      case FgwServiceOpenType.curFilters:
+      case FgwServiceOpenType.usedRecord:
+        break;
+      case FgwServiceOpenType.shareByCopy:
+        if (_viewerEntry != null) {
+          await shareCopiedEntries.init();
+          debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
+          source.pauseMonitoring();
+          final entriesByDestination = <String, Set<AvesEntry>>{};
+          final entries = {_viewerEntry!};
+          // t4y: for every time only copy one entry,
+          // it is more natural not remove pre copied to accumulate more item to share.
+          await EntrySetActionDelegate().doMove(context,
+              moveType: MoveType.shareByCopy,
+              entries: entries,
+              shareByCopyNeedRemove: settings.shareByCopyAppModeViewAutoRemove);
+
+          entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
+          debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
+        }
+    }
+
     switch (routeName) {
+      case ScenarioListPage.routeName:
+        return buildRoute((context) => const ScenarioListPage());
       case AlbumListPage.routeName:
         return buildRoute((context) => const AlbumListPage());
       case TagListPage.routeName:
         return buildRoute((context) => const TagListPage());
+      case AssignListPage.routeName:
+        return buildRoute((context) => const AssignListPage());
       case ExplorerPage.routeName:
         final path = _initialExplorerPath ?? settings.homeCustomExplorerPath;
         return buildRoute((context) => ExplorerPage(path: path));
@@ -366,6 +556,8 @@ class _HomePageState extends State<HomePage> {
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:
         return buildRoute((context) => const ScreenSaverSettingsPage());
+      case FgwWidgetSettings.routeName:
+        return buildRoute((context) => FgwWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
         return SearchPageRoute(
           delegate: CollectionSearchDelegate(

@@ -18,22 +18,22 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
 
   @override
   Future<Set<FgwUsedEntryRecordRow>> loadAllRows() async {
-    return await metadataDb.loadAllFgwUsedEntryRecord();
+    return await localMediaDb.loadAllFgwUsedEntryRecord();
   }
 
   @override
   Future<void> addRowsToDb(Set<FgwUsedEntryRecordRow> newRows) async {
-    await metadataDb.addFgwUsedEntryRecord(newRows);
+    await localMediaDb.addFgwUsedEntryRecord(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<FgwUsedEntryRecordRow> removedRows) async {
-    await metadataDb.removeFgwUsedEntryRecord(removedRows);
+    await localMediaDb.removeFgwUsedEntryRecord(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearFgwUsedEntryRecord();
+    await localMediaDb.clearFgwUsedEntryRecord();
   }
 
   @override

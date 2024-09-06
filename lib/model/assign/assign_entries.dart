@@ -17,22 +17,22 @@ class AssignEntries extends PresentationRows<AssignEntryRow> {
 
   @override
   Future<Set<AssignEntryRow>> loadAllRows() async {
-    return await metadataDb.loadAllAssignEntries();
+    return await localMediaDb.loadAllAssignEntries();
   }
 
   @override
   Future<void> addRowsToDb(Set<AssignEntryRow> newRows) async {
-    await metadataDb.addAssignEntries(newRows);
+    await localMediaDb.addAssignEntries(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<AssignEntryRow> removedRows) async {
-    await metadataDb.removeAssignEntries(removedRows);
+    await localMediaDb.removeAssignEntries(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearAssignEntries();
+    await localMediaDb.clearAssignEntries();
   }
 
   @override
@@ -93,7 +93,7 @@ class AssignEntries extends PresentationRows<AssignEntryRow> {
     }
     dateMillis = DateTime.now().millisecondsSinceEpoch;
     return AssignEntryRow(
-      id: metadataDb.nextId,
+      id: localMediaDb.nextId,
       assignId: assignId,
       entryId: entryId,
       dateMillis: dateMillis,
@@ -112,7 +112,7 @@ class AssignEntries extends PresentationRows<AssignEntryRow> {
 
     if (invalidRows.isNotEmpty) {
       removeRows(invalidRows, type: type, notify: notify);
-      metadataDb.removeAssignEntries(invalidRows); // Ensure the database is updated
+      localMediaDb.removeAssignEntries(invalidRows); // Ensure the database is updated
     }
   }
 

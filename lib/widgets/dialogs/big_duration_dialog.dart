@@ -27,9 +27,9 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
   void initState() {
     super.initState();
     var seconds = widget.initialSeconds;
-    if (seconds < 3) seconds = 3;
+    if (seconds < 3) seconds = 30;
     _hours = ValueNotifier(seconds ~/ Duration.secondsPerHour);
-    _minutes = ValueNotifier((seconds - _hours.value*Duration.secondsPerHour) ~/ Duration.secondsPerMinute);
+    _minutes = ValueNotifier((seconds - _hours.value * Duration.secondsPerHour) ~/ Duration.secondsPerMinute);
     _seconds = ValueNotifier(seconds % secondsInMinute);
   }
 
@@ -74,7 +74,7 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
                           alignment: Alignment.centerRight,
                           child: WheelSelector(
                             valueNotifier: _hours,
-                            values: List.generate(Duration.hoursPerDay *2, (i) => i),
+                            values: List.generate(Duration.hoursPerDay * 2, (i) => i),
                             textStyle: textStyle,
                             textAlign: digitsAlign,
                             format: timeComponentFormatter.format,
@@ -126,7 +126,7 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
           actions: [
             const CancelButton(),
             AnimatedBuilder(
-              animation: Listenable.merge([_hours,_minutes, _seconds]),
+              animation: Listenable.merge([_hours, _minutes, _seconds]),
               builder: (context, child) {
                 final isValid = _minutes.value > 0 || _seconds.value >= 3 || _hours.value > 0;
                 return TextButton(
@@ -142,6 +142,6 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
     );
   }
 
-  void _submit(BuildContext context) => Navigator.maybeOf(context)?.pop(
-      _hours.value * Duration.secondsPerHour +_minutes.value * secondsInMinute + _seconds.value);
+  void _submit(BuildContext context) => Navigator.maybeOf(context)
+      ?.pop(_hours.value * Duration.secondsPerHour + _minutes.value * secondsInMinute + _seconds.value);
 }

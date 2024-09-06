@@ -71,7 +71,7 @@ class FgwServiceHelper with FeedbackMixin {
 
   Future<void> _initDependencies() async {
     await androidFileUtils.init();
-    await metadataDb.init();
+    await localMediaDb.init();
     final readyCompleter = Completer();
     _source.stateNotifier.addListener(() {
       if (_source.isReady && !readyCompleter.isCompleted) {
@@ -132,7 +132,7 @@ class FgwServiceHelper with FeedbackMixin {
     final updateType = WallpaperUpdateType.values.safeByName(args['updateType'] as String, WallpaperUpdateType.home);
     final widgetId = args['widgetId'] as int;
     try {
-      final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
+      final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.guardLevel);
       AvesEntry? fgwEntry;
       final curLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
       // debugPrint('$widgetId handleWallpaper curLevel [$curLevel]');

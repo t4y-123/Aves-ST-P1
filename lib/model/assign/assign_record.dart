@@ -45,22 +45,22 @@ class AssignRecord extends PresentationRows<AssignRecordRow> {
 
   @override
   Future<Set<AssignRecordRow>> loadAllRows() async {
-    return await metadataDb.loadAllAssignRecords();
+    return await localMediaDb.loadAllAssignRecords();
   }
 
   @override
   Future<void> addRowsToDb(Set<AssignRecordRow> newRows) async {
-    await metadataDb.addAssignRecords(newRows);
+    await localMediaDb.addAssignRecords(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<AssignRecordRow> removedRows) async {
-    await metadataDb.removeAssignRecords(removedRows);
+    await localMediaDb.removeAssignRecords(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearAssignRecords();
+    await localMediaDb.clearAssignRecords();
   }
 
   @override
@@ -93,7 +93,7 @@ class AssignRecord extends PresentationRows<AssignRecordRow> {
     final orderNum = maxOrderNum + existOrderNumOffset;
     final finalDateTime = DateTime.now();
     return AssignRecordRow(
-      id: metadataDb.nextId,
+      id: localMediaDb.nextId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, finalDateTime),
       color: AColors.getRandomColor(),

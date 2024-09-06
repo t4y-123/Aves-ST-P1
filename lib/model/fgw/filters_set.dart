@@ -16,22 +16,22 @@ class FiltersSet extends PresentationRows<FiltersSetRow> {
 
   @override
   Future<Set<FiltersSetRow>> loadAllRows() async {
-    return await metadataDb.loadAllFilterSet();
+    return await localMediaDb.loadAllFilterSet();
   }
 
   @override
   Future<void> addRowsToDb(Set<FiltersSetRow> newRows) async {
-    await metadataDb.addFilterSet(newRows);
+    await localMediaDb.addFilterSet(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<FiltersSetRow> removedRows) async {
-    await metadataDb.removeFilterSet(removedRows);
+    await localMediaDb.removeFilterSet(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearFilterSet();
+    await localMediaDb.clearFilterSet();
   }
 
   FiltersSetRow newRow(
@@ -45,7 +45,7 @@ class FiltersSet extends PresentationRows<FiltersSetRow> {
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxFilterSetNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-    final newId = metadataDb.nextId;
+    final newId = localMediaDb.nextId;
     final filterSetSuqNum = maxFilterSetNum + existActiveMaxLevelOffset;
     return FiltersSetRow(
       id: newId,

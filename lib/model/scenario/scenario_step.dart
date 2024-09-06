@@ -20,22 +20,22 @@ class ScenarioSteps extends PresentationRows<ScenarioStepRow> {
 
   @override
   Future<Set<ScenarioStepRow>> loadAllRows() async {
-    return await metadataDb.loadAllScenarioSteps();
+    return await localMediaDb.loadAllScenarioSteps();
   }
 
   @override
   Future<void> addRowsToDb(Set<ScenarioStepRow> newRows) async {
-    await metadataDb.addScenarioSteps(newRows);
+    await localMediaDb.addScenarioSteps(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<ScenarioStepRow> removedRows) async {
-    await metadataDb.removeScenarioSteps(removedRows);
+    await localMediaDb.removeScenarioSteps(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearScenarioSteps();
+    await localMediaDb.clearScenarioSteps();
   }
 
   @override
@@ -93,7 +93,7 @@ class ScenarioSteps extends PresentationRows<ScenarioStepRow> {
     final finalStepNum = maxStepNum + existMaxStepNumOffset;
 
     return ScenarioStepRow(
-      id: metadataDb.nextId,
+      id: localMediaDb.nextId,
       scenarioId: scenarioId,
       orderNum: maxOrderNum + existMaxOrderNumOffset,
       stepNum: finalStepNum,

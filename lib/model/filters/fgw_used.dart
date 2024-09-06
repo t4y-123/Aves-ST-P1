@@ -12,33 +12,27 @@ class FgwUsedFilter extends CoveredCollectionFilter {
   final int? guardLevelId;
   final WallpaperUpdateType? updateType;
   final int? widgetId;
-
+  late final Set<int>? containsEntryIds;
   late final EntryFilter _test;
 
   FgwUsedFilter({this.guardLevelId, this.updateType, this.widgetId, super.reversed = false}) {
-    _initializeTest();
-  }
-
-  void _initializeTest() {
-    _test = (entry) {
-      () async {
-        await fgwUsedEntryRecord.refresh();
+    containsEntryIds = fgwUsedEntryRecord.all
+        .where((row) {
+          if (guardLevelId != null && row.guardLevelId != guardLevelId) return false;
+          if (updateType != null && row.updateType != updateType) return false;
+          if (widgetId != null && row.widgetId != widgetId) return false;
+          return true;
+        })
+        .map((row) => row.entryId)
+        .toSet();
+    if (containsEntryIds != null && containsEntryIds!.isNotEmpty) {
+      _test = (entry) {
+        return containsEntryIds!.contains(entry.id);
       };
-      final filteredRecords = fgwUsedEntryRecord.all
-          .where((row) {
-            if (guardLevelId != null && row.guardLevelId != guardLevelId) return false;
-            if (updateType != null && row.updateType != updateType) return false;
-            if (widgetId != null && row.widgetId != widgetId) return false;
-            return true;
-          })
-          .map((row) => row.entryId)
-          .toSet();
-      if (filteredRecords.isNotEmpty) {
-        return filteredRecords.contains(entry.id);
-      } else {
-        return false;
-      }
-    };
+    } else {
+      _test = (entry) => false;
+    }
+    //debugPrint('$runtimeType AssignFilter $assignId $displayName');
   }
 
   factory FgwUsedFilter.fromMap(Map<String, dynamic> json) {

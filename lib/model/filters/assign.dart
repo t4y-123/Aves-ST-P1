@@ -14,25 +14,26 @@ class AssignFilter extends CoveredCollectionFilter {
   final String displayName;
   late final EntryFilter _test;
   late final AssignRecordRow? assignRecord;
+  late final Set<int>? containsEntryIds;
 
   @override
   List<Object?> get props => [assignId, displayName, reversed];
 
   AssignFilter(this.assignId, this.displayName, {super.reversed = false}) {
-    debugPrint('$runtimeType AssignFilter $assignId $displayName');
+    //debugPrint('$runtimeType AssignFilter $assignId $displayName');
     final assignRecord = assignRecords.all.firstWhereOrNull((e) => e.id == assignId);
-    final assignFilterEntriesIds =
+    containsEntryIds =
         assignEntries.all.where((e) => e.isActive && e.assignId == assignId).map((e) => e.entryId).toSet();
-    if (assignRecord != null) {
+    if (containsEntryIds != null && containsEntryIds!.isNotEmpty) {
       this.assignRecord = assignRecord;
       _test = (entry) {
-        return assignFilterEntriesIds.contains(entry.id);
+        return containsEntryIds!.contains(entry.id);
       };
     } else {
       this.assignRecord = null;
       _test = (entry) => false;
     }
-    debugPrint('$runtimeType AssignFilter $assignId $displayName');
+    //debugPrint('$runtimeType AssignFilter $assignId $displayName');
   }
 
   factory AssignFilter.fromMap(Map<String, dynamic> json) {

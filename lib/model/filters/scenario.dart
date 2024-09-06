@@ -19,6 +19,7 @@ class ScenarioFilter extends CoveredCollectionFilter {
   final String displayName;
   late final EntryFilter _test;
   late final ScenarioRow? scenario;
+  late final List<ScenarioStepRow>? steps;
 
   @override
   List<Object?> get props => [scenarioId, displayName, reversed];
@@ -26,11 +27,11 @@ class ScenarioFilter extends CoveredCollectionFilter {
   ScenarioFilter(this.scenarioId, this.displayName, {super.reversed = false}) {
     if (scenarioId >= 0) {
       scenario = scenarios.all.firstWhere((e) => e.id == scenarioId);
-      List<ScenarioStepRow> steps = scenarioSteps.all.where((e) => e.scenarioId == scenarioId && e.isActive).toList();
-      steps.sort();
+      steps = scenarioSteps.all.where((e) => e.scenarioId == scenarioId && e.isActive).toList();
+      steps?.sort();
 
       _test = (entry) {
-        if (steps.isEmpty) return true;
+        if (steps == null && steps!.isEmpty) return true;
 
         bool result = true;
         bool isUnionOrTrue = false;
@@ -43,39 +44,44 @@ class ScenarioFilter extends CoveredCollectionFilter {
         // if a entry is test false in a pre intersectAnd step ,
         // it should not need test in after intersectAnd step for it is already get rid,
         // unless it is made true added by a unionOr step.
-        for (var step in steps) {
+
+        for (var step in steps!) {
           bool needStepTest = false;
           bool stepResult = false;
 
           switch (step.loadType) {
             case ScenarioStepLoadType.unionOr:
-              if (!isUnionOrTrue) {
-                needStepTest = true;
-              }
+              // Even if isUnionOrTrue is already true, we still need to evaluate further unionOr steps
+              // isUnionOrTrue == false, means it is not add in pre union.
+              //  isIntersectAndFalse == true mean it may be added in follow union.
+              needStepTest = !isUnionOrTrue || isIntersectAndFalse;
               break;
             case ScenarioStepLoadType.intersectAnd:
-              if (!isIntersectAndFalse) {
-                needStepTest = true;
-              }
+              // Even if isIntersectAndFalse is true, we still need to evaluate further intersectAnd steps
+              // isUnionOrTrue == true, means it is added in pre union.
+              //  isIntersectAndFalse == false mean it is not be rid of in pre intersect.
+              // if the same it need to test if need to remove in intersectAnd
+              needStepTest = !isIntersectAndFalse || isUnionOrTrue;
               break;
           }
 
           if (needStepTest) {
-            stepResult = step.filters?.isEmpty ?? true ? true : step.filters!.every((filter) => filter.test(entry));
+            // Evaluate the filters for this step
+            stepResult = step.filters!.isEmpty ? true : step.filters!.every((filter) => filter.test(entry));
 
             switch (step.loadType) {
               case ScenarioStepLoadType.unionOr:
-                if (stepResult) isUnionOrTrue = true;
-                result = stepResult || result;
+                if (stepResult) isUnionOrTrue = true; // Track if unionOr condition was met
+                result = stepResult || result; // Union: entry remains in if any unionOr is true
                 break;
+
               case ScenarioStepLoadType.intersectAnd:
-                if (!stepResult) isIntersectAndFalse = true;
-                result = result && stepResult;
+                if (!stepResult) isIntersectAndFalse = true; // Track if intersectAnd condition failed
+                result = result && stepResult; // Intersection: entry is removed if any intersectAnd is false
                 break;
             }
           }
         }
-
         return result;
       };
     } else {

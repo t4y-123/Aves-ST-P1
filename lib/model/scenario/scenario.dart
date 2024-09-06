@@ -20,22 +20,22 @@ class Scenario extends PresentationRows<ScenarioRow> {
 
   @override
   Future<Set<ScenarioRow>> loadAllRows() async {
-    return await metadataDb.loadAllScenarios();
+    return await localMediaDb.loadAllScenarios();
   }
 
   @override
   Future<void> addRowsToDb(Set<ScenarioRow> newRows) async {
-    await metadataDb.addScenarios(newRows);
+    await localMediaDb.addScenarios(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<ScenarioRow> removedRows) async {
-    await metadataDb.removeScenarios(removedRows);
+    await localMediaDb.removeScenarios(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearScenarios();
+    await localMediaDb.clearScenarios();
   }
 
   @override
@@ -71,7 +71,7 @@ class Scenario extends PresentationRows<ScenarioRow> {
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
     final orderNum = maxScenario + existOrderNumOffset;
     return ScenarioRow(
-      id: metadataDb.nextId,
+      id: localMediaDb.nextId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, newLoadType),
       color: color ?? AColors.getRandomColor(),

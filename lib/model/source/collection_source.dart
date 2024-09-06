@@ -508,7 +508,7 @@ abstract class CollectionSource
       await localMediaDb.insertEntries(movedEntries);
       await localMediaDb.saveCatalogMetadata(movedEntries.map((entry) => entry.catalogMetadata).whereNotNull().toSet());
       await localMediaDb.saveAddresses(movedEntries.map((entry) => entry.addressDetails).whereNotNull().toSet());
-       // t4y: for intuitively, the copied items should be the most recently.
+      // t4y: for intuitively, the copied items should be the most recently.
       // And for functionally, somme apps  will still swallows you pic making it not be able to send to others unless made some modified.
       if (shareByCopy) {
         await shareCopiedEntries.add(movedEntries);
@@ -623,7 +623,10 @@ abstract class CollectionSource
 
     if (dataTypes.contains(EntryDataType.address)) {
       await Future.forEach(entries, (entry) async {
-        await entry.locate(background: background, force: dataTypes.contains(EntryDataType.address), geocoderLocale: settings.appliedLocale);
+        await entry.locate(
+            background: background,
+            force: dataTypes.contains(EntryDataType.address),
+            geocoderLocale: settings.appliedLocale);
         await localMediaDb.updateAddress(entry.id, entry.addressDetails);
       });
       onAddressMetadataChanged();

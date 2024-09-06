@@ -17,22 +17,22 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
 
   @override
   Future<Set<FgwScheduleRow>> loadAllRows() async {
-    return await metadataDb.loadAllFgwSchedules();
+    return await localMediaDb.loadAllFgwSchedules();
   }
 
   @override
   Future<void> addRowsToDb(Set<FgwScheduleRow> newRows) async {
-    await metadataDb.addFgwSchedules(newRows);
+    await localMediaDb.addFgwSchedules(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<FgwScheduleRow> removedRows) async {
-    await metadataDb.removeFgwSchedules(removedRows);
+    await localMediaDb.removeFgwSchedules(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearFgwSchedules();
+    await localMediaDb.clearFgwSchedules();
   }
 
   Future<void> _removeDuplicates({PresentationRowType type = PresentationRowType.all}) async {
@@ -94,7 +94,7 @@ class FgwSchedule extends PresentationRows<FgwScheduleRow> {
     final newLabelName = (updateType == WallpaperUpdateType.widget) ? '$labelNameCommon $widgetId' : labelNameCommon;
 
     return FgwScheduleRow(
-      id: id ?? metadataDb.nextId,
+      id: id ?? localMediaDb.nextId,
       orderNum: maxScheduleNum + existMaxOrderNumOffset,
       labelName: newLabelName,
       guardLevelId: guardLevelId,
@@ -195,7 +195,7 @@ class FgwScheduleRow extends PresentRow<FgwScheduleRow> {
   factory FgwScheduleRow.fromMap(Map map) {
     final defaultDisplayType =
         FgwDisplayedType.values.safeByName(map['displayType'] as String, settings.fgwDisplayType);
-    debugPrint('WallpaperScheduleRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
+    //debugPrint('WallpaperScheduleRow defaultDisplayType $defaultDisplayType fromMap:\n  $map.');
     return FgwScheduleRow(
       id: map['id'] as int,
       orderNum: map['orderNum'] as int,

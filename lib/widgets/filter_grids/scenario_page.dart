@@ -1,6 +1,7 @@
 import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/filters/filters.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -10,15 +11,13 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/empty.dart';
 import 'package:aves/widgets/filter_grids/common/filter_nav_page.dart';
+import 'package:aves/widgets/filter_grids/common/scenario/scenario_action_set.dart';
+import 'package:aves/widgets/filter_grids/common/scenario/status_filter_nav_page.dart';
 import 'package:aves/widgets/filter_grids/common/section_keys.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../model/filters/scenario.dart';
-import 'common/scenario/scenario_action_set.dart';
-import 'common/scenario/status_filter_nav_page.dart';
 
 class ScenarioListPage extends StatelessWidget {
   static const routeName = '/scenario';

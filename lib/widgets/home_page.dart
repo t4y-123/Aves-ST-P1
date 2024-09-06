@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aves/app_mode.dart';
+import 'package:aves/model/app/intent.dart';
 import 'package:aves/model/app/permissions.dart';
 import 'package:aves/model/app_inventory.dart';
 import 'package:aves/model/entry/entry.dart';
@@ -8,6 +9,7 @@ import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/fgw/enum/fgw_service_item.dart';
 import 'package:aves/model/fgw/fgw_schedule_helper.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
 import 'package:aves/model/fgw/filters_set.dart';
 import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
@@ -16,7 +18,6 @@ import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/fgw_used.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/path.dart';
-import 'package:aves/model/app/intent.dart';
 import 'package:aves/model/settings/enums/home_page.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
@@ -136,11 +137,33 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         case IntentActions.view:
           appMode = AppMode.view;
           _secureUris = (intentData[IntentDataKeys.secureUris] as List?)?.cast<String>();
-
+        case IntentActions.edit:
+          appMode = AppMode.edit;
+        case IntentActions.setWallpaper:
+          appMode = AppMode.setWallpaper;
+        case IntentActions.pickItems:
+          // TODO TLAD apply pick mimetype(s)
+          // some apps define multiple types, separated by a space (maybe other signs too, like `,` `;`?)
+          final multiple = (intentData[IntentDataKeys.allowMultiple] as bool?) ?? false;
+          debugPrint('pick mimeType=$intentMimeType multiple=$multiple');
+          appMode = multiple ? AppMode.pickMultipleMediaExternal : AppMode.pickSingleMediaExternal;
+        case IntentActions.pickCollectionFilters:
+          appMode = AppMode.pickCollectionFiltersExternal;
+        case IntentActions.screenSaver:
+          appMode = AppMode.screenSaver;
+          _initialRouteName = ScreenSaverPage.routeName;
+        case IntentActions.screenSaverSettings:
+          _initialRouteName = ScreenSaverSettingsPage.routeName;
+        case IntentActions.search:
+          _initialRouteName = SearchPage.routeName;
+          _initialSearchQuery = intentData[IntentDataKeys.query] as String?;
+        case IntentActions.widgetSettings:
+          _initialRouteName = HomeWidgetSettingsPage.routeName;
+          _widgetId = (intentData[IntentDataKeys.widgetId] as int?) ?? 0;
         case IntentActions.widgetOpen:
         case IntentActions.fgwWidgetOpen:
           String? uri, mimeType;
-          final widgetId = intentData[IntentDataKeys.widgetId];
+          final widgetId = intentData[IntentDataKeys.widgetId] as int?;
           if (widgetId != null) {
             // widget settings may be modified in a different process after channel setup
             await settings.reload();
@@ -162,7 +185,7 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
             } else if (intentAction == IntentActions.fgwWidgetOpen) {
               final curGuardLevel =
                   fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
-              debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
+              //debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
 
               if (curGuardLevel != null) {
                 final curWidgetSchedule = fgwSchedules.all
@@ -171,7 +194,7 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
                   final curFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == curWidgetSchedule.filtersSetId);
                   if (curFiltersSet != null) {
                     _initialFilters = curFiltersSet.filters;
-                    debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
+                    //debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
                   }
                 }
               }
@@ -196,8 +219,6 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         case IntentActions.fgwUsedRecordOpen:
           appMode = AppMode.main;
           _fgwOpenType = FgwServiceOpenType.usedRecord;
-          _initialFilters = {FgwUsedFilter(guardLevelId: settings.curFgwGuardLevelNum)};
-          _initialRouteName = CollectionPage.routeName;
         case IntentActions.fgwViewOpen:
         case IntentActions.fgwDuplicateOpen:
           await settings.reload();
@@ -220,67 +241,22 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
                 break;
             }
           }
-          debugPrint('$runtimeType fgw intentActions $intentAction appMode $appMode');
-        case IntentActions.edit:
-          appMode = AppMode.edit;
-        case IntentActions.setWallpaper:
-          appMode = AppMode.setWallpaper;
-        case IntentActions.pickItems:
-          // TODO TLAD apply pick mimetype(s)
-          // some apps define multiple types, separated by a space (maybe other signs too, like `,` `;`?)
-          final multiple = (intentData[IntentDataKeys.allowMultiple] as bool?) ?? false;
-          debugPrint('pick mimeType=$intentMimeType multiple=$multiple');
-          appMode = multiple ? AppMode.pickMultipleMediaExternal : AppMode.pickSingleMediaExternal;
-        case IntentActions.pickCollectionFilters:
-          appMode = AppMode.pickCollectionFiltersExternal;
-        case IntentActions.screenSaver:
-          appMode = AppMode.screenSaver;
-          _initialRouteName = ScreenSaverPage.routeName;
-        case IntentActions.screenSaverSettings:
-          _initialRouteName = ScreenSaverSettingsPage.routeName;
-        case IntentActions.search:
-          _initialRouteName = SearchPage.routeName;
-          _initialSearchQuery = intentData[IntentDataKeys.query] as String?;
-        case IntentActions.widgetSettings:
-          _initialRouteName = HomeWidgetSettingsPage.routeName;
-          _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
-          _widgetId = (intentData[IntentDataKeys.widgetId] as int?) ?? 0;
+        //debugPrint('$runtimeType fgw intentActions $intentAction appMode $appMode');
 
-        case IntentActions.widgetOpen:
-          final widgetId = intentData[IntentDataKeys.widgetId] as int?;
-          if (widgetId == null) {
-            error = true;
-          } else {
-            // widget settings may be modified in a different process after channel setup
-            await settings.reload();
-            final page = settings.getWidgetOpenPage(widgetId);
-            switch (page) {
-              case WidgetOpenPage.collection:
-                _initialFilters = settings.getWidgetCollectionFilters(widgetId);
-              case WidgetOpenPage.viewer:
-                appMode = AppMode.view;
-                intentUri = settings.getWidgetUri(widgetId);
-              case WidgetOpenPage.home:
-              case WidgetOpenPage.updateWidget:
-                break;
-            }
-            unawaited(WidgetService.update(widgetId));
-          }
         case IntentActions.fgwWidgetSettings:
           _initialRouteName = FgwWidgetSettings.routeName;
           _widgetId = intentData[IntentDataKeys.widgetId] ?? 0;
         case IntentActions.fgwUnlock:
           await settings.reload();
-          debugPrint('$runtimeType await unlockFgw(context)): ${settings.guardLevelLock}');
+          //debugPrint('$runtimeType await unlockFgw(context)): ${settings.guardLevelLock}');
           if (!await unlockFgw(context)) {
             settings.guardLevelLock = true;
           } else {
             settings.guardLevelLock = false;
             await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);
-            debugPrint(
-                '$runtimeType await ForegroundWallpaperService.setFgwGuardLevelLockState(settings.guardLevelLock);; ${settings.guardLevelLock}');
+            // debugPrint( $runtimeType  ForegroundWallpaperService.setFgwGuardLevelLockState; ${settings.guardLevelLock}');
           }
-          default:
+        default:
           // do not use 'route' as extra key, as the Flutter framework acts on it
           final extraRoute = intentData[IntentDataKeys.page] as String?;
           if (allowedShortcutRoutes.contains(extraRoute)) {
@@ -373,13 +349,11 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
   }
 
   bool _isViewerSourceable(AvesEntry? viewerEntry) {
-    return viewerEntry != null && viewerEntry.directory != null && !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
-  }
-  bool _isViewerSourceable2(AvesEntry? viewerEntry) {
     return viewerEntry != null &&
         viewerEntry.directory != null &&
         !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
   }
+
   Future<AvesEntry?> _initViewerEntry({required String uri, required String? mimeType}) async {
     if (uri.startsWith('/')) {
       // convert this file path to a proper URI
@@ -428,6 +402,7 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
 
             source.stateNotifier.addListener(_onSourceStateChanged);
             await completer.future;
+
             switch (_fgwOpenType) {
               case null:
               case FgwServiceOpenType.usedRecord:
@@ -465,17 +440,9 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
                 debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
             }
 
-            collection = CollectionLens(
-              source: source,
-              filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
-              listenToSource: false,
-              // if we group bursts, opening a burst sub-entry should:
-              // - identify and select the containing main entry,
-              // - select the sub-entry in the Viewer page.
-              stackBursts: false,
-            );
             final viewerEntryPath = viewerEntry.path;
-            final collectionEntry = collection.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+            final collectionEntry =
+                collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
             if (collectionEntry != null) {
               viewerEntry = collectionEntry;
             } else {
@@ -514,10 +481,17 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         );
 
     final source = context.read<CollectionSource>();
+    debugPrint('$runtimeType ${appMode}) _fgwOpenType $_fgwOpenType');
     switch (_fgwOpenType) {
       case null:
       case FgwServiceOpenType.curFilters:
       case FgwServiceOpenType.usedRecord:
+        await fgwUsedEntryRecord.refresh();
+        if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+          _initialFilters = {FgwUsedFilter(guardLevelId: settings.curFgwGuardLevelNum)};
+          filters = _initialFilters;
+          routeName = CollectionPage.routeName;
+        }
         break;
       case FgwServiceOpenType.shareByCopy:
         if (_viewerEntry != null) {

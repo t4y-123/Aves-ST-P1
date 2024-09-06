@@ -162,9 +162,7 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
     debugPrint('Error in foregroundWallpaperWidgetMainCommon _getWidgetEntry for widgetId $widgetId: $e');
   }
 
-  debugPrint('Attempting to retrieve a normal entry for widgetId $widgetId');
   final filters = settings.getWidgetCollectionFilters(widgetId);
-  debugPrint('foregroundWallpaperWidgetMainCommon getWidgetCollectionFilters:\n[ $filters ]');
 
   final entries =
       CollectionLens(source: source, filters: filters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
@@ -183,6 +181,8 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
     settings.setWidgetUri(widgetId, entry.uri);
   }
   source.dispose();
-  debugPrint('Returning normal entry for widgetId $widgetId: $entry');
+
+  debugPrint('Attempting Returning normal entry for widgetId $widgetId: $entry '
+      'foregroundWallpaperWidgetMainCommon getWidgetCollectionFilters:\n[ $filters ]');
   return entry;
 }

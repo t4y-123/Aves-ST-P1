@@ -29,6 +29,8 @@ class FgwRowsHelper {
       settings.curFgwGuardLevelNum = fgwGuardLevels.all.first.guardLevel;
     }
     await fgwUsedEntryRecord.init();
+    // debugPrint('$runtimeType \n fgwUsedEntryRecord initWallpaperSchedules'
+    //     '${fgwUsedEntryRecord.all.map((e) => e.toMap())}');
   }
 
   Future<void> clearWallpaperSchedules() async {

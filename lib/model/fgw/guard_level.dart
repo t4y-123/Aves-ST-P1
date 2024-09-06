@@ -18,22 +18,22 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
 
   @override
   Future<Set<FgwGuardLevelRow>> loadAllRows() async {
-    return await metadataDb.loadAllFgwGuardLevels();
+    return await localMediaDb.loadAllFgwGuardLevels();
   }
 
   @override
   Future<void> addRowsToDb(Set<FgwGuardLevelRow> newRows) async {
-    await metadataDb.addFgwGuardLevels(newRows);
+    await localMediaDb.addFgwGuardLevels(newRows);
   }
 
   @override
   Future<void> removeRowsFromDb(Set<FgwGuardLevelRow> removedRows) async {
-    await metadataDb.removeFgwGuardLevels(removedRows);
+    await localMediaDb.removeFgwGuardLevels(removedRows);
   }
 
   @override
   Future<void> clearRowsInDb() async {
-    await metadataDb.clearFgwGuardLevel();
+    await localMediaDb.clearFgwGuardLevel();
   }
 
   @override
@@ -63,7 +63,7 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.guardLevel).reduce((a, b) => a > b ? a : b);
     final guardLevel = maxGuardLevel + existLevelOffset;
     return FgwGuardLevelRow(
-      id: metadataDb.nextId,
+      id: localMediaDb.nextId,
       guardLevel: guardLevel,
       labelName: labelName ?? await getLabelName(guardLevel),
       color: newColor ?? AColors.getRandomColor(),

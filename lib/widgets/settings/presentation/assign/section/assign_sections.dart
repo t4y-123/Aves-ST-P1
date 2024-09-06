@@ -4,7 +4,7 @@ import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
-import 'package:aves/widgets/settings/presentation/assign/sub_page/single_record_assign_entry_edit_page.dart';
+import 'package:aves/widgets/settings/presentation/assign/single_record_assign_entry_edit_page.dart';
 import 'package:aves/widgets/settings/presentation/common/section.dart';
 import 'package:aves/widgets/viewer/entry_viewer_page.dart';
 import 'package:collection/collection.dart';

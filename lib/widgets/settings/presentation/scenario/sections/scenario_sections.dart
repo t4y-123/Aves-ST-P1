@@ -6,7 +6,7 @@ import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/settings/common/item_tiles.dart';
 import 'package:aves/widgets/settings/presentation/common/section.dart';
-import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_step_edit_page.dart';
+import 'package:aves/widgets/settings/presentation/scenario/scenario_step_edit_page.dart';
 import 'package:aves/widgets/settings/presentation/scenario/sub_page/scenario_step_item_page.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';

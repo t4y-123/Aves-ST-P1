@@ -3,4 +3,5 @@
     <string name="app_name">Aves [Debug]</string>
     <string name="foreground_wallpaper_widget_label">fgwD壁纸</string>
     <string name="foreground_wallpaper_channel_name">fgwD壁纸</string>
+    <string name="foreground_wallpaper_tile_service_label">fgwD壁纸</string>
 </resources>

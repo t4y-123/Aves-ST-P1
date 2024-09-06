@@ -1,3 +1,4 @@
+import 'package:aves/model/settings/settings.dart';
 import 'package:aves/utils/time_utils.dart';
 import 'package:aves/widgets/common/basic/wheel.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
@@ -27,7 +28,7 @@ class _HmsDurationDialogState extends State<HmsDurationDialog> {
   void initState() {
     super.initState();
     var seconds = widget.initialSeconds;
-    if (seconds < 3) seconds = 30;
+    if (seconds < 3) seconds = settings.defaultNewUpdateInterval;
     _hours = ValueNotifier(seconds ~/ Duration.secondsPerHour);
     _minutes = ValueNotifier((seconds - _hours.value * Duration.secondsPerHour) ~/ Duration.secondsPerMinute);
     _seconds = ValueNotifier(seconds % secondsInMinute);

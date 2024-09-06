@@ -1092,6 +1092,7 @@
   "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
   "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
   "settingsExpiredInterval": "Expired Interval",
+  "settingsFgwNewScheduleDefaultInterval": "Fgw new schedule default interval",
 
   "shareByCopySetDateTypeOnlyThisTime": "only this time copied",
   "shareByCopySetDateTypeAllCopiedEntries": "all copied pre and now",
@@ -1277,14 +1278,9 @@
 
   "interjectName01": "Portrait Interject",
   "interjectName02": "Landscape Interject",
-  "interjectName03": "<30min Interject",
-  "interjectName04": "<1hours Interject",
-  "interjectName05": "<3hours  Interject",
-  "interjectName06": "<6hours  Interject",
-  "interjectName07": "<9hours  Interject",
-  "interjectName08": "<12hours  Interject",
-  "interjectName09": "<1days  Interject",
-  "interjectName10": "<3days  Interject",
+  "interjectName03": "<6hours Interject",
+  "interjectName04": "<12hours Interject",
+  "interjectName05": "<3days Interject",
 
 
   "unionName01": "Video Union",

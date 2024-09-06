@@ -84,6 +84,11 @@ class FgwOpSettingsPage extends StatelessWidget with FeedbackMixin, FgwAwareMixi
             tileTitle: context.l10n.settingsSetAllFgwScheduleDisplayType,
             dialogTitle: context.l10n.settingsSetAllFgwScheduleDisplayType,
           ),
+          SettingsDurationListTile(
+            selector: (context, s) => s.defaultNewUpdateInterval,
+            onChanged: (v) => settings.defaultNewUpdateInterval = v,
+            title: l10n.settingsFgwNewScheduleDefaultInterval,
+          ),
           ListTile(
             title: Text('${l10n.settingsFgwScheduleSyncButtonText} '),
             trailing: ElevatedButton(

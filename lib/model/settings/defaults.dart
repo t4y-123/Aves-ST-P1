@@ -15,7 +15,7 @@ import 'enums/presentation.dart';
 
 class SettingsDefaults {
   // app
-  static const hasAcceptedTerms = true; // t4y temp set true accept for test
+  static const hasAcceptedTerms = false; // t4y temp set true accept for test
 
   static const canUseAnalysisService = false;
   static const isInstalledAppAccessAllowed = false;
@@ -167,10 +167,10 @@ class SettingsDefaults {
   static const areAnimationsRemoved = false;
 
   //t4y: foreground wallpaper
-  static const int fgwNewUpdateInterval = 3;
+  static const int fgwNewUpdateInterval = 30;
   static const int fgwGuardLevel = 1;
   //for easily test, debug set to most recent,else, release change to random.
-  static const fgwDisplayedItem = FgwDisplayedType.mostRecent;
+  static const fgwDisplayedItem = FgwDisplayedType.random;
   // for default schedule type : 3/4/6 for home and lock, o r3/3/3 for only home.Format: levelsCount/filtersCount/scheduleCount
   // set to type333 in release for some os,like miui,
   //  third part app will not be able to set the lock screen wallpaper for having strict limit.

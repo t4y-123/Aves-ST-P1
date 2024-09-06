@@ -106,7 +106,7 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
   Future<void> addAvesEntry(AvesEntry entry, WallpaperUpdateType updateType,
       {int widgetId = 0, FgwGuardLevelRow? curLevel}) async {
     curLevel ??= await fgwScheduleHelper.getCurGuardLevel();
-    final newRecord = await newRow(curLevel!.id, updateType, entry.id, widgetId: widgetId);
+    final newRecord = await newRow(curLevel.id, updateType, entry.id, widgetId: widgetId);
     await add({newRecord});
   }
 }

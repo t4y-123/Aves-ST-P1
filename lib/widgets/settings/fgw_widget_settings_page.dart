@@ -129,13 +129,17 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
               final newSchedules = activeLevels.map((level) {
                 FgwScheduleRow? todoRow = fgwSchedules.bridgeAll
                     .firstWhereOrNull((e) => e.guardLevelId == level.id && e.widgetId == widgetId);
-                todoRow ??= fgwSchedules.newRow(
-                  existMaxOrderNumOffset: orderNumOffset++,
-                  guardLevelId: level.id,
-                  filtersSetId: filtersSets.all.first.id,
-                  updateType: WallpaperUpdateType.widget,
-                  widgetId: widgetId,
-                );
+                if (todoRow == null) {
+                  final newWidgetFilterSet = filtersSets.newRow(1, type: PresentationRowType.bridgeAll);
+                  filtersSets.add({newWidgetFilterSet}, type: PresentationRowType.bridgeAll);
+                  todoRow = fgwSchedules.newRow(
+                    existMaxOrderNumOffset: orderNumOffset++,
+                    guardLevelId: level.id,
+                    filtersSetId: newWidgetFilterSet.id,
+                    updateType: WallpaperUpdateType.widget,
+                    widgetId: widgetId,
+                  );
+                }
                 return todoRow;
               }).toList();
 

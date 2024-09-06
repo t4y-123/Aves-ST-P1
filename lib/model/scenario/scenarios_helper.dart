@@ -78,7 +78,7 @@ class ScenariosHelper {
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
     const injNum = exNum + 7;
-    const unUum = injNum + 10;
+    const unUum = injNum + 5;
     return {
       //exclude unique
       await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
@@ -94,12 +94,7 @@ class ScenariosHelper {
       await scenarios.newRow(injNum + 3, labelName: _l10n.interjectName03, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 4, labelName: _l10n.interjectName04, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName05, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 6, labelName: _l10n.interjectName06, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 7, labelName: _l10n.interjectName07, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 8, labelName: _l10n.interjectName08, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 9, labelName: _l10n.interjectName09, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 10, labelName: _l10n.interjectName10, loadType: ScenarioLoadType.intersectAnd),
-      //union or
+
       await scenarios.newRow(unUum + 1, labelName: _l10n.unionName01, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 2, labelName: _l10n.unionName02, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 3, labelName: _l10n.unionName03, loadType: ScenarioLoadType.unionOr),
@@ -118,7 +113,7 @@ class ScenariosHelper {
     int orderNum = 1;
     const exNum = -1;
     const injNum = exNum + 7;
-    const unUum = injNum + 10;
+    const unUum = injNum + 5;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
       //1/2/3/4 5
@@ -143,14 +138,9 @@ class ScenariosHelper {
       ///////////////////////////////////
       newScenarioStep(orderNum++, sIds[injNum + 1], 1, {AspectRatioFilter.portrait}),
       newScenarioStep(orderNum++, sIds[injNum + 2], 1, {AspectRatioFilter.landscape}),
-      newScenarioStep(orderNum++, sIds[injNum + 3], 1, {QueryFilter('TIME2NOW < 30mi')}),
-      newScenarioStep(orderNum++, sIds[injNum + 4], 1, {QueryFilter('TIME2NOW < 1h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 6], 1, {QueryFilter('TIME2NOW < 6h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 7], 1, {QueryFilter('TIME2NOW < 9h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 8], 1, {QueryFilter('TIME2NOW < 12h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 9], 1, {QueryFilter('TIME2NOW < 1d')}),
-      newScenarioStep(orderNum++, sIds[injNum + 10], 1, {QueryFilter('TIME2NOW < 3d')}),
+      newScenarioStep(orderNum++, sIds[injNum + 3], 1, {QueryFilter('TIME2NOW < 6h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 4], 1, {QueryFilter('TIME2NOW < 12h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3d')}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////

@@ -93,7 +93,7 @@ class AssignEntries extends PresentationRows<AssignEntryRow> {
     }
     dateMillis = DateTime.now().millisecondsSinceEpoch;
     return AssignEntryRow(
-      id: localMediaDb.nextId,
+      id: localMediaDb.nextDateId,
       assignId: assignId,
       entryId: entryId,
       dateMillis: dateMillis,

@@ -16,15 +16,20 @@ object FgwServiceActionHandler {
     fun handleStartCommand(context: Context, intent: Intent?, flags: Int, startId: Int) {
 //        if(intent?.action!=null && intent?.action!= FgwIntentAction.SWITCH_GROUP)
 //            showToast(context, "${intent!!.action} tapped")
+
         when (intent?.action) {
             FgwIntentAction.SWITCH_GROUP -> {
                 FgwSeviceNotificationHandler.isLevelGroup = !FgwSeviceNotificationHandler.isLevelGroup
             }
             FgwIntentAction.PRE -> {
-                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.PRE_WARLLPAPER)
+                val updateType = intent?.getStringExtra("updateType") ?: FgwConstant.CUR_TYPE_HOME
+                val widgetId = intent?.getIntExtra("widgetId", FgwConstant.NOT_WIDGET_ID) ?: FgwConstant.NOT_WIDGET_ID
+                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.PRE_WARLLPAPER,updateType, widgetId)
             }
             FgwIntentAction.NEXT -> {
-                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.NEXT_WARLLPAPER)
+                val updateType = intent?.getStringExtra("updateType") ?: FgwConstant.CUR_TYPE_HOME
+                val widgetId = intent?.getIntExtra("widgetId", FgwConstant.NOT_WIDGET_ID) ?: FgwConstant.NOT_WIDGET_ID
+                FgwServiceFlutterHandler.handleWallpaper(context,FgwConstant.NEXT_WARLLPAPER,updateType, widgetId)
             }
             FgwIntentAction.DOWNWARD -> {
                 FgwSeviceNotificationHandler.isChangingGuardLevel = true
@@ -41,11 +46,12 @@ object FgwServiceActionHandler {
             }
             FgwIntentAction.APPLY_LEVEL_CHANGE -> {
                 //cancel all schedule periodic work, then set the level.
-                // in dart side, the flutter changeGuardLevel will call the next wallpaper to refresh the wallpaper.
                 WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(context)
+                // in dart side, the flutter changeGuardLevel will call the next wallpaper to refresh the wallpaper.
                 FgwServiceFlutterHandler.curGuardLevel = FgwSeviceNotificationHandler.guardLevel
-                FgwSeviceNotificationHandler.isChangingGuardLevel = false
                 FgwServiceFlutterHandler.changeGuardLevel(context,FgwServiceFlutterHandler.curGuardLevel)
+                FgwSeviceNotificationHandler.isChangingGuardLevel = false
+                //FgwServiceFlutterHandler.callDartNoArgsMethod(context,FgwConstant.SYNC_FGW_SCHEDULE_CHANGES)
             }
             FgwIntentAction.LOCK -> {
                 FgwSeviceNotificationHandler.isGuardLevelLocked = true;

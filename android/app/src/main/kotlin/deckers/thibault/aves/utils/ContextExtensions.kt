@@ -69,12 +69,14 @@ inline fun <reified T : Service> Context.servicePendingIntent(
 inline fun <reified T : BroadcastReceiver> Context.widgetPendingIntent(
     widgetId: Int,
     requestCode: Int = 0,
+    action: String = AppWidgetManager.ACTION_APPWIDGET_UPDATE,  // Default action
     configIntent: Intent.() -> Unit = {}
 ): PendingIntent? {
-    val intent = Intent(this, T::class.java)
-    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
-    configIntent.invoke(intent)
+    val intent = Intent(this, T::class.java).apply {
+        this.action = action  // Use the provided action
+        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+        configIntent.invoke(this)
+    }
 
     val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
@@ -102,6 +104,27 @@ inline fun <reified T : Service> Context.getExistingPendingIntent(
     return getService(this, requestCode, intent, flags)
 }
 
+@SuppressLint("UnspecifiedImmutableFlag")
+inline fun <reified T : BroadcastReceiver> Context.getExistWidgetPendingIntent(
+    widgetId: Int,
+    requestCode: Int = 0,
+    action: String = AppWidgetManager.ACTION_APPWIDGET_UPDATE,  // Default action
+    configIntent: Intent.() -> Unit = {}
+): PendingIntent? {
+    val intent = Intent(this, T::class.java).apply {
+        this.action = action  // Use the provided action
+        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+        configIntent.invoke(this)
+    }
+
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_MUTABLE
+    } else {
+        PendingIntent.FLAG_NO_CREATE
+    }
+
+    return PendingIntent.getBroadcast(this, requestCode, intent, flags)
+}
 
 @SuppressLint("UnspecifiedImmutableFlag")
 fun Context.activityPendingIntent(

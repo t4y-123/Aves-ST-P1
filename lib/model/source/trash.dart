@@ -69,7 +69,7 @@ mixin TrashMixin on SourceBase {
           // there is no matching entry
           final sourceEntry = await mediaFetchService.getEntry(uri, null, allowUnsized: true);
           if (sourceEntry != null) {
-            final id = localMediaDb.nextId;
+            final id = localMediaDb.nextDateId;
             sourceEntry.id = id;
             sourceEntry.path = pContext.join(recoveryPath, pContext.basename(untrackedPath));
             sourceEntry.trashed = true;

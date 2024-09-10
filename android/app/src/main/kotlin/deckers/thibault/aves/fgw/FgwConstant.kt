@@ -40,6 +40,8 @@ object FgwConstant {
     //wallpaper op string
     const val FGW_UPDATE_TYPE_EXTRA = "updateType"
     const val FGW_WIDGET_ID_EXTRA = "widgetId"
+    const val FGW_INTERVAL_EXTRA = "interval"
+
     //wallpaper op string
     const val NEXT_WARLLPAPER = "nextWallpaper"
     const val PRE_WARLLPAPER = "preWallpaper"

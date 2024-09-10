@@ -126,30 +126,35 @@ abstract class PresentationRows<T extends PresentRow> with ChangeNotifier {
   Set<T> get bridgeAll => Set.unmodifiable(_bridgeRows);
 
   Future<void> syncRowsToBridge({bool notify = true}) async {
+    await refresh(notify: false);
     debugPrint('$runtimeType syncRowsToBridge,\n'
-        'all:[$_rows]'
+        'all:[$_rows]\n'
         'before bridget:[$_bridgeRows]');
     await refresh(notify: false);
     _bridgeRows.clear();
     _bridgeRows.addAll(_rows);
 
     debugPrint('$runtimeType syncRowsToBridge,\n'
-        'after bridget:[$_bridgeRows]');
+        'after bridget:[$_bridgeRows]\n'
+        'all:[$_rows]\n');
     if (notify) notifyListeners();
   }
 
   Future<void> syncBridgeToRows({bool notify = true}) async {
     debugPrint('$runtimeType syncBridgeToRows, before\n'
-        'all:[$_rows]'
+        'all:[$_rows]\n'
         'before bridget:[$_bridgeRows]');
 
     await clear(notify: false);
     _rows.addAll(_bridgeRows);
+    debugPrint('$runtimeType _rows.addAll(_bridgeRows);, before addRowsToDb \n'
+        'all:[$_rows]\n'
+        'before bridget:[$_bridgeRows]');
     await addRowsToDb(_rows);
 
     debugPrint('$runtimeType syncBridgeToRows, after\n'
-        'all:[$_rows]'
-        'before bridget:[$_bridgeRows]');
+        'all:[$_rows]\n'
+        'after bridget:[$_bridgeRows]\n');
     if (notify) notifyListeners();
   }
 

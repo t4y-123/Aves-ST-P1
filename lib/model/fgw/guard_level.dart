@@ -63,7 +63,7 @@ class GuardLevel extends PresentationRows<FgwGuardLevelRow> {
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.guardLevel).reduce((a, b) => a > b ? a : b);
     final guardLevel = maxGuardLevel + existLevelOffset;
     return FgwGuardLevelRow(
-      id: localMediaDb.nextId,
+      id: localMediaDb.nextDateId,
       guardLevel: guardLevel,
       labelName: labelName ?? await getLabelName(guardLevel),
       color: newColor ?? AColors.getRandomColor(),

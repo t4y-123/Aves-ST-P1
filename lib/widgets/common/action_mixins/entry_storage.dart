@@ -171,19 +171,19 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         .toSet();
     final expiredEntries = todoEntries.where(shareCopiedEntries.isExpiredCopied).toSet();
     if (expiredEntries.isEmpty) return;
-    debugPrint('$runtimeType deleteExpiredShareCopied\n'
-        'todoEntries $todoEntries \n'
-        'expiredEntries $expiredEntries\n');
+    //debugPrint('$runtimeType deleteExpiredShareCopied\n'
+    //     'todoEntries $todoEntries \n'
+    //     'expiredEntries $expiredEntries\n');
 
     final entriesByDestination = <String, Set<AvesEntry>>{};
     entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
 
-    debugPrint('$runtimeType deleteExpiredShareCopied\n'
-        'settings.enableBin ${settings.enableBin} \n'
-        ' settings.shareByCopyExpiredRemoveUseBin ${settings.shareByCopyExpiredRemoveUseBin}\n');
+    //debugPrint('$runtimeType deleteExpiredShareCopied\n'
+    //     'settings.enableBin ${settings.enableBin} \n'
+    //     ' settings.shareByCopyExpiredRemoveUseBin ${settings.shareByCopyExpiredRemoveUseBin}\n');
     source.pauseMonitoring();
     final useBin = settings.enableBin && settings.shareByCopyExpiredRemoveUseBin;
-    debugPrint('$runtimeType deleteExpiredShareCopied delete to useBin $useBin \n');
+    //debugPrint('$runtimeType deleteExpiredShareCopied delete to useBin $useBin \n');
     // delete forever trashed items
     await EntrySetActionDelegate().doDelete(
       context: context,
@@ -291,8 +291,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
           movedOps: movedOps,
           onUpdatedEntries: (entries) {
             updatedEntries.addAll(entries);
-            debugPrint('$runtimeType doQuickMove entries:\n $entries');
-            debugPrint('$runtimeType doQuickMove updatedEntries:\n $updatedEntries');
+            // debugPrint('$runtimeType doQuickMove entries:\n $entries');
+            // debugPrint('$runtimeType doQuickMove updatedEntries:\n $updatedEntries');
           },
         );
 
@@ -399,7 +399,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     bool shareByCopyNeedRemove = true,
   }) async {
     final isViewerMode = context.read<ValueNotifier<AppMode>>().value == AppMode.view;
-    debugPrint('$runtimeType doMove in viewerMode?[$isViewerMode]:${context.read<ValueNotifier<AppMode>>().value}');
+    // debugPrint('$runtimeType doMove in viewerMode?[$isViewerMode]:${context.read<ValueNotifier<AppMode>>().value}');
     if (moveType == MoveType.toBin && !isShareByCopyDelete) {
       final l10n = context.l10n;
       if (!await showSkippableConfirmationDialog(
@@ -413,6 +413,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     // when share by copy in viewer mode, not need to delete pre.
     final needRemoveExpired = ((isViewerMode && settings.shareByCopyAppModeViewAutoRemove) || shareByCopyNeedRemove);
     if (moveType == MoveType.shareByCopy && needRemoveExpired) {
+      await shareCopiedEntries.refresh();
       await deleteExpiredShareCopied(context);
     }
 
@@ -440,7 +441,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         final l10n = context.l10n;
         final deleteTimeString = formatToLocalDuration(context, Duration(seconds: settings.shareByCopyRemoveInterval));
         String dirName = pContext.basename(androidFileUtils.avesShareByCopyPath);
-        debugPrint('$runtimeType deleteTimeStrings:$deleteTimeString dirName:$dirName');
+        // debugPrint('$runtimeType deleteTimeStrings:$deleteTimeString dirName:$dirName');
 
         if (!await showSkippableConfirmationDialog(
           context: context,

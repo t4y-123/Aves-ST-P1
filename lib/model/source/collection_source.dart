@@ -299,8 +299,14 @@ abstract class CollectionSource
   void addOrUpdateEntry(AvesEntry entry) {
     final path = entry.path;
     if (path != null) {
+      // Optionally update the existing entry
       if (_entriesByPath.containsKey(path)) {
-        // Optionally update the existing entry
+        final preEntry = _entriesByPath[path];
+        // if share by copied exist with a same file,mean this duplicate happen in a share copy op, replace pre record.
+        if (preEntry != null && shareCopiedEntries.all.contains(preEntry.id)) {
+          shareCopiedEntries.removeIds({preEntry.id});
+          shareCopiedEntries.add({entry});
+        }
         _rawEntries.remove(_entriesByPath[path]);
         _entriesByPath[path] = entry;
       } else {
@@ -491,7 +497,7 @@ abstract class CollectionSource
         if (sourceEntry != null) {
           fromAlbums.add(sourceEntry.directory);
           movedEntries.add(sourceEntry.copyWith(
-            id: localMediaDb.nextId,
+            id: localMediaDb.nextDateId,
             uri: newFields['uri'] as String?,
             path: newFields['path'] as String?,
             contentId: newFields['contentId'] as int?,

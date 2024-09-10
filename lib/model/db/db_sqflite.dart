@@ -67,8 +67,13 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
   @override
   int get nextId => ++_lastId;
 
+  int _initTime = 0;
+  @override
+  int get nextDateId => _initTime + _lastId++;
+
   @override
   Future<void> init() async {
+    _initTime = DateTime.now().millisecondsSinceEpoch;
     _db = await openDatabase(
       await path,
       onCreate: (db, version) async {

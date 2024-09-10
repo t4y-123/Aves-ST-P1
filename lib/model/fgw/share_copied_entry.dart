@@ -20,6 +20,11 @@ class ShareCopiedEntries with ChangeNotifier {
     //     '[$_rows]  start');
   }
 
+  Future<void> refresh() async {
+    _rows.clear();
+    await init();
+  }
+
   int get count => _rows.length;
 
   Set<int> get all => Set.unmodifiable(_rows.map((v) => v.id));

@@ -93,7 +93,7 @@ class ScenarioSteps extends PresentationRows<ScenarioStepRow> {
     final finalStepNum = maxStepNum + existMaxStepNumOffset;
 
     return ScenarioStepRow(
-      id: localMediaDb.nextId,
+      id: localMediaDb.nextDateId,
       scenarioId: scenarioId,
       orderNum: maxOrderNum + existMaxOrderNumOffset,
       stepNum: finalStepNum,

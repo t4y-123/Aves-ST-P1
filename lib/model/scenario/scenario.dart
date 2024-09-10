@@ -71,7 +71,7 @@ class Scenario extends PresentationRows<ScenarioRow> {
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
     final orderNum = maxScenario + existOrderNumOffset;
     return ScenarioRow(
-      id: localMediaDb.nextId,
+      id: localMediaDb.nextDateId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, newLoadType),
       color: color ?? AColors.getRandomColor(),

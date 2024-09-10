@@ -180,6 +180,8 @@ class FgwScheduleHelper {
       case WallpaperUpdateType.lock:
         location = WallpaperLocation.lockScreen;
         debugPrint(' location = WallpaperLocation.lockScreen;');
+      case WallpaperUpdateType.both:
+        location = WallpaperLocation.bothScreens;
       case WallpaperUpdateType.widget:
         debugPrint('setFgWallpaper WallpaperUpdateType.widget wait for implementation');
         return;

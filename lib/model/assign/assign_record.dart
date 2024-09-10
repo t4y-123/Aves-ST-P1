@@ -93,7 +93,7 @@ class AssignRecord extends PresentationRows<AssignRecordRow> {
     final orderNum = maxOrderNum + existOrderNumOffset;
     final finalDateTime = DateTime.now();
     return AssignRecordRow(
-      id: localMediaDb.nextId,
+      id: localMediaDb.nextDateId,
       orderNum: orderNum,
       labelName: labelName ?? await getLabelName(orderNum, finalDateTime),
       color: AColors.getRandomColor(),

@@ -219,6 +219,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         case IntentActions.fgwUsedRecordOpen:
           appMode = AppMode.main;
           _fgwOpenType = FgwServiceOpenType.usedRecord;
+          // for it may change in fgw notification.
+          await settings.reload();
         case IntentActions.fgwViewOpen:
         case IntentActions.fgwDuplicateOpen:
           await settings.reload();

@@ -190,7 +190,7 @@ class MediaStoreSource extends CollectionSource {
         final existingEntry = knownContentIds.contains(contentId)
             ? knownLiveEntries.firstWhereOrNull((entry) => entry.contentId == contentId)
             : null;
-        entry.id = existingEntry?.id ?? localMediaDb.nextId;
+        entry.id = existingEntry?.id ?? localMediaDb.nextDateId;
 
         newEntries.add(entry);
       },
@@ -295,7 +295,7 @@ class MediaStoreSource extends CollectionSource {
             if (existingEntry != null) {
               entriesToRefresh.add(existingEntry);
             } else {
-              sourceEntry.id = localMediaDb.nextId;
+              sourceEntry.id = localMediaDb.nextDateId;
               newEntries.add(sourceEntry);
             }
             final existingDirectory = existingEntry?.directory;
@@ -405,7 +405,7 @@ class MediaStoreSource extends CollectionSource {
         final sourceEntry = await mediaFetchService.getEntry(uri, null, allowUnsized: true);
         if (sourceEntry != null) {
           newEntries.add(sourceEntry.copyWith(
-            id: localMediaDb.nextId,
+            id: localMediaDb.nextDateId,
             origin: EntryOrigins.vault,
           ));
         }

@@ -42,9 +42,11 @@ class _DbTabState extends State<DbTab> {
     final id = entry.id;
     _dbDateLoader = localMediaDb.loadDates().then((values) => values[id]);
     _dbEntryLoader = localMediaDb.loadEntriesById({id}).then((values) => values.firstOrNull);
-    _dbMetadataLoader = localMediaDb.loadCatalogMetadata().then((values) => values.firstWhereOrNull((row) => row.id == id));
+    _dbMetadataLoader =
+        localMediaDb.loadCatalogMetadata().then((values) => values.firstWhereOrNull((row) => row.id == id));
     _dbAddressLoader = localMediaDb.loadAddresses().then((values) => values.firstWhereOrNull((row) => row.id == id));
-    _dbTrashDetailsLoader = localMediaDb.loadAllTrashDetails().then((values) => values.firstWhereOrNull((row) => row.id == id));
+    _dbTrashDetailsLoader =
+        localMediaDb.loadAllTrashDetails().then((values) => values.firstWhereOrNull((row) => row.id == id));
     _dbVideoPlaybackLoader = localMediaDb.loadVideoPlayback(id);
     setState(() {});
   }
@@ -95,7 +97,7 @@ class _DbTabState extends State<DbTab> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      final duplicates = {entry.copyWith(id: localMediaDb.nextId)};
+                      final duplicates = {entry.copyWith(id: localMediaDb.nextDateId)};
                       final source = context.read<CollectionSource>();
                       source.addEntries(duplicates);
                       await localMediaDb.insertEntries(duplicates);

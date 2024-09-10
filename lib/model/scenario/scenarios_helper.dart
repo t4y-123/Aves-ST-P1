@@ -78,7 +78,7 @@ class ScenariosHelper {
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
     const injNum = exNum + 7;
-    const unUum = injNum + 5;
+    const unUum = injNum + 7;
     return {
       //exclude unique
       await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
@@ -94,6 +94,8 @@ class ScenariosHelper {
       await scenarios.newRow(injNum + 3, labelName: _l10n.interjectName03, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 4, labelName: _l10n.interjectName04, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName05, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName06, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName07, loadType: ScenarioLoadType.intersectAnd),
 
       await scenarios.newRow(unUum + 1, labelName: _l10n.unionName01, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 2, labelName: _l10n.unionName02, loadType: ScenarioLoadType.unionOr),
@@ -113,7 +115,7 @@ class ScenariosHelper {
     int orderNum = 1;
     const exNum = -1;
     const injNum = exNum + 7;
-    const unUum = injNum + 5;
+    const unUum = injNum + 7;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
       //1/2/3/4 5
@@ -138,9 +140,11 @@ class ScenariosHelper {
       ///////////////////////////////////
       newScenarioStep(orderNum++, sIds[injNum + 1], 1, {AspectRatioFilter.portrait}),
       newScenarioStep(orderNum++, sIds[injNum + 2], 1, {AspectRatioFilter.landscape}),
-      newScenarioStep(orderNum++, sIds[injNum + 3], 1, {QueryFilter('TIME2NOW < 6h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 4], 1, {QueryFilter('TIME2NOW < 12h')}),
-      newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3d')}),
+      newScenarioStep(orderNum++, sIds[injNum + 3], 1, {AspectRatioFilter.portrait.reverse()}),
+      newScenarioStep(orderNum++, sIds[injNum + 4], 1, {AspectRatioFilter.landscape.reverse()}),
+      newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 6], 1, {QueryFilter('TIME2NOW < 12h')}),
+      newScenarioStep(orderNum++, sIds[injNum + 7], 1, {QueryFilter('TIME2NOW < 3d')}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////

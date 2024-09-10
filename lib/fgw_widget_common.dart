@@ -105,7 +105,7 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
     final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
     AvesEntry? fgwEntry;
     final curLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
-    debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curLevel [$curLevel]');
+    debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curLevel [${curLevel?.toMap()}]');
 
     if (activeLevelIds.contains(settings.curFgwGuardLevelNum)) {
       final curSchedule =
@@ -113,20 +113,20 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
       if (curSchedule == null) {
         throw 'Failed to get curSchedule for widgetId $widgetId';
       }
-      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curSchedule [$curSchedule]');
+      //debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curSchedule [$curSchedule]');
 
       final curFilterSet = filtersSets.all.firstWhereOrNull((e) => e.id == curSchedule.filtersSetId);
       if (curFilterSet == null) {
         throw 'Failed to get curFilterSet for widgetId $widgetId';
       }
-      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilterSet [$curFilterSet]');
+      //debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilterSet [$curFilterSet]');
 
       final curFilters = curFilterSet.filters;
-      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilters [$curFilters]');
+      //debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curFilters [$curFilters]');
 
       final fgwEntries =
           CollectionLens(source: source, filters: curFilters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
-      debugPrint('$widgetId foregroundWallpaperWidgetMainCommon fgwEntries ${fgwEntries.length}: [$fgwEntries]');
+      //debugPrint('$widgetId foregroundWallpaperWidgetMainCommon fgwEntries ${fgwEntries.length}: [$fgwEntries]');
 
       if (fgwEntries.isNotEmpty) {
         switch (curSchedule.displayType) {
@@ -140,21 +140,20 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
 
         final recentUsedEntryRecord =
             fgwUsedEntryRecord.all.where((e) => e.widgetId == widgetId && e.guardLevelId == curLevel?.id);
-        debugPrint(
-            '$widgetId foregroundWallpaperWidgetMainCommon recentUsedEntryRecord entries length [${recentUsedEntryRecord.length}]');
+        // //debugPrint(
+        //     '$widgetId foregroundWallpaperWidgetMainCommon recentUsedEntryRecord entries length [${recentUsedEntryRecord.length}]');
 
         fgwEntry = fgwEntries.firstWhereOrNull(
           (entry) => !recentUsedEntryRecord.any((usedEntry) => usedEntry.entryId == entry.id),
         );
-        if (fgwEntry != null) {
-          debugPrint('$widgetId calling addAvesEntry fgwEntry: $fgwEntry');
-          await fgwUsedEntryRecord.addAvesEntry(fgwEntry, WallpaperUpdateType.widget,
-              widgetId: widgetId, curLevel: curLevel);
-        }
+        fgwEntry ??= fgwEntries.first;
+
+        //debugPrint('$widgetId calling addAvesEntry fgwEntry: $fgwEntry');
+        await fgwUsedEntryRecord.addAvesEntry(fgwEntry, WallpaperUpdateType.widget,
+            widgetId: widgetId, curLevel: curLevel);
+
         debugPrint('$widgetId Widget fgwEntry found: $fgwEntry');
-        if (fgwEntry != null) {
-          settings.setWidgetUri(widgetId, fgwEntry.uri);
-        }
+        settings.setWidgetUri(widgetId, fgwEntry.uri);
         return fgwEntry;
       }
     }

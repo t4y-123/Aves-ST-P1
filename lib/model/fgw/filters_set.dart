@@ -45,7 +45,7 @@ class FiltersSet extends PresentationRows<FiltersSetRow> {
     final relevantItems = isActive ? targetSet.where((item) => item.isActive).toList() : targetSet.toList();
     final maxFilterSetNum =
         relevantItems.isEmpty ? 0 : relevantItems.map((item) => item.orderNum).reduce((a, b) => a > b ? a : b);
-    final newId = localMediaDb.nextId;
+    final newId = localMediaDb.nextDateId;
     final filterSetSuqNum = maxFilterSetNum + existActiveMaxLevelOffset;
     return FiltersSetRow(
       id: newId,

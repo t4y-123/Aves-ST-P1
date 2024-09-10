@@ -88,9 +88,8 @@ class FgwUsedEntryRecord extends PresentationRows<FgwUsedEntryRecordRow> {
     int entryId, {
     int widgetId = 0,
   }) async {
-    final int id = DateTime.now().millisecondsSinceEpoch;
     final int dateMillis = DateTime.now().millisecondsSinceEpoch;
-
+    final int id = dateMillis + localMediaDb.nextId;
     return FgwUsedEntryRecordRow(
       id: id,
       labelName: 'null',

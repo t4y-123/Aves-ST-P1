@@ -176,9 +176,11 @@ object FgwServiceFlutterHandler {
                 }
                 // Schedules
                 call.argument<ArrayList<String>>(FgwConstant.SCHEDULES)?.let { schedulesString ->
-                    //Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n ")
+                    Log.d(LOG_TAG, "handleSyncFromDartToNative:start deal Schedules\n" +
+                            " allpaperScheduleHelper.cancelFgwServiceRelateSchedule(context: $context) ")
                     scheduleList = parseSchedulesString(schedulesString)
-                    WallpaperScheduleHelper.handleSchedules(context, scheduleList)
+                    WallpaperScheduleHelper.cancelFgwServiceRelateSchedule(context)
+                    WallpaperScheduleHelper.handleSchedules(context, scheduleList,true)
                 }
 
                 Log.d(LOG_TAG, "handleSyncFromDartToNative:curGuardLevel $curGuardLevel \n"+
@@ -186,7 +188,6 @@ object FgwServiceFlutterHandler {
                         "handleSyncFromDartToNative:entryFilename $entryFilename \n" +
                         "handleSyncFromDartToNative:isGuardLevelLocked ${FgwSeviceNotificationHandler.isGuardLevelLocked} \n" +
                         "handleSyncFromDartToNative:scheduleList $scheduleList")
-
                 FgwSeviceNotificationHandler.updateNotificationFromStoredValues(context)
                 result.success(true)
             } catch (e: Exception) {
@@ -278,14 +279,14 @@ object FgwServiceFlutterHandler {
         }
         Log.d(LOG_TAG, "callDartNoArgsMethod [$opString]:end")
     }
-
-    fun handleWallpaper(context: Context, opString: String) {
-        Log.d(LOG_TAG, "handleWallpaper: opString=$opString, updateType=$curUpdateType, widgetId=$curWidgetId")
+    
+    fun handleWallpaper(context: Context, opString: String, updateType: String, widgetId: Int) {
+        Log.d(LOG_TAG, "handleWallpaper: opString=$opString, updateType=$updateType, widgetId=$widgetId")
         runBlocking {
             invokeFlutterMethod<Any>(context, FGWN_SERVICE_OP_CHANNEL, opString,
                 arguments = hashMapOf(
-                    "updateType" to curUpdateType,
-                    "widgetId" to curWidgetId,
+                    "updateType" to updateType,
+                    "widgetId" to widgetId,
                 ),
                 onSuccess = { result -> Log.d(LOG_TAG, "$opString success: $result") },
                 onError = { e -> Log.e(LOG_TAG, "Failed to invoke $opString", e) }

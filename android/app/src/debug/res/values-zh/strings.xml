@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">收图浏览</string>
+    <string name="app_widget_label">相框</string>
+    <string name="foreground_wallpaper_widget_label">FGW壁纸</string>
+    <string name="foreground_wallpaper_channel_name">FGW壁纸</string>
+    <string name="foreground_wallpaper_tile_service_label">FGW壁纸</string>
+    <string name="foreground_wallpaper_notification_default_title">壁纸标题</string>
+    <string name="foreground_wallpaper_notification_default_message">壁纸信息</string>
+    <string name="wallpaper">壁纸</string>
+    <string name="search_shortcut_short_label">搜索</string>
+    <string name="videos_shortcut_short_label">视频</string>
+    <string name="analysis_channel_name">媒体扫描</string>
+    <string name="analysis_notification_default_title">正在扫描媒体</string>
+    <string name="analysis_notification_action_stop">停止</string>
+    <string name="safe_mode_shortcut_short_label">安全模式</string>
+</resources>

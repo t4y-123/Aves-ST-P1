@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aves/model/device.dart';
 import 'package:aves/model/fgw/enum/fgw_schedule_item.dart';
 import 'package:aves/model/fgw/filters_set.dart';
@@ -8,6 +10,8 @@ import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/settings/enums/widget_outline.dart';
 import 'package:aves/model/settings/enums/widget_shape.dart';
 import 'package:aves/model/settings/settings.dart';
+import 'package:aves/model/source/collection_source.dart';
+import 'package:aves/services/analysis_service.dart';
 import 'package:aves/services/fgw_widget_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/icons.dart';
@@ -47,6 +51,8 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
   late WidgetOpenPage _openPage;
   late WidgetDisplayedItem _displayedItem;
   late Set<CollectionFilter> _collectionFilters;
+  late Future<void> _initializationFuture;
+
   Future<Map<Brightness, Map<WidgetOutline, Color?>>> _outlineColorsByBrightness = Future.value({});
 
   int get widgetId => widget.widgetId;
@@ -72,7 +78,10 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
     _openPage = settings.getWidgetOpenPage(widgetId);
     _displayedItem = settings.getWidgetDisplayedItem(widgetId);
     _collectionFilters = settings.getWidgetCollectionFilters(widgetId);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateOutlineColors());
+    _initializationFuture = _initializeAsyncDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateOutlineColors();
+    });
   }
 
   void _updateOutlineColors() {
@@ -92,126 +101,147 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
     return byBrightness;
   }
 
+  Future<void> _initializeAsyncDependencies() async {
+    if (!widget.fromSettingsPage) {
+      //unawaited(reportService.setCustomKey('app_mode', 'fgw_widget_setting'));
+      // unawaited(GlobalSearch.registerCallback());
+      unawaited(AnalysisService.registerCallback());
+      final source = context.read<CollectionSource>();
+      final readyCompleter = Completer();
+      source.stateNotifier.addListener(() {
+        if (source.isReady && !readyCompleter.isCompleted) {
+          readyCompleter.complete();
+        }
+      });
+      await source.init(canAnalyze: false);
+      await readyCompleter.future;
+    }
+    await fgwGuardLevels.syncRowsToBridge();
+    await fgwSchedules.syncRowsToBridge();
+    await filtersSets.syncRowsToBridge();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    return FutureBuilder<void>(
+        future: _initializationFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
+              ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
+              ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
+            ],
+            child: AvesScaffold(
+              appBar: AppBar(
+                title: Text(l10n.settingsForegroundWallpaperWidgetPageTitle),
+              ),
+              body: SafeArea(
+                child: FutureBuilder<Map<Brightness, Map<WidgetOutline, Color?>>>(
+                  future: _outlineColorsByBrightness,
+                  builder: (context, snapshot) {
+                    final outlineColorsByBrightness = snapshot.data;
+                    if (outlineColorsByBrightness == null) return const SizedBox();
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<GuardLevel>.value(value: fgwGuardLevels),
-        ChangeNotifierProvider<FgwSchedule>.value(value: fgwSchedules),
-        ChangeNotifierProvider<FiltersSet>.value(value: filtersSets),
-      ],
-      child: AvesScaffold(
-        appBar: AppBar(
-          title: Text(l10n.settingsForegroundWallpaperWidgetPageTitle),
-        ),
-        body: SafeArea(
-          child: FutureBuilder<Map<Brightness, Map<WidgetOutline, Color?>>>(
-            future: _outlineColorsByBrightness,
-            builder: (context, snapshot) {
-              () async {
-                await fgwGuardLevels.syncRowsToBridge();
-                await filtersSets.syncRowsToBridge();
-                await fgwSchedules.syncRowsToBridge();
-              };
+                    final effectiveOutlineColors = outlineColorsByBrightness[Theme.of(context).brightness];
+                    if (effectiveOutlineColors == null) return const SizedBox();
 
-              final outlineColorsByBrightness = snapshot.data;
-              if (outlineColorsByBrightness == null) return const SizedBox();
+                    // Get active levels
+                    final activeLevels = fgwGuardLevels.bridgeAll.where((level) => level.isActive);
+                    // Create a new widget wallpaper schedule for each active level
+                    int orderNumOffset = 1;
+                    final newSchedules = activeLevels.map((level) {
+                      FgwScheduleRow? todoRow = fgwSchedules.bridgeAll
+                          .firstWhereOrNull((e) => e.guardLevelId == level.id && e.widgetId == widgetId);
+                      debugPrint('activeLevels =${activeLevels.map((e) => e.toMap())} todoRow ${todoRow?.toMap()}');
+                      if (todoRow == null) {
+                        final newWidgetFilterSet = filtersSets.newRow(1, type: PresentationRowType.bridgeAll);
+                        filtersSets.add({newWidgetFilterSet}, type: PresentationRowType.bridgeAll);
+                        todoRow = fgwSchedules.newRow(
+                          existMaxOrderNumOffset: orderNumOffset++,
+                          guardLevelId: level.id,
+                          filtersSetId: newWidgetFilterSet.id,
+                          updateType: WallpaperUpdateType.widget,
+                          widgetId: widgetId,
+                        );
+                      }
+                      return todoRow;
+                    }).toList();
 
-              final effectiveOutlineColors = outlineColorsByBrightness[Theme.of(context).brightness];
-              if (effectiveOutlineColors == null) return const SizedBox();
-
-              // Get active levels
-              final activeLevels = fgwGuardLevels.bridgeAll.where((level) => level.isActive);
-              // Create a new widget wallpaper schedule for each active level
-              int orderNumOffset = 1;
-              final newSchedules = activeLevels.map((level) {
-                FgwScheduleRow? todoRow = fgwSchedules.bridgeAll
-                    .firstWhereOrNull((e) => e.guardLevelId == level.id && e.widgetId == widgetId);
-                if (todoRow == null) {
-                  final newWidgetFilterSet = filtersSets.newRow(1, type: PresentationRowType.bridgeAll);
-                  filtersSets.add({newWidgetFilterSet}, type: PresentationRowType.bridgeAll);
-                  todoRow = fgwSchedules.newRow(
-                    existMaxOrderNumOffset: orderNumOffset++,
-                    guardLevelId: level.id,
-                    filtersSetId: newWidgetFilterSet.id,
-                    updateType: WallpaperUpdateType.widget,
-                    widgetId: widgetId,
-                  );
-                }
-                return todoRow;
-              }).toList();
-
-              // Add new schedules to the existing schedules list
-              fgwSchedules.add(newSchedules.toSet(), type: PresentationRowType.bridgeAll);
-              final newSchedulesIds = newSchedules.map((e) => e.id);
-              return Column(
-                children: [
-                  Expanded(
-                    child: ListView(
+                    // Add new schedules to the existing schedules list
+                    fgwSchedules.add(newSchedules.toSet(), type: PresentationRowType.bridgeAll);
+                    final newSchedulesIds = newSchedules.map((e) => e.id);
+                    return Column(
                       children: [
-                        _buildShapeSelector(effectiveOutlineColors),
-                        ListTile(
-                          title: Text(l10n.settingsWidgetShowOutline),
-                          trailing: HomeWidgetOutlineSelector(
-                            getter: () => _outline,
-                            setter: (v) => setState(() => _outline = v),
-                            outlineColorsByBrightness: outlineColorsByBrightness,
+                        Expanded(
+                          child: ListView(
+                            children: [
+                              _buildShapeSelector(effectiveOutlineColors),
+                              ListTile(
+                                title: Text(l10n.settingsWidgetShowOutline),
+                                trailing: HomeWidgetOutlineSelector(
+                                  getter: () => _outline,
+                                  setter: (v) => setState(() => _outline = v),
+                                  outlineColorsByBrightness: outlineColorsByBrightness,
+                                ),
+                              ),
+                              SettingsSelectionListTile<WidgetOpenPage>(
+                                values: WidgetOpenPage.values,
+                                getName: (context, v) => v.getName(context),
+                                selector: (context, s) => _openPage,
+                                onSelection: (v) => setState(() => _openPage = v),
+                                tileTitle: l10n.settingsWidgetOpenPage,
+                              ),
+                              SettingsSelectionListTile<WidgetDisplayedItem>(
+                                values: WidgetDisplayedItem.values,
+                                getName: (context, v) => v.getName(context),
+                                selector: (context, s) => _displayedItem,
+                                onSelection: (v) => setState(() => _displayedItem = v),
+                                tileTitle: l10n.settingsWidgetDisplayedItem,
+                              ),
+                              SettingsCollectionTile(
+                                filters: _collectionFilters,
+                                onSelection: (v) => setState(() => _collectionFilters = v),
+                              ),
+                              Selector<FgwSchedule, Set<FgwScheduleRow>>(
+                                selector: (_, schedules) => schedules.bridgeAll,
+                                builder: (_, bridgeAll, __) {
+                                  return Column(
+                                    children: bridgeAll
+                                        .where((e) => newSchedulesIds.contains(e.id))
+                                        .toList()
+                                        .sorted()
+                                        .map((e) => ScheduleItemPageTile(item: e).build(context))
+                                        .toList(),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                        SettingsSelectionListTile<WidgetOpenPage>(
-                          values: WidgetOpenPage.values,
-                          getName: (context, v) => v.getName(context),
-                          selector: (context, s) => _openPage,
-                          onSelection: (v) => setState(() => _openPage = v),
-                          tileTitle: l10n.settingsWidgetOpenPage,
-                        ),
-                        SettingsSelectionListTile<WidgetDisplayedItem>(
-                          values: WidgetDisplayedItem.values,
-                          getName: (context, v) => v.getName(context),
-                          selector: (context, s) => _displayedItem,
-                          onSelection: (v) => setState(() => _displayedItem = v),
-                          tileTitle: l10n.settingsWidgetDisplayedItem,
-                        ),
-                        SettingsCollectionTile(
-                          filters: _collectionFilters,
-                          onSelection: (v) => setState(() => _collectionFilters = v),
-                        ),
-                        Selector<FgwSchedule, Set<FgwScheduleRow>>(
-                          selector: (_, schedules) => schedules.bridgeAll,
-                          builder: (_, bridgeAll, __) {
-                            return Column(
-                              children: bridgeAll
-                                  .where((e) => newSchedulesIds.contains(e.id))
-                                  .toList()
-                                  .sorted()
-                                  .map((e) => ScheduleItemPageTile(item: e).build(context))
-                                  .toList(),
-                            );
-                          },
+                        const Divider(height: 0),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: AvesOutlinedButton(
+                            label: l10n.saveTooltip,
+                            onPressed: () async {
+                              await _saveSettings();
+                              await ForegroundWallpaperWidgetService.configure();
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  const Divider(height: 0),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: AvesOutlinedButton(
-                      label: l10n.saveTooltip,
-                      onPressed: () {
-                        _saveSettings();
-                        ForegroundWallpaperWidgetService.configure();
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        });
   }
 
   Widget _buildShapeSelector(Map<WidgetOutline, Color?> outlineColors) {
@@ -254,15 +284,16 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
     settings.setWidgetOpenPage(widgetId, _openPage);
     settings.setWidgetDisplayedItem(widgetId, _displayedItem);
     settings.setWidgetCollectionFilters(widgetId, _collectionFilters);
+
     // t4y: sync bridge to all to save settings.
-    await fgwSchedules.syncBridgeToRows();
-    await fgwSchedules.syncBridgeToRows();
-    await filtersSets.syncBridgeToRows();
+    await filtersSets.syncBridgeToRows(notify: false);
+    await fgwSchedules.syncBridgeToRows(notify: false);
 
     if (invalidateUri) {
       settings.setWidgetUri(widgetId, null);
     }
-
+    debugPrint('$runtimeType _saveSettings syncBridgeToRows finish');
+    //await ForegroundWallpaperService.syncFgwScheduleChanges();
     // Conditionally pop the page based on the source
     if (widget.fromSettingsPage) {
       Navigator.of(context).pop();

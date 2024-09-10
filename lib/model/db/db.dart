@@ -19,7 +19,7 @@ import 'package:aves/model/viewer/video_playback.dart';
 
 abstract class LocalMediaDb {
   int get nextId;
-
+  int get nextDateId;
   Future<void> init();
 
   Future<int> dbFileSize();

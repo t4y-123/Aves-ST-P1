@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
 import 'package:aves/model/fgw/fgw_rows_helper.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
 import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
@@ -123,6 +125,10 @@ class MediaStoreSource extends CollectionSource {
     }
     final removedEntries = knownEntries.where((entry) => removedContentIds.contains(entry.contentId)).toSet();
     knownEntries.removeAll(removedEntries);
+
+    await shareCopiedEntries.removeEntries(removedEntries);
+    await assignEntries.removeEntries(removedEntries);
+    await fgwUsedEntryRecord.removeEntries(removedEntries);
 
     // show known entries
     debugPrint('$runtimeType load ${stopwatch.elapsed} add known entries');

@@ -968,7 +968,7 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
 
   @override
   Future<void> addShareCopiedEntries(Set<ShareCopiedEntryRow> rows) async {
-    debugPrint('addShareCopiedEntries.add(_db:\n$rows');
+    //debugPrint('addShareCopiedEntries.add(_db:\n$rows');
     if (rows.isEmpty) return;
     final batch = _db.batch();
     rows.forEach((row) => _batchInsertShareCopiedEntries(batch, row));
@@ -995,7 +995,7 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
   }
 
   void _batchInsertShareCopiedEntries(Batch batch, ShareCopiedEntryRow row) {
-    debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
+    //debugPrint('addShareCopiedEntries.add(_batchInsertShareCopiedEntries:\n$batch \n $row');
     batch.insert(
       shareCopiedEntryTable,
       row.toMap(),
@@ -1192,7 +1192,7 @@ class SqfliteLocalMediaDb implements LocalMediaDb {
   }
 
   void _batchInsertAssignEntries(Batch batch, AssignEntryRow row) {
-    debugPrint('addAssignEntries.add(_batchInsertAssignEntries:\n$batch \n $row');
+    //debugPrint('addAssignEntries.add(_batchInsertAssignEntries:\n$batch \n $row');
     batch.insert(
       assignEntryTable,
       row.toMap(),

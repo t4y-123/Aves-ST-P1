@@ -102,12 +102,12 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   await source.init(canAnalyze: false);
   await readyCompleter.future;
   try {
-    final activeLevelIds = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.id);
+    final activeLevelNums = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.guardLevel);
     AvesEntry? fgwEntry;
     final curLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
     debugPrint('$widgetId foregroundWallpaperWidgetMainCommon curLevel [${curLevel?.toMap()}]');
 
-    if (activeLevelIds.contains(settings.curFgwGuardLevelNum)) {
+    if (activeLevelNums.contains(settings.curFgwGuardLevelNum)) {
       final curSchedule =
           fgwSchedules.all.firstWhereOrNull((e) => e.guardLevelId == curLevel?.id && e.widgetId == widgetId);
       if (curSchedule == null) {
@@ -156,9 +156,11 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
         settings.setWidgetUri(widgetId, fgwEntry.uri);
         return fgwEntry;
       }
+    } else {
+      debugPrint('Error in foregroundWallpaperWidgetMainCommon get active for widgetId $widgetId: $activeLevelNums');
     }
   } catch (e) {
-    debugPrint('Error in foregroundWallpaperWidgetMainCommon _getWidgetEntry for widgetId $widgetId: $e');
+    debugPrint('Error in foregroundWallpaperWidgetMainCommon get active for widgetId $widgetId: $e');
   }
 
   final filters = settings.getWidgetCollectionFilters(widgetId);

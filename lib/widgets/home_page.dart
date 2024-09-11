@@ -490,7 +490,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
       case FgwServiceOpenType.usedRecord:
         await fgwUsedEntryRecord.refresh();
         if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
-          _initialFilters = {FgwUsedFilter(guardLevelId: settings.curFgwGuardLevelNum)};
+          final curLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+          _initialFilters = {FgwUsedFilter(guardLevelId: curLevel?.id)};
           filters = _initialFilters;
           routeName = CollectionPage.routeName;
         }

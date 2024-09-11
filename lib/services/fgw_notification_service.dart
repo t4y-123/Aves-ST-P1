@@ -166,13 +166,21 @@ class FgwServiceHelper with FeedbackMixin {
       // debugPrint('$widgetId handleWallpaper curLevel [$curLevel]');
       // Ensure map is initialized
       if (_fgwFilters.isEmpty || _activeLevels.isEmpty || _schedules.isEmpty || curLevel == null) {
+        await _initDependencies();
         await _initFilterMap();
+        debugPrint(
+            '$widgetId handleWallpape _fgwFilters.isEmpty || _activeLevels.isEmpty || _schedules.isEmpty || curLevel == null'
+            ' ${_activeLevels.map((e) => e.toMap())}: [${_schedules.values.map((e) => e.toMap())}]');
       }
       final key = '${settings.curFgwGuardLevelNum}-${updateType.name}-$widgetId';
       final emptyMessage = _l10n.fgwScheduleEntryEmptyMessage('Level[$key]');
       final curFilters = _fgwFilters[key];
 
       if (curFilters == null || _schedules[key] == null) {
+        await _initDependencies();
+        await _initFilterMap();
+        debugPrint('$widgetId handleWallpaper curFilters == null || _schedules[$key] == null'
+            ' ${curFilters?.map((e) => e.toMap())}: [${_schedules[key]}]');
         await showToast(emptyMessage);
         throw 'Failed to get for widgetId $widgetId \n key:$key _schedules[key] ${_schedules[key]} \n curFilters ${_fgwFilters[key]}';
       }
@@ -181,6 +189,7 @@ class FgwServiceHelper with FeedbackMixin {
               .sortedEntries;
       //debugPrint('$widgetId handleWallpaper fgwEntries ${fgwEntries.length}: [$fgwEntries]');
       if (fgwEntries.isEmpty) {
+        await _initFilterMap();
         await showToast(emptyMessage);
         return Future.value(false);
       }

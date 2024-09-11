@@ -302,9 +302,11 @@ abstract class CollectionSource
       // Optionally update the existing entry
       if (_entriesByPath.containsKey(path)) {
         final preEntry = _entriesByPath[path];
-        // if share by copied exist with a same file,mean this duplicate happen in a share copy op, replace pre record.
+        //t4y: if share by copied exist with a same file,mean this duplicate happen in a share copy op,
+        // but as not sure which one will be added to db in multi progress,
+        // I add them all to share by copy record.
+        // and remove when remove expired share copied.
         if (preEntry != null && shareCopiedEntries.all.contains(preEntry.id)) {
-          shareCopiedEntries.removeIds({preEntry.id});
           shareCopiedEntries.add({entry});
         }
         _rawEntries.remove(_entriesByPath[path]);

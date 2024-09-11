@@ -61,6 +61,12 @@ class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
               onChanged: (v) => settings.shareByCopyRemoveInterval = v,
               title: l10n.settingsExpiredInterval,
             ),
+            SettingsNumberEditTile(
+              selector: (context, s) => s.shareByCopyObsoleteRecordRemoveInterval,
+              onChanged: (v) => settings.shareByCopyObsoleteRecordRemoveInterval = v,
+              title: l10n.settingsShareByCopyRecordExpiredInterval,
+              minValue: 1,
+            ),
             SettingsSelectionListTile<ShareByCopySetDateType>(
               values: ShareByCopySetDateType.values,
               getName: (context, v) => v.getName(context),

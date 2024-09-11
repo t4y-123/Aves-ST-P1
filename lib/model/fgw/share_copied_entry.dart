@@ -34,15 +34,25 @@ class ShareCopiedEntries with ChangeNotifier {
   bool isExpiredCopied(AvesEntry entry) {
     //debugPrint('[$entry] isExpiredCopied start');
     if (!isShareCopied(entry)) return false;
-    final dateMillis = _rows.firstWhereOrNull((row) => row.id == entry.id)?.dateMillis;
+    return isExpiredCopiedId(entry.id, Duration(seconds: settings.shareByCopyRemoveInterval));
+  }
+
+  bool isExpiredRecord(int id) {
+    //debugPrint('[$entry] isExpiredCopied start');
+    return isExpiredCopiedId(id, Duration(days: settings.shareByCopyObsoleteRecordRemoveInterval));
+  }
+
+  bool isExpiredCopiedId(int entryId, Duration duration) {
+    //debugPrint('[$entryId] isExpiredCopied start');
+    final dateMillis = _rows.firstWhereOrNull((row) => row.id == entryId)?.dateMillis;
     if (dateMillis == null) return false;
-    // //debugPrint('$runtimeType [$entry] isExpiredCopied dateMillis $dateMillis');
-    // //debugPrint('dateMillis add ${settings.shareByCopyRemoveInterval} : $runtimeType '
-    //     '${DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval))}');
-    // //debugPrint('(${DateTime.now()}');
-    return DateTime.fromMillisecondsSinceEpoch(dateMillis)
-        .add(Duration(seconds: settings.shareByCopyRemoveInterval))
-        .isBefore(DateTime.now());
+    final result = DateTime.fromMillisecondsSinceEpoch(dateMillis).add(duration).isBefore(DateTime.now());
+    // debugPrint('$runtimeType [$entryId] isExpiredCopied dateMillis $dateMillis'
+    //     'dateMillis add ${settings.shareByCopyRemoveInterval} : $runtimeType '
+    //     '${DateTime.fromMillisecondsSinceEpoch(dateMillis).add(Duration(seconds: settings.shareByCopyRemoveInterval))}'
+    //     '(${DateTime.now()}'
+    //     'result: $result');
+    return result;
   }
 
   ShareCopiedEntryRow _entryToRow(AvesEntry entry) =>

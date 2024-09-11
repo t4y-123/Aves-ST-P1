@@ -1092,6 +1092,8 @@
   "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
   "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
   "settingsExpiredInterval": "Expired Interval",
+  "settingsShareByCopyRecordExpiredInterval": "Record expired days",
+
   "settingsFgwNewScheduleDefaultInterval": "Fgw new schedule default interval",
 
   "shareByCopySetDateTypeOnlyThisTime": "only this time copied",

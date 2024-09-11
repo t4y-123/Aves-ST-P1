@@ -95,6 +95,12 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
       getInt(shareByCopyRemoveIntervalKey) ?? SettingsDefaults.shareByCopyRemoveInterval;
   set shareByCopyRemoveInterval(int newValue) => set(shareByCopyRemoveIntervalKey, newValue);
 
+  static const shareByCopyObsoleteRecordRemoveIntervalKey = 'share_by_copy_obsolete_record_remove_interval';
+  int get shareByCopyObsoleteRecordRemoveInterval =>
+      getInt(shareByCopyObsoleteRecordRemoveIntervalKey) ?? SettingsDefaults.shareByCopyObsoleteRecordRemoveInterval;
+  set shareByCopyObsoleteRecordRemoveInterval(int newValue) =>
+      set(shareByCopyObsoleteRecordRemoveIntervalKey, newValue);
+
   static const shareByCopySetDateTypeKey = 'share_by_copy_set_date_type';
   ShareByCopySetDateType get shareByCopySetDateType => getEnumOrDefault(
       shareByCopySetDateTypeKey, SettingsDefaults.shareByCopySetDateType, ShareByCopySetDateType.values);

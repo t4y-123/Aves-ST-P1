@@ -125,7 +125,7 @@ class MediaStoreSource extends CollectionSource {
     }
     final removedEntries = knownEntries.where((entry) => removedContentIds.contains(entry.contentId)).toSet();
     knownEntries.removeAll(removedEntries);
-
+    // t4y: remove obsoleteIds in fgw and scenario.
     await shareCopiedEntries.removeEntries(removedEntries);
     await assignEntries.removeEntries(removedEntries);
     await fgwUsedEntryRecord.removeEntries(removedEntries);

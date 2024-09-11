@@ -1427,6 +1427,8 @@
   "@settingsShareByCopyAppModeViewAutoRemove": {},
   "settingsExpiredInterval": "过期间隔",
   "@settingsExpiredInterval": {},
+  "settingsShareByCopyRecordExpiredInterval": "复制记录保留日数",
+  "@settingsShareByCopyRecordExpiredInterval": {},
   "settingsFgwNewScheduleDefaultInterval": "新计划默认间隔",
   "@settingsFgwNewScheduleDefaultInterval": {},
 
@@ -1540,7 +1542,7 @@
   "settingsWidgetUpdateWhenOpenPage": "前台壁纸小部件打开页面时更新小部件：",
   "@settingsWidgetUpdateWhenOpenPage": {},
 
-  "settingsMaxFgwUsedEntryRecord": "每个的最大使用记录：\n[防护级别，更新类型，小部件 ID]]",
+  "settingsMaxFgwUsedEntryRecord": "[防护级别，更新类型，小部件 ID]\n每组最大使用记录数]",
   "@settingsMaxFgwUsedEntryRecord": {},
   "settingsGuardLevel": "防护级别",
   "@settingsGuardLevel": {},

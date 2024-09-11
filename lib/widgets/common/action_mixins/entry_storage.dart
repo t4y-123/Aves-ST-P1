@@ -181,7 +181,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     //debugPrint('$runtimeType deleteExpiredShareCopied\n'
     //     'settings.enableBin ${settings.enableBin} \n'
     //     ' settings.shareByCopyExpiredRemoveUseBin ${settings.shareByCopyExpiredRemoveUseBin}\n');
-    source.pauseMonitoring();
+    //source.pauseMonitoring();
     final useBin = settings.enableBin && settings.shareByCopyExpiredRemoveUseBin;
     //debugPrint('$runtimeType deleteExpiredShareCopied delete to useBin $useBin \n');
     // delete forever trashed items
@@ -192,6 +192,11 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       isShareByCopyDelete: true,
     );
     await shareCopiedEntries.removeEntries(expiredEntries);
+    // remove expired ids.
+    final expiredCopiedIds = shareCopiedEntries.all.where(shareCopiedEntries.isExpiredRecord).toSet();
+    if (expiredCopiedIds.isNotEmpty) {
+      await shareCopiedEntries.removeEntryIds(expiredCopiedIds);
+    }
     //await delegate.setDateToNow(context,entries:todoEntries,showConfirm: false);
     return;
   }

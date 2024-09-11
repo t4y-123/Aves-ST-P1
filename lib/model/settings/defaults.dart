@@ -192,6 +192,7 @@ class SettingsDefaults {
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
   static const shareByCopyRemoveInterval = 15; // seconds
+  static const shareByCopyObsoleteRecordRemoveInterval = 15; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.

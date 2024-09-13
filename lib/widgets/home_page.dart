@@ -183,21 +183,6 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
                 unawaited(WidgetService.update(widgetId));
               }
             } else if (intentAction == IntentActions.fgwWidgetOpen) {
-              final curGuardLevel =
-                  fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
-              //debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
-
-              if (curGuardLevel != null) {
-                final curWidgetSchedule = fgwSchedules.all
-                    .firstWhereOrNull((e) => e.guardLevelId == curGuardLevel.id && widgetId == widgetId);
-                if (curWidgetSchedule != null) {
-                  final curFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == curWidgetSchedule.filtersSetId);
-                  if (curFiltersSet != null) {
-                    _initialFilters = curFiltersSet.filters;
-                    //debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
-                  }
-                }
-              }
               if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
                 unawaited(ForegroundWallpaperWidgetService.update(widgetId));
               }
@@ -335,6 +320,23 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         await _initViewerEssentials();
       default:
         break;
+    }
+    if (intentAction == IntentActions.fgwWidgetOpen) {
+      final widgetId = intentData[IntentDataKeys.widgetId] as int?;
+      final curGuardLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
+      //debugPrint('IntentActions.foregroundWallpaperWidgetOpen curGuardLevel $curGuardLevel\n$uri');
+
+      if (curGuardLevel != null) {
+        final curWidgetSchedule =
+            fgwSchedules.all.firstWhereOrNull((e) => e.guardLevelId == curGuardLevel.id && widgetId == widgetId);
+        if (curWidgetSchedule != null) {
+          final curFiltersSet = filtersSets.all.firstWhereOrNull((e) => e.id == curWidgetSchedule.filtersSetId);
+          if (curFiltersSet != null) {
+            _initialFilters = curFiltersSet.filters;
+            //debugPrint('IntentActions.foregroundWallpaperWidgetOpen _initialFilters $_initialFilters');
+          }
+        }
+      }
     }
 
     // `pushReplacement` is not enough in some edge cases

@@ -1100,6 +1100,10 @@
   "shareByCopySetDateTypeAllCopiedEntries": "all copied pre and now",
   "settingsShareByCopySetDateTypeTileTitle": "Set date to now copied entries range: ",
 
+  "shareByCopyRemoveBeforeCopy": "Remove before copy",
+  "shareByCopyRemoveAfterCopy": "Remove after copy",
+  "shareByCopyRemoveSequenceTileTitle": "Remove sequence",
+
   "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
   "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
 

@@ -75,6 +75,14 @@ class ShareByCopyPage extends StatelessWidget with FeedbackMixin {
               tileTitle: context.l10n.settingsShareByCopySetDateTypeTileTitle,
               dialogTitle: context.l10n.settingsShareByCopySetDateTypeTileTitle,
             ),
+            SettingsSelectionListTile<ShareByCopyRemoveSequence>(
+              values: ShareByCopyRemoveSequence.values,
+              getName: (context, v) => v.getName(context),
+              selector: (context, s) => s.shareByCopyRemoveSequence,
+              onSelection: (v) => settings.shareByCopyRemoveSequence = v,
+              tileTitle: context.l10n.shareByCopyRemoveSequenceTileTitle,
+              dialogTitle: context.l10n.shareByCopyRemoveSequenceTileTitle,
+            ),
             ListTile(
               title: Text('${l10n.settingsClearShareCopiedItemsRecord} '),
               trailing: ElevatedButton(

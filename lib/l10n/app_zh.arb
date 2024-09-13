@@ -1440,6 +1440,15 @@
   "settingsShareByCopySetDateTypeTileTitle": "复制分享时更新至当前日期的项目范围：",
   "@settingsShareByCopySetDateTypeTileTitle": {},
 
+  "shareByCopyRemoveBeforeCopy": "复制前删除",
+  "@shareByCopyRemoveBeforeCopy": {},
+  "shareByCopyRemoveAfterCopy": "复制后删除",
+  "@shareByCopyRemoveAfterCopy": {},
+  "shareByCopyRemoveSequenceTileTitle": "删除顺序",
+  "@shareByCopyRemoveSequenceTileTitle": {},
+
+
+
   "settingsClearShareCopiedItemsRecord": "清除复制分享记录：",
   "@settingsClearShareCopiedItemsRecord": {},
   "confirmClearShareCopiedItemsRecord": "这将清除所有记住的复制项目共 {num} 条记录\n\n确定继续吗？",

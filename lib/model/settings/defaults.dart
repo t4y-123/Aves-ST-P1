@@ -194,6 +194,7 @@ class SettingsDefaults {
   static const shareByCopyRemoveInterval = 15; // seconds
   static const shareByCopyObsoleteRecordRemoveInterval = 15; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
+  static const shareByCopyRemoveSequence = ShareByCopyRemoveSequence.removeAfterCopy;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
   // so,always force to copy a new item before edit, then edit the copied item.

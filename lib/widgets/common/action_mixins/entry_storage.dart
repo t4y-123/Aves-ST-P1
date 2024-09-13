@@ -165,15 +165,17 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
 
   Future<void> deleteExpiredShareCopied(BuildContext context) async {
     final source = context.read<CollectionSource>();
+    await shareCopiedEntries.refresh();
     //await shareCopiedEntries.init();
     final todoEntries = source.allEntries
         .where((entry) => {PathFilter(androidFileUtils.avesShareByCopyPath)}.any((f) => f.test(entry)))
         .toSet();
     final expiredEntries = todoEntries.where(shareCopiedEntries.isExpiredCopied).toSet();
     if (expiredEntries.isEmpty) return;
-    //debugPrint('$runtimeType deleteExpiredShareCopied\n'
-    //     'todoEntries $todoEntries \n'
-    //     'expiredEntries $expiredEntries\n');
+    debugPrint('$runtimeType deleteExpiredShareCopied\n'
+        'todoEntries $todoEntries \n'
+        'expiredEntries $expiredEntries\n');
+    final expiredContentIds = expiredEntries.map((e) => e.contentId ?? 0).toSet();
 
     final entriesByDestination = <String, Set<AvesEntry>>{};
     entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
@@ -191,11 +193,11 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       enableBin: useBin,
       isShareByCopyDelete: true,
     );
-    await shareCopiedEntries.removeEntries(expiredEntries);
+    await shareCopiedEntries.removeIds(expiredContentIds);
     // remove expired ids.
     final expiredCopiedIds = shareCopiedEntries.all.where(shareCopiedEntries.isExpiredRecord).toSet();
     if (expiredCopiedIds.isNotEmpty) {
-      await shareCopiedEntries.removeEntryIds(expiredCopiedIds);
+      await shareCopiedEntries.removeEntryContentIds(expiredCopiedIds);
     }
     //await delegate.setDateToNow(context,entries:todoEntries,showConfirm: false);
     return;
@@ -403,7 +405,6 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     bool isShareByCopyDelete = false,
     bool shareByCopyNeedRemove = true,
   }) async {
-    final isViewerMode = context.read<ValueNotifier<AppMode>>().value == AppMode.view;
     // debugPrint('$runtimeType doMove in viewerMode?[$isViewerMode]:${context.read<ValueNotifier<AppMode>>().value}');
     if (moveType == MoveType.toBin && !isShareByCopyDelete) {
       final l10n = context.l10n;
@@ -416,11 +417,6 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     }
     // t4y delete the expired items first.
     // when share by copy in viewer mode, not need to delete pre.
-    final needRemoveExpired = ((isViewerMode && settings.shareByCopyAppModeViewAutoRemove) || shareByCopyNeedRemove);
-    if (moveType == MoveType.shareByCopy && needRemoveExpired) {
-      await shareCopiedEntries.refresh();
-      await deleteExpiredShareCopied(context);
-    }
 
     final entriesByDestination = <String, Set<AvesEntry>>{};
     switch (moveType) {
@@ -457,6 +453,12 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
     }
 
+    if (moveType == MoveType.shareByCopy &&
+        settings.shareByCopyRemoveSequence == ShareByCopyRemoveSequence.removeBeforeCopy &&
+        shareByCopyNeedRemove) {
+      await deleteExpiredShareCopied(context);
+    }
+
     await doQuickMove(
       context,
       moveType: moveType,
@@ -464,6 +466,12 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       onSuccess: onSuccess,
       isShareByCopyDelete: isShareByCopyDelete,
     );
+
+    if (moveType == MoveType.shareByCopy &&
+        settings.shareByCopyRemoveSequence == ShareByCopyRemoveSequence.removeAfterCopy &&
+        shareByCopyNeedRemove) {
+      await deleteExpiredShareCopied(context);
+    }
   }
 
   Future<void> rename(

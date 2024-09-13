@@ -106,6 +106,12 @@ mixin ForegroundWallpaperSettings on SettingsAccess {
       shareByCopySetDateTypeKey, SettingsDefaults.shareByCopySetDateType, ShareByCopySetDateType.values);
   set shareByCopySetDateType(ShareByCopySetDateType newValue) => set(shareByCopySetDateTypeKey, newValue.toString());
 
+  static const shareByCopyRemoveSequenceKey = 'share_by_copy_remove_sequence';
+  ShareByCopyRemoveSequence get shareByCopyRemoveSequence => getEnumOrDefault(
+      shareByCopyRemoveSequenceKey, SettingsDefaults.shareByCopyRemoveSequence, ShareByCopyRemoveSequence.values);
+  set shareByCopyRemoveSequence(ShareByCopyRemoveSequence newValue) =>
+      set(shareByCopyRemoveSequenceKey, newValue.toString());
+
   static const fgwDisplayTypeKey = 'fgw_display_type';
   FgwDisplayedType get fgwDisplayType =>
       getEnumOrDefault(fgwDisplayTypeKey, SettingsDefaults.fgwDisplayedItem, FgwDisplayedType.values);

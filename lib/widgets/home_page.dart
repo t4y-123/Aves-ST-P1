@@ -510,7 +510,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
           await EntrySetActionDelegate().doMove(context,
               moveType: MoveType.shareByCopy,
               entries: entries,
-              shareByCopyNeedRemove: settings.shareByCopyAppModeViewAutoRemove);
+              shareByCopyNeedRemove:
+                  settings.shareByCopyExpiredAutoRemove && settings.shareByCopyAppModeViewAutoRemove);
 
           entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
           debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');

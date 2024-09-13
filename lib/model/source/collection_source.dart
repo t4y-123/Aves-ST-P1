@@ -306,7 +306,7 @@ abstract class CollectionSource
         // but as not sure which one will be added to db in multi progress,
         // I add them all to share by copy record.
         // and remove when remove expired share copied.
-        if (preEntry != null && shareCopiedEntries.all.contains(preEntry.id)) {
+        if (preEntry != null && shareCopiedEntries.all.contains(preEntry.contentId)) {
           shareCopiedEntries.add({entry});
         }
         _rawEntries.remove(_entriesByPath[path]);
@@ -354,14 +354,15 @@ abstract class CollectionSource
     if (entries.isEmpty) return;
 
     final ids = entries.map((entry) => entry.id).toSet();
+    final mapContentIds = entries.map((entry) => entry.contentId ?? 0).toSet();
     await favourites.removeIds(ids);
     await covers.removeIds(ids);
     await localMediaDb.removeIds(ids);
     debugPrint('$runtimeType  removeEntries');
     await fgwUsedEntryRecord.removeEntryIds(ids);
     debugPrint('$runtimeType  await fgwUsedEntryRecord.removeEntryIds(ids); $ids');
-    await shareCopiedEntries.removeEntryIds(ids);
-    debugPrint('$runtimeType  await shareCopiedEntries.removeEntryIds(ids);; $ids');
+    await shareCopiedEntries.removeEntryContentIds(mapContentIds);
+    debugPrint('$runtimeType  await shareCopiedEntries.removeEntryIds(ids);; $ids\n mapContentIds $mapContentIds');
 
     ids.forEach((id) => _entryById.remove);
     _rawEntries.removeAll(entries);
@@ -549,11 +550,14 @@ abstract class CollectionSource
           }
         }
       });
-      if (moveType == MoveType.toBin) {
-        debugPrint('$runtimeType  await shareCopiedEntries.removeEntries(movedEntries) in  updateAfterMove tobin'
-            ' :\n$movedEntries');
-        await shareCopiedEntries.removeEntries(movedEntries);
-      }
+      // // t4y: content Id after move to bin is null
+      // if (moveType == MoveType.toBin) {
+      //   final contentIds = movedEntries.map((e) => e.contentId);
+      //   debugPrint('$runtimeType  await shareCopiedEntries.removeEntries(movedEntries) in  updateAfterMove tobin'
+      //       ' :\n$movedEntries\n'
+      //       'movedEntries ContentIds:$contentIds');
+      //   await shareCopiedEntries.removeEntries(movedEntries);
+      // }
     }
 
     switch (moveType) {

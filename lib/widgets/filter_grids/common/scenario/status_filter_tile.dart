@@ -160,8 +160,8 @@ class _StatusInteractiveStatusFilterTileState<T extends CollectionFilter>
                           scenarioSteps.syncBridgeToRows();
                         });
                       } else {
-                        scenarios.removeRows({newItem}, type: PresentationRowType.bridgeAll);
-                        scenarioSteps.removeRows(bridgeSubItems.toSet(), type: PresentationRowType.bridgeAll);
+                        scenarios.syncRowsToBridge(notify: false);
+                        scenarioSteps.syncRowsToBridge(notify: false);
                       }
                     });
                   }

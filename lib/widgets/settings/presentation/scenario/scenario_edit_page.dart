@@ -57,7 +57,7 @@ class _ScenarioEditSettingPageState extends State<ScenarioEditSettingPage> with 
             title: Text(l10n.settingsScenariosEditConfigPageTile),
             bottom: TabBar(
               tabs: [
-                Tab(text: l10n.settingsScenarioStepsTabTypes),
+                Tab(text: l10n.settingsScenarioTabTypes),
                 Tab(text: l10n.settingsScenarioStepsTabTypes),
               ],
             ),

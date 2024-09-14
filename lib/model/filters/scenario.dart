@@ -5,6 +5,7 @@ import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/theme/icons.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -26,7 +27,11 @@ class ScenarioFilter extends CoveredCollectionFilter {
 
   ScenarioFilter(this.scenarioId, this.displayName, {super.reversed = false}) {
     if (scenarioId >= 0) {
-      scenario = scenarios.all.firstWhere((e) => e.id == scenarioId);
+      scenario = scenarios.all.firstWhereOrNull((e) => e.id == scenarioId);
+      if (scenario == null) {
+        _test = (entry) => false;
+        return;
+      }
       steps = scenarioSteps.all.where((e) => e.scenarioId == scenarioId && e.isActive).toList();
       steps?.sort();
 

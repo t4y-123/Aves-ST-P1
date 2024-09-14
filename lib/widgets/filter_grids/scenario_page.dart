@@ -100,6 +100,7 @@ class ScenarioListPage extends StatelessWidget {
         .where((e) => e.isActive)
         .map((scenario) => ScenarioFilter(scenario.id, scenario.labelName))
         .toSet();
+
     filters.add(ScenarioFilter(ScenarioFilter.scenarioSettingId, context.l10n.scenarioFilterSettingTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioAddNewItemId, context.l10n.scenarioFilterAddNewTitle));
     filters.add(ScenarioFilter(ScenarioFilter.scenarioOpId, context.l10n.scenarioFilterOpTitle));

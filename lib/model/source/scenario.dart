@@ -1,5 +1,6 @@
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/utils/collection_utils.dart';
 import 'package:collection/collection.dart';
@@ -20,6 +21,8 @@ mixin ScenarioMixin on SourceBase {
   }
 
   void updateScenario({bool notify = true}) {
+    // Notify if required
+    scenariosHelper.updateScenario();
     if (notify) {
       notifyScenariosChanged();
     }

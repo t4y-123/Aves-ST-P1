@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:aves/model/assign/assign_entries.dart';
-import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
@@ -19,7 +18,7 @@ import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
-import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/settings/modules/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
@@ -121,12 +120,11 @@ abstract class CollectionSource
           vaults.vaultDirectories.whereNot(vaults.isLocked).map((v) => AlbumFilter(v, null)).toSet();
       _onFilterVisibilityChanged(newlyVisibleFilters);
     });
-
-    assignRecords.addListener(updateAssigns);
+    //
     assignEntries.addListener(updateAssigns);
-    assignRecords.addListener(updateScenario);
-    scenarios.addListener(updateScenario);
-    scenarios.addListener(updateAssigns);
+    assignEntries.addListener(updateScenario);
+    scenarioSteps.addListener(updateScenario);
+    scenarioSteps.addListener(updateAssigns);
   }
 
   @mustCallSuper
@@ -199,8 +197,11 @@ abstract class CollectionSource
       ..._getAppHiddenFilters(),
     };
 
-    if (!useScenario || settings.scenarioPinnedExcludeFilters.isEmpty) {
+    if (!useScenario) {
       return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+    }
+    if (settings.scenarioPinnedExcludeFilters.isEmpty) {
+      return entries.where((entry) => false);
     }
     // Separate the filters by type once
     return applyScenarioFilters(entries);

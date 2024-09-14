@@ -75,6 +75,50 @@ class ScenariosHelper {
     settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..clear();
   }
 
+  void updateScenario() {
+    // Retrieve all scenario rows
+    final allScenarios = scenarios.all.toSet();
+
+    // Check pinned exclude filters
+    final toRemoveExclude = settings.scenarioPinnedExcludeFilters.where((filter) {
+      if (filter is! ScenarioFilter) return false;
+      final scenario = allScenarios.firstWhereOrNull((e) => e.id == filter.scenarioId);
+      // Remove the filter if the scenario is not found or loadType has changed
+      return scenario == null || scenario.loadType != ScenarioLoadType.excludeUnique;
+    }).toSet();
+
+    settings.scenarioPinnedExcludeFilters = settings.scenarioPinnedExcludeFilters..removeAll(toRemoveExclude);
+
+    // Check pinned intersect filters
+    final toRemoveIntersect = settings.scenarioPinnedIntersectFilters.where((filter) {
+      if (filter is! ScenarioFilter) return false;
+      final scenario = allScenarios.firstWhereOrNull((e) => e.id == filter.scenarioId);
+      // Remove the filter if the scenario is not found or loadType has changed
+      return scenario == null || scenario.loadType != ScenarioLoadType.intersectAnd;
+    }).toSet();
+
+    settings.scenarioPinnedIntersectFilters = settings.scenarioPinnedIntersectFilters..removeAll(toRemoveIntersect);
+
+    // Check pinned union filters
+    final toRemoveUnion = settings.scenarioPinnedUnionFilters.where((filter) {
+      if (filter is! ScenarioFilter) return false;
+      final scenario = allScenarios.firstWhereOrNull((e) => e.id == filter.scenarioId);
+      // Remove the filter if the scenario is not found or loadType has changed
+      return scenario == null || scenario.loadType != ScenarioLoadType.unionOr;
+    }).toSet();
+
+    settings.scenarioPinnedUnionFilters = settings.scenarioPinnedUnionFilters..removeAll(toRemoveUnion);
+
+    // Set default exclude filters if exclude filters are empty
+    if (!settings.scenarioLock && settings.scenarioPinnedExcludeFilters.isEmpty) {
+      setExcludeDefaultFirst();
+    }
+    debugPrint('$runtimeType updateScenario settings:\n'
+        '${settings.scenarioPinnedExcludeFilters..toSet()} \n'
+        '${settings.scenarioPinnedIntersectFilters..toSet()} \n'
+        '${settings.scenarioPinnedUnionFilters..toSet()} ');
+  }
+
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
     const injNum = exNum + 7;

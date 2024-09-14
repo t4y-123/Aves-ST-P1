@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
@@ -18,6 +19,7 @@ import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/metadata/trash.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
 import 'package:aves/model/settings/modules/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -121,10 +123,12 @@ abstract class CollectionSource
       _onFilterVisibilityChanged(newlyVisibleFilters);
     });
     //
+    assignRecords.addListener(updateScenario);
+    assignRecords.addListener(updateAssigns);
     assignEntries.addListener(updateAssigns);
-    assignEntries.addListener(updateScenario);
+    scenarios.addListener(updateScenario);
+    scenarios.addListener(updateAssigns);
     scenarioSteps.addListener(updateScenario);
-    scenarioSteps.addListener(updateAssigns);
   }
 
   @mustCallSuper
@@ -217,9 +221,9 @@ abstract class CollectionSource
     final intersectAndFilters = settings.scenarioPinnedIntersectFilters;
     final unionOrFilters = settings.scenarioPinnedUnionFilters;
 
-    debugPrint('applyScenarioFilters excludeUniqueFilters $excludeUniqueFilters \n'
-        'intersectAndFilters $intersectAndFilters \n'
-        'unionOrFilters $unionOrFilters ');
+    // debugPrint('applyScenarioFilters excludeUniqueFilters $excludeUniqueFilters \n'
+    //     'intersectAndFilters $intersectAndFilters \n'
+    //     'unionOrFilters $unionOrFilters ');
 
     final hasUnionOr = unionOrFilters.isNotEmpty;
     final hasIntersectAnd = intersectAndFilters.isNotEmpty;
@@ -781,6 +785,7 @@ abstract class CollectionSource
   }
 
   void _onScenarioChanged() {
+    debugPrint('$runtimeType  _onScenarioChanged ');
     updateDerivedFilters();
     eventBus.fire(const FilterVisibilityChangedEvent());
     _visibleEntries = Set.unmodifiable(_applyHiddenFilters(_rawEntries));

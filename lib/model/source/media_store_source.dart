@@ -243,7 +243,7 @@ class MediaStoreSource extends CollectionSource {
         // as the initial addition of entries is silent,
         // so we manually notify change for potential home screen filters
         notifyAlbumsChanged();
-        notifyScenariosChanged();
+        // notifyScenariosChanged();
 
         unawaited(reportService.log(
             '$runtimeType load done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${newEntries.length} new, ${removedEntries.length} removed'));

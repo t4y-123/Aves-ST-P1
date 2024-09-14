@@ -5,6 +5,7 @@ import 'package:aves/l10n/l10n.dart';
 import 'package:aves/model/presentation/base_bridge_row.dart';
 import 'package:aves/model/scenario/enum/scenario_item.dart';
 import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/theme/colors.dart';
@@ -84,6 +85,13 @@ class Scenario extends PresentationRows<ScenarioRow> {
   @override
   ScenarioRow importFromMap(Map<String, dynamic> attributes) {
     return ScenarioRow.fromMap(attributes);
+  }
+
+  @override
+  Future<void> syncBridgeToRows({bool notify = true}) async {
+    await super.syncBridgeToRows(notify: false);
+    scenariosHelper.updateScenario();
+    if (notify) notifyListeners();
   }
 }
 

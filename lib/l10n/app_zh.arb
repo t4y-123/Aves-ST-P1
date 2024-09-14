@@ -1548,7 +1548,7 @@
   "@settingsFgwScheduleSyncButtonAlert": {},
   "settingsShowChipFgwButton": "在主页面显示前台壁纸服务开关按钮，建议关闭",
   "@settingsShowChipFgwButton": {},
-  "settingsWidgetUpdateWhenOpenPage": "前台壁纸小部件打开页面时更新小部件：",
+  "settingsWidgetUpdateWhenOpenPage": "前台壁纸小部件打开页面时更新小部件",
   "@settingsWidgetUpdateWhenOpenPage": {},
 
   "settingsMaxFgwUsedEntryRecord": "[防护级别，更新类型，小部件 ID]\n每组最大使用记录数]",

@@ -1,6 +1,38 @@
 ## Aves-ST, 收图浏览
 
+## 功能
+防社死
 
+1、临时指定,分享图片给好友观看时只显示指定的图片：
+![001_tmp_assign.png](snap%2F001_tmp_assign.png)
+
+
+2、自定义场景，例如只允许显示最近3小时内拍摄的照片：
+![002_add_scenario.png](snap%2F002_add_scenario.png)
+
+
+3、等级壁纸，随时切换会让人社死的壁纸设置与不会社死的壁纸设置：
+![003_level_wallpaper.png](snap%2F003_level_wallpaper.png)
+
+
+4、复制分享，使想要分享的图片在其它APP中总是显示在最新。在查找图片这点上，图片浏览器总是比其它社交软件的图片查看功能更好用，不是么？
+![004_share_by_copy.png](snap%2F004_share_by_copy.png)
+
+
+5、卓面小部件显示横向壁纸，查询助手帮助查看指定条件图片：
+![005_fgw_widget_and_query_helper.png](snap%2F005_fgw_widget_and_query_helper.png)
+
+## 说明
+
+本项目基于开源项目：
+https://github.com/deckerst/aves
+修改。
+我对原开发者的了解除了帐号名称并不知道更多，所以以上功能可能被添加入原项目也可能不。
+除【展示】功能外的bug请联系原开发。
+
+
+-----------------------------------
+原项目部分说明：
 
 ## Features
 
@@ -28,7 +60,7 @@ Aves requires a few permissions to do its job:
 - **view network connections**: checking for connection states allows Aves to gracefully degrade features that depend on internet.
 
 
-## Project Setup
+## Project Setup（修改适配本项目）
 
 Before running or building the app, update the dependencies for the desired flavor:
 ```

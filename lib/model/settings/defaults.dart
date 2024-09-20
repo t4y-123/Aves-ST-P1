@@ -191,10 +191,10 @@ class SettingsDefaults {
   static const shareByCopyCollectionPageAutoRemove = true;
   static const shareByCopyViewerPageAutoRemove = false;
   static const shareByCopyAppModeViewAutoRemove = false;
-  static const shareByCopyRemoveInterval = 15; // seconds
-  static const shareByCopyObsoleteRecordRemoveInterval = 15; // seconds
+  static const shareByCopyRemoveInterval = 10; // seconds
+  static const shareByCopyObsoleteRecordRemoveInterval = 10; // seconds
   static const shareByCopySetDateType = ShareByCopySetDateType.onlyThisTimeCopiedEntries;
-  static const shareByCopyRemoveSequence = ShareByCopyRemoveSequence.removeAfterCopy;
+  static const shareByCopyRemoveSequence = ShareByCopyRemoveSequence.removeBeforeCopy;
   // t4y: Data is precious,
   // in some phone, it may always overwrite the original pic without ask while the user may want to keep the origin with a edited new.
   // so,always force to copy a new item before edit, then edit the copied item.

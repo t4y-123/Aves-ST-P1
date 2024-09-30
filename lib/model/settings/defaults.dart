@@ -87,11 +87,11 @@ class SettingsDefaults {
   // viewer ,
   // t4y: personal prefer value
   static const viewerQuickActions = [
-    EntryAction.delete,
-    EntryAction.rotateScreen,
-    EntryAction.toggleFavourite,
     EntryAction.shareByDateNow,
     EntryAction.shareByCopy,
+    EntryAction.toggleFavourite,
+    EntryAction.delete,
+    EntryAction.rotateScreen,
   ];
   // t4y: pre value.
   // static const viewerQuickActions = [

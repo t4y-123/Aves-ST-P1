@@ -11,6 +11,8 @@ import 'package:aves/model/filters/favourite.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
 import 'package:aves/model/filters/mime.dart';
+import 'package:aves/model/filters/or.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/query.dart';
 import 'package:aves/model/filters/rating.dart';
 import 'package:aves/model/filters/trash.dart';
@@ -200,8 +202,25 @@ class CollectionLens with ChangeNotifier {
             ? source.trashedEntries
             : (useScenario ? source.visibleEntries : source.noneScenarioVisibleEntries));
     _disposeSyntheticEntries();
-    _filteredSortedEntries =
-        List.of(filters.isEmpty ? entries : entries.where((entry) => filters.every((filter) => filter.test(entry))));
+    // _filteredSortedEntries =
+    //     List.of(filters.isEmpty ? entries : entries.where((entry) => filters.every((filter) => filter.test(entry))));
+    // t4y: make can have both album entries and path filters in same time.
+    //      with ti can still applied limit filters.
+    if (filters.isEmpty) {
+      _filteredSortedEntries = List.of(entries);
+    } else {
+      // Classify filters into two groups
+      final orFilters = filters.where((filter) => filter is OrFilter || filter is PathFilter || filter is AlbumFilter);
+      final otherFilters =
+          filters.where((filter) => filter is! OrFilter && filter is! PathFilter && filter is! AlbumFilter);
+
+      // Apply the filtering logic
+      _filteredSortedEntries = List.of(entries.where((entry) {
+        final orCondition = orFilters.any((filter) => filter.test(entry));
+        final everyCondition = otherFilters.every((filter) => filter.test(entry));
+        return orCondition && everyCondition;
+      }));
+    }
 
     if (stackBursts) {
       _stackBursts();

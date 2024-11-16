@@ -46,7 +46,7 @@ class PathFilter extends CollectionFilter {
   EntryFilter get positiveTest => _test;
 
   @override
-  bool get exclusiveProp => true;
+  bool get exclusiveProp => false;
 
   @override
   String get universalLabel => path;

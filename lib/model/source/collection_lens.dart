@@ -214,9 +214,8 @@ class CollectionLens with ChangeNotifier {
       final otherFilters =
           filters.where((filter) => filter is! OrFilter && filter is! PathFilter && filter is! AlbumFilter);
 
-      // Apply the filtering logic
       _filteredSortedEntries = List.of(entries.where((entry) {
-        final orCondition = orFilters.any((filter) => filter.test(entry));
+        final orCondition = orFilters.isEmpty || orFilters.any((filter) => filter.test(entry));
         final everyCondition = otherFilters.every((filter) => filter.test(entry));
         return orCondition && everyCondition;
       }));

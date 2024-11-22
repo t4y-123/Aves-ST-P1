@@ -1,5 +1,4 @@
 ## Aves-ST, 收图浏览
-Better than any vault-style photo album app
 
 This app offers enhanced features, flexibility, and convenience for managing and sharing photos, better than any traditional secure photo album apps.
 

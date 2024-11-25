@@ -122,7 +122,7 @@ class ScenariosHelper {
   Future<Set<ScenarioRow>> commonScenarios(AppLocalizations _l10n) async {
     const exNum = 0;
     const injNum = exNum + 7;
-    const unUum = injNum + 7;
+    const unUum = injNum + 8;
     return {
       //exclude unique
       await scenarios.newRow(exNum + 1, labelName: _l10n.excludeName01),
@@ -138,8 +138,9 @@ class ScenariosHelper {
       await scenarios.newRow(injNum + 3, labelName: _l10n.interjectName03, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 4, labelName: _l10n.interjectName04, loadType: ScenarioLoadType.intersectAnd),
       await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName05, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName06, loadType: ScenarioLoadType.intersectAnd),
-      await scenarios.newRow(injNum + 5, labelName: _l10n.interjectName07, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 6, labelName: _l10n.interjectName06, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 7, labelName: _l10n.interjectName07, loadType: ScenarioLoadType.intersectAnd),
+      await scenarios.newRow(injNum + 8, labelName: _l10n.interjectName08, loadType: ScenarioLoadType.intersectAnd),
 
       await scenarios.newRow(unUum + 1, labelName: _l10n.unionName01, loadType: ScenarioLoadType.unionOr),
       await scenarios.newRow(unUum + 2, labelName: _l10n.unionName02, loadType: ScenarioLoadType.unionOr),
@@ -159,7 +160,7 @@ class ScenariosHelper {
     int orderNum = 1;
     const exNum = -1;
     const injNum = exNum + 7;
-    const unUum = injNum + 7;
+    const unUum = injNum + 8;
     List<ScenarioStepRow> groupScenarioSteps = [
       //steps for /exclude unique
       //1/2/3/4 5
@@ -169,8 +170,7 @@ class ScenariosHelper {
       newScenarioStep(orderNum++, sIds[exNum + 2], 1, {MimeFilter.image}),
       // the 3 is for all image  without share copied
       newScenarioStep(orderNum++, sIds[exNum + 3], 1, {MimeFilter.image}),
-      newScenarioStep(
-          orderNum++, sIds[exNum + 3], 2, {PathFilter(androidFileUtils.avesShareByCopyPath, reversed: true)}),
+      newScenarioStep(orderNum++, sIds[exNum + 3], 2, {PathFilter(androidFileUtils.dcimPath)}),
       //recent 3hours DCIM pic
       newScenarioStep(orderNum++, sIds[exNum + 4], 1, {PathFilter(androidFileUtils.dcimPath)}),
       newScenarioStep(orderNum++, sIds[exNum + 4], 2, {QueryFilter('TIME2NOW < 3h')}),
@@ -189,6 +189,8 @@ class ScenariosHelper {
       newScenarioStep(orderNum++, sIds[injNum + 5], 1, {QueryFilter('TIME2NOW < 3h')}),
       newScenarioStep(orderNum++, sIds[injNum + 6], 1, {QueryFilter('TIME2NOW < 12h')}),
       newScenarioStep(orderNum++, sIds[injNum + 7], 1, {QueryFilter('TIME2NOW < 3d')}),
+      newScenarioStep(
+          orderNum++, sIds[injNum + 8], 1, {PathFilter(androidFileUtils.avesShareByCopyPath, reversed: true)}),
       ///////////////////////////////////
       //steps for some added dir or path,
       ///////////////////////////////////

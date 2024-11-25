@@ -1252,10 +1252,10 @@
   "createScenarioButtonLabel": "Create Scenario",
 
   "scenarioLoadTypeExclude": "Exclude (Unique)",
-  "scenarioLoadTypeUnion": "Union (Or)",
-  "scenarioLoadTypeIntersect": "Intersect (And)",
-  "scenarioStepLoadTypeUnion": "Union (Or)",
-  "scenarioStepLoadTypeIntersect": "Intersect (And)",
+  "scenarioLoadTypeUnion": "Union (OR: additions)",
+  "scenarioLoadTypeIntersect": "Intersect (AND: constraints)",
+  "scenarioStepLoadTypeUnion": "Union (OR: additions)",
+  "scenarioStepLoadTypeIntersect": "Intersect (AND: constraints)",
 
   "scenarioNamePrefix": "Scenario",
 
@@ -1267,8 +1267,8 @@
   "scenarioTierFuncPinned": "Func Pinned",
   "scenarioTierActivePinned": "Active Pinned",
   "scenarioTierExcludeUnique": "Exclude (Unique)",
-  "scenarioTierIntersectAnd": "Intersect (And)",
-  "scenarioTierUnionOr": "Union (Or)",
+  "scenarioTierIntersectAnd": "Intersect (AND: constraints)",
+  "scenarioTierUnionOr": "Union (OR: additions)",
 
   "chipActionLockScenario": "Lock scenario",
   "chipActionUnlockScenario": "Unlock scenario",
@@ -1276,8 +1276,8 @@
 
   "excludeName01": "All Exclude",
   "excludeName02": "Image Exclude",
-  "excludeName03": "Img Not Share Exclude",
-  "excludeName04": "<3hour DCIM ",
+  "excludeName03": "DCIM Exclude",
+  "excludeName04": "<3hour DCIM Exclude",
   "excludeName05": "Share Copied Exclude",
   "excludeName06": "Video Exclude",
   "excludeName07": "Fgw Used",
@@ -1289,6 +1289,7 @@
   "interjectName05": "<3hours Interject",
   "interjectName06": "<12hours Interject",
   "interjectName07": "<3days Interject",
+  "interjectName08": "Not Share Copied Interject",
 
 
   "unionName01": "Video Union",

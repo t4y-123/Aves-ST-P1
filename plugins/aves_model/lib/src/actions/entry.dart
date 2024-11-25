@@ -54,6 +54,10 @@ enum EntryAction {
   viewMotionPhotoVideo,
   // debug
   debug,
+  // t4y:
+  //
+  shareByCopy,
+  shareByDateNow,
 }
 
 class EntryActions {
@@ -68,6 +72,8 @@ class EntryActions {
     EntryAction.toggleFavourite,
     EntryAction.rotateScreen,
     EntryAction.viewSource,
+    EntryAction.shareByCopy,
+    EntryAction.shareByDateNow,
   ];
 
   static const export = [

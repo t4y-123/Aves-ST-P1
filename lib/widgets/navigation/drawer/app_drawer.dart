@@ -2,6 +2,7 @@ import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
+import 'package:aves/model/source/assign.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/source/location/country.dart';
@@ -21,6 +22,7 @@ import 'package:aves/widgets/common/identity/aves_logo.dart';
 import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/debug/app_debug_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
+import 'package:aves/widgets/filter_grids/assign_page.dart';
 import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/places_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
@@ -171,6 +173,7 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
       color: colorScheme.primary,
       child: SafeArea(
         bottom: false,
+
         child: OutlinedButtonTheme(
           data: OutlinedButtonThemeData(
             style: ButtonStyle(
@@ -193,7 +196,7 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
                     OutlinedText(
                       textSpans: [
                         TextSpan(
-                          text: l10n.appName,
+                          text: l10n.appNameSt,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 38,
@@ -335,6 +338,11 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
             trailing = StreamBuilder(
               stream: source.eventBus.on<TagsChangedEvent>(),
               builder: (context, _) => Text('${source.sortedTags.length}'),
+            );
+          case AssignListPage.routeName:
+            trailing = StreamBuilder(
+              stream: source.eventBus.on<AssignsChangedEvent>(),
+              builder: (context, _) => Text('${assignRecords.all.length}'),
             );
         }
 

@@ -24,7 +24,7 @@ void mainCommon(AppFlavor flavor, {Map? debugIntentData}) {
 // flutter run --profile --trace-skia
 
   initPlatformServices();
-
+  //debugPrint('initPlatformServices');
   Isolate.current.addErrorListener(RawReceivePort((pair) {
     final List<dynamic> errorAndStacktrace = pair;
     reportService.recordError(errorAndStacktrace.first, errorAndStacktrace.last);

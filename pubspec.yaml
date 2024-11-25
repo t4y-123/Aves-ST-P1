@@ -31,7 +31,7 @@ dependencies:
   aves_report:
     path: plugins/aves_report
   aves_report_platform:
-    path: plugins/aves_report_crashlytics
+    path: plugins/aves_report_console
   aves_screen_state:
     path: plugins/aves_screen_state
   aves_services:
@@ -71,9 +71,9 @@ dependencies:
   fluster:
   flutter_displaymode:
   flutter_highlight:
-  flutter_localizations_plus:
+  flutter_localization_nn:
     git:
-      url: https://github.com/deckerst/flutter_localizations_plus.git
+      url: https://github.com/deckerst/flutter_localization_nn.git
   flutter_map:
   flutter_markdown:
   flutter_staggered_animations:
@@ -117,6 +117,8 @@ dependencies:
   vector_tile_renderer:
   volume_controller:
   xml:
+  wallpaper_handler:
+
 
 dependency_overrides:
   media_kit:

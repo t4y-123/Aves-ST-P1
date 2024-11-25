@@ -4,4 +4,5 @@ enum MoveType {
   export,
   toBin,
   fromBin,
+  shareByCopy,
 }

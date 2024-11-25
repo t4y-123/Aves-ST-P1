@@ -65,6 +65,16 @@ bool _shouldConfirm(ConfirmationDialog type) {
       return settings.confirmMoveToBin;
     case ConfirmationDialog.moveUndatedItems:
       return settings.confirmMoveUndatedItems;
+    case ConfirmationDialog.setDateToNow:
+      return settings.confirmSetDateToNow;
+    case ConfirmationDialog.shareByCopy:
+      return settings.confirmShareByCopy;
+    case ConfirmationDialog.editAsCopiedFirst:
+      return settings.confirmEditAsCopiedFirst;
+    case ConfirmationDialog.chipRemoveScenario:
+      return settings.confirmRemoveScenario;
+    case ConfirmationDialog.chipRemoveAssign:
+      return settings.confirmRemoveAssign;
   }
 }
 
@@ -78,6 +88,16 @@ void _skipConfirmation(ConfirmationDialog type) {
       settings.confirmMoveToBin = false;
     case ConfirmationDialog.moveUndatedItems:
       settings.confirmMoveUndatedItems = false;
+    case ConfirmationDialog.setDateToNow:
+      settings.confirmSetDateToNow = false;
+    case ConfirmationDialog.shareByCopy:
+      settings.confirmShareByCopy = false;
+    case ConfirmationDialog.editAsCopiedFirst:
+      settings.confirmEditAsCopiedFirst = false;
+    case ConfirmationDialog.chipRemoveScenario:
+      settings.confirmRemoveScenario = false;
+    case ConfirmationDialog.chipRemoveAssign:
+      settings.confirmRemoveAssign = false;
   }
 }
 

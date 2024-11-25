@@ -39,7 +39,8 @@ class InteractiveFilterTile<T extends CollectionFilter> extends StatefulWidget {
   State<InteractiveFilterTile<T>> createState() => _InteractiveFilterTileState<T>();
 }
 
-class _InteractiveFilterTileState<T extends CollectionFilter> extends State<InteractiveFilterTile<T>> with FeedbackMixin, VaultAwareMixin {
+class _InteractiveFilterTileState<T extends CollectionFilter> extends State<InteractiveFilterTile<T>>
+    with FeedbackMixin, VaultAwareMixin {
   HeroType? _heroTypeOverride;
 
   FilterGridItem<T> get gridItem => widget.gridItem;
@@ -191,7 +192,9 @@ class FilterTile<T extends CollectionFilter> extends StatelessWidget {
           const radius = Radius.circular(123);
           child = InkWell(
             // as of Flutter v2.8.1, `InkWell` does not use `BorderRadiusGeometry`
-            borderRadius: context.isRtl ? const BorderRadius.only(topRight: radius, bottomRight: radius) : const BorderRadius.only(topLeft: radius, bottomLeft: radius),
+            borderRadius: context.isRtl
+                ? const BorderRadius.only(topRight: radius, bottomRight: radius)
+                : const BorderRadius.only(topLeft: radius, bottomLeft: radius),
             onTap: onTap,
             child: child,
           );

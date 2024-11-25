@@ -69,6 +69,9 @@ extension ExtraEntryActionView on EntryAction {
       EntryAction.viewMotionPhotoVideo => l10n.entryActionViewMotionPhotoVideo,
       // debug
       EntryAction.debug => 'Debug',
+      //t4y:
+      EntryAction.shareByCopy =>  l10n.entryActionShareByCopy,
+      EntryAction.shareByDateNow =>  l10n.entryActionShareByDateNow,
     };
   }
 
@@ -147,6 +150,9 @@ extension ExtraEntryActionView on EntryAction {
       EntryAction.viewMotionPhotoVideo => AIcons.openVideoPart,
       // debug
       EntryAction.debug => AIcons.debug,
+    //t4y:
+      EntryAction.shareByCopy =>  AIcons.shareByCopy,
+      EntryAction.shareByDateNow =>  AIcons.shareByDateNow,
     };
   }
 }

@@ -67,6 +67,12 @@ android {
             ext.useNdkAbiFilters = true
         }
 
+        t4play {
+            dimension "store"
+            ext.useNdkAbiFilters = true
+            applicationIdSuffix ".t4y"
+        }
+
         izzy {
             // IzzyOnDroid
             // check offending libraries with `scanapk`

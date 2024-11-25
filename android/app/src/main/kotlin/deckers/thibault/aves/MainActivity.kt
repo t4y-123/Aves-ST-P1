@@ -23,6 +23,7 @@ import app.loup.streams_channel.StreamsChannel
 import deckers.thibault.aves.channel.AvesByteSendingMethodCodec
 import deckers.thibault.aves.channel.calls.AccessibilityHandler
 import deckers.thibault.aves.channel.calls.AnalysisHandler
+import deckers.thibault.aves.channel.calls.ForegroundWallpaperHandler
 import deckers.thibault.aves.channel.calls.AppAdapterHandler
 import deckers.thibault.aves.channel.calls.AppProfileHandler
 import deckers.thibault.aves.channel.calls.Coresult.Companion.safe
@@ -69,6 +70,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import deckers.thibault.aves.fgw.FgwIntentAction
+import deckers.thibault.aves.fgw.FgwConstant
 
 // `FlutterFragmentActivity` because of local auth plugin
 open class MainActivity : FlutterFragmentActivity() {
@@ -81,7 +84,9 @@ open class MainActivity : FlutterFragmentActivity() {
     internal lateinit var intentDataMap: MutableMap<String, Any?>
     private lateinit var analysisHandler: AnalysisHandler
     private lateinit var mediaSessionHandler: MediaSessionHandler
-
+    //t4y add for foreground wallpaper
+    private  lateinit var foregroundWallpaperHandler: ForegroundWallpaperHandler
+    // end
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.i(LOG_TAG, "onCreate intent=$intent")
 
@@ -123,6 +128,10 @@ open class MainActivity : FlutterFragmentActivity() {
         // dart -> platform -> dart
         // - need Context
         analysisHandler = AnalysisHandler(this, ::onAnalysisCompleted)
+        //t4y add for foreground wallpaper
+        foregroundWallpaperHandler = ForegroundWallpaperHandler(this)
+        MethodChannel(messenger, ForegroundWallpaperHandler.CHANNEL).setMethodCallHandler(foregroundWallpaperHandler)
+        //
         mediaSessionHandler = MediaSessionHandler(this, mediaCommandStreamHandler)
         MethodChannel(messenger, AnalysisHandler.CHANNEL).setMethodCallHandler(analysisHandler)
         MethodChannel(messenger, AppAdapterHandler.CHANNEL).setMethodCallHandler(AppAdapterHandler(this))
@@ -407,10 +416,48 @@ open class MainActivity : FlutterFragmentActivity() {
                 }
             }
 
+
+            INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN -> {
+                val widgetId = intent.getIntExtra(EXTRA_KEY_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    return hashMapOf(
+                        INTENT_DATA_KEY_ACTION to action,
+                        INTENT_DATA_KEY_WIDGET_ID to widgetId,
+                    )
+                }
+            }
+
             Intent.ACTION_RUN -> {
                 // flutter run
             }
-
+            FgwIntentAction.USED_RECORD -> {
+                Log.d(LOG_TAG, "FgwIntentAction.USED_RECORD in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to FgwIntentAction.USED_RECORD,
+                )
+            }
+            FgwConstant.FGW_VIEW_OPEN -> {
+                Log.d(LOG_TAG, "FgwConstant.FGW_VIEW_OPEN in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to  FgwConstant.FGW_VIEW_OPEN,
+                )
+            }
+            FgwConstant.FGW_UNLOCK -> {
+                Log.d(LOG_TAG, "FgwConstant.FGW_UNLOCK in Main.${intent?.action}")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to  FgwConstant.FGW_UNLOCK,
+                )
+            }
+            FgwIntentAction.DUPLICATE -> {
+                Log.d(LOG_TAG, "FgwServiceHiddenActivity .FgwIntentAction.DUPLICATE return hashMapOf")
+                return hashMapOf(
+                    INTENT_DATA_KEY_ACTION to FgwIntentAction.DUPLICATE,
+                    EXTRA_KEY_SAFE_MODE to false,
+                    EXTRA_KEY_PAGE to "/collection",
+//                    FgwConstant.FGW_UPDATE_TYPE_EXTRA to intent?.getStringExtra(FgwConstant.FGW_UPDATE_TYPE_EXTRA),
+//                    FgwConstant.FGW_WIDGET_ID_EXTRA to intent?.getIntExtra(FgwConstant.FGW_WIDGET_ID_EXTRA, -1),
+                )
+            }
             else -> {
                 Log.w(LOG_TAG, "unhandled intent action=${intent?.action}")
             }
@@ -565,6 +612,8 @@ open class MainActivity : FlutterFragmentActivity() {
         const val INTENT_ACTION_VIEW_GEO = "view_geo"
         const val INTENT_ACTION_WIDGET_OPEN = "widget_open"
         const val INTENT_ACTION_WIDGET_SETTINGS = "widget_settings"
+        const val INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_SETTINGS = "foreground_wallpaper_widget_settings"
+        const val INTENT_ACTION_FOREGROUND_WALLPAPER_WIDGET_OPEN = "foreground_wallpaper_widget_open"
 
         const val INTENT_DATA_KEY_ACTION = "action"
         const val INTENT_DATA_KEY_ALLOW_MULTIPLE = "allowMultiple"

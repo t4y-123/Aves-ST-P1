@@ -1,10 +1,15 @@
 import 'dart:async';
 
+import 'package:aves/model/assign/assign_entries.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_rows_helper.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/analysis_controller.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -59,6 +64,15 @@ class MediaStoreSource extends CollectionSource {
     await vaults.init();
     await favourites.init();
     await covers.init();
+
+    //t4y: for foreground wallpaper initialize.
+    await fgwRowsHelper.initWallpaperSchedules();
+
+    await shareCopiedEntries.init();
+    //t4y: for scenario
+    await scenariosHelper.initScenarios();
+
+
     final currentTimeZoneOffset = DateTime.now().timeZoneOffset.inMilliseconds;
     final catalogTimeZoneOffset = settings.catalogTimeZoneOffsetMillis;
     if (currentTimeZoneOffset != catalogTimeZoneOffset) {
@@ -107,6 +121,10 @@ class MediaStoreSource extends CollectionSource {
     }
     final removedEntries = knownEntries.where((entry) => removedContentIds.contains(entry.contentId)).toSet();
     knownEntries.removeAll(removedEntries);
+    // t4y: remove obsoleteIds in fgw and scenario.
+    await shareCopiedEntries.removeEntries(removedEntries);
+    await assignEntries.removeEntries(removedEntries);
+    await fgwUsedEntryRecord.removeEntries(removedEntries);
 
     // show known entries
     debugPrint('$runtimeType load ${stopwatch.elapsed} add known entries');
@@ -210,16 +228,18 @@ class MediaStoreSource extends CollectionSource {
           await localMediaDb.insertEntries(newEntries);
 
           // TODO TLAD find duplication cause
-          final duplicates = await localMediaDb.searchLiveDuplicates(EntryOrigins.mediaStoreContent, newEntries);
-          if (duplicates.isNotEmpty) {
-            unawaited(reportService.recordError(Exception('Loading entries yielded duplicates=${duplicates.join(', ')}')));
-            // post-error cleanup
-            await localMediaDb.removeIds(duplicates.map((v) => v.id).toSet());
-            for (final duplicate in duplicates) {
-              final duplicateId = duplicate.id;
-              newEntries.removeWhere((v) => duplicateId == v.id);
-            }
-          }
+          // t4y: using else way in addEntries to avoid dupli.
+          // final duplicates = await localMediaDb.searchLiveDuplicates(EntryOrigins.mediaStoreContent, newEntries);
+          // if (duplicates.isNotEmpty) {
+          //   unawaited(reportService.recordError(
+          //       Exception('Loading entries yielded duplicates=${duplicates.join(', ')}'), StackTrace.current));
+          //   // post-error cleanup
+          //   await localMediaDb.removeIds(duplicates.map((v) => v.id).toSet());
+          //   for (final duplicate in duplicates) {
+          //     final duplicateId = duplicate.id;
+          //     newEntries.removeWhere((v) => duplicateId == v.id);
+          //   }
+          // }
 
           addEntries(newEntries);
 
@@ -241,8 +261,9 @@ class MediaStoreSource extends CollectionSource {
         // as the initial addition of entries is silent,
         // so we manually notify change for potential home screen filters
         notifyAlbumsChanged();
+        // notifyScenariosChanged();
 
-        unawaited(reportService.log('$runtimeType load (new) done in ${stopwatch.elapsed.inSeconds}s for ${newEntries.length} new entries'));
+        unawaited(reportService.log('$runtimeType load done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${newEntries.length} new, ${removedEntries.length} removed'));
       },
       onError: (error) => debugPrint('$runtimeType stream error=$error'),
     );
@@ -295,7 +316,7 @@ class MediaStoreSource extends CollectionSource {
               entriesToRefresh.add(existingEntry);
             } else if (_canAnalyze) {
               // it can discover new entries only if it can analyze them
-              sourceEntry.id = localMediaDb.nextId;
+              sourceEntry.id = localMediaDb.nextDateId;
               newEntries.add(sourceEntry);
             }
             final existingDirectory = existingEntry?.directory;
@@ -323,17 +344,19 @@ class MediaStoreSource extends CollectionSource {
       await localMediaDb.insertEntries(newEntries);
 
       // TODO TLAD find duplication cause
-      final duplicates = await localMediaDb.searchLiveDuplicates(EntryOrigins.mediaStoreContent, newEntries);
-      if (duplicates.isNotEmpty) {
-        unawaited(reportService.recordError(Exception('Refreshing entries yielded duplicates=${duplicates.join(', ')}')));
-        // post-error cleanup
-        await localMediaDb.removeIds(duplicates.map((v) => v.id).toSet());
-        for (final duplicate in duplicates) {
-          final duplicateId = duplicate.id;
-          newEntries.removeWhere((v) => duplicateId == v.id);
-          tempUris.add(duplicate.uri);
-        }
-      }
+      // not use
+      // final duplicates = await localMediaDb.searchLiveDuplicates(EntryOrigins.mediaStoreContent, newEntries);
+      // if (duplicates.isNotEmpty) {
+      //   unawaited(reportService.recordError(
+      //       Exception('Refreshing entries yielded duplicates=${duplicates.join(', ')}'), StackTrace.current));
+      //   // post-error cleanup
+      //   await localMediaDb.removeIds(duplicates.map((v) => v.id).toSet());
+      //   for (final duplicate in duplicates) {
+      //     final duplicateId = duplicate.id;
+      //     newEntries.removeWhere((v) => duplicateId == v.id);
+      //     tempUris.add(duplicate.uri);
+      //   }
+      // }
 
       addEntries(newEntries);
       await analyze(analysisController, entries: newEntries);
@@ -402,7 +425,7 @@ class MediaStoreSource extends CollectionSource {
         final sourceEntry = await mediaFetchService.getEntry(uri, null, allowUnsized: true);
         if (sourceEntry != null) {
           newEntries.add(sourceEntry.copyWith(
-            id: localMediaDb.nextId,
+            id: localMediaDb.nextDateId,
             origin: EntryOrigins.vault,
           ));
         }

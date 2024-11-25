@@ -100,7 +100,8 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
   await source.init(scope: filters);
   await readyCompleter.future;
 
-  final entries = CollectionLens(source: source, filters: filters).sortedEntries;
+  final entries =
+      CollectionLens(source: source, filters: filters, useScenario: settings.canScenarioAffectFgw).sortedEntries;
   switch (settings.getWidgetDisplayedItem(widgetId)) {
     case WidgetDisplayedItem.random:
       entries.shuffle();

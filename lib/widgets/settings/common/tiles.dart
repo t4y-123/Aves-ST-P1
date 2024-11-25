@@ -5,6 +5,7 @@ import 'package:aves/utils/time_utils.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/common/identity/aves_caption.dart';
 import 'package:aves/widgets/dialogs/duration_dialog.dart';
+import 'package:aves/widgets/dialogs/number_dialog.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/common.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/multi_selection.dart';
 import 'package:aves/widgets/dialogs/selection_dialogs/single_selection.dart';
@@ -179,7 +180,8 @@ class SettingsMultiSelectionListTile<T> extends StatelessWidget {
         }
         return ListTile(
           title: titleWidget,
-          subtitle: AvesCaption(current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
+          subtitle: AvesCaption(
+              current.isEmpty ? noneSubtitle : current.map((v) => getName(context, v)).join(AText.separator)),
           onTap: () => showSelectionDialog<List<T>>(
             context: context,
             builder: (context) => AvesMultiSelectionDialog<T>(
@@ -229,6 +231,61 @@ class SettingsDurationListTile extends StatelessWidget {
             final v = await showDialog<int>(
               context: context,
               builder: (context) => DurationDialog(initialSeconds: current),
+            );
+            if (v != null) {
+              onChanged(v);
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+class SettingsNumberEditTile extends StatelessWidget {
+  final int Function(BuildContext, Settings) selector;
+  final ValueChanged<int> onChanged;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final int? minValue;
+  final int? maxValue;
+
+  const SettingsNumberEditTile({
+    super.key,
+    required this.selector,
+    required this.onChanged,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.minValue,
+    this.maxValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<Settings, int>(
+      selector: selector,
+      builder: (context, current, child) {
+        Widget titleWidget = Text(title);
+        if (trailing != null) {
+          titleWidget = Row(
+            children: [
+              Expanded(child: titleWidget),
+            ],
+          );
+        }
+        return ListTile(
+          title: Text(title),
+          subtitle: AvesCaption(current.toString()),
+          onTap: () async {
+            final v = await showDialog<int>(
+              context: context,
+              builder: (context) => NumberInputDialog(
+                initialValue: current,
+                minValue: minValue,
+                maxValue: maxValue,
+              ),
             );
             if (v != null) {
               onChanged(v);

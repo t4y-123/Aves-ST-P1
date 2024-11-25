@@ -46,7 +46,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 
-typedef QueryTest<T extends CollectionFilter> = List<FilterGridItem<T>> Function(BuildContext context, List<FilterGridItem<T>> filters, String query);
+typedef QueryTest<T extends CollectionFilter> = List<FilterGridItem<T>> Function(
+    BuildContext context, List<FilterGridItem<T>> filters, String query);
 
 class FilterGridPage<T extends CollectionFilter> extends StatelessWidget {
   final String? settingsRouteKey;
@@ -59,7 +60,8 @@ class FilterGridPage<T extends CollectionFilter> extends StatelessWidget {
   final QueryTest<T> applyQuery;
   final Widget Function() emptyBuilder;
   final HeroType heroType;
-  final StreamController<DraggableScrollbarEvent> _draggableScrollBarEventStreamController = StreamController.broadcast();
+  final StreamController<DraggableScrollbarEvent> _draggableScrollBarEventStreamController =
+      StreamController.broadcast();
 
   FilterGridPage({
     super.key,
@@ -307,7 +309,8 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
             }
 
             final sectionedListLayoutProvider = ValueListenableBuilder<double>(
-              valueListenable: context.select<TileExtentController, ValueNotifier<double>>((controller) => controller.extentNotifier),
+              valueListenable: context
+                  .select<TileExtentController, ValueNotifier<double>>((controller) => controller.extentNotifier),
               builder: (context, thumbnailExtent, child) {
                 return Selector<TileExtentController, (double, int, double, double)>(
                   selector: (context, c) => (c.viewportSize.width, c.columnCount, c.spacing, c.horizontalPadding),
@@ -367,7 +370,8 @@ class _FilterGridContentState<T extends CollectionFilter> extends State<_FilterG
                                       return AnimatedScale(
                                         scale: focusedItem == gridItem ? 1 : .9,
                                         curve: Curves.fastOutSlowIn,
-                                        duration: context.select<DurationsData, Duration>((v) => v.tvImageFocusAnimation),
+                                        duration:
+                                            context.select<DurationsData, Duration>((v) => v.tvImageFocusAnimation),
                                         child: child!,
                                       );
                                     },
@@ -532,7 +536,8 @@ class _FilterSectionedContentState<T extends CollectionFilter> extends State<_Fi
     final filter = highlightInfo.clear();
     if (filter is! T) return;
 
-    final item = visibleSections.values.expand((list) => list).firstWhereOrNull((gridItem) => gridItem.filter == filter);
+    final item =
+        visibleSections.values.expand((list) => list).firstWhereOrNull((gridItem) => gridItem.filter == filter);
     if (item == null) return;
 
     await Future.delayed(ADurations.highlightScrollInitDelay);
@@ -560,7 +565,8 @@ class _FilterScaler<T extends CollectionFilter> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(context);
-    final (tileSpacing, horizontalPadding) = context.select<TileExtentController, (double, double)>((v) => (v.spacing, v.horizontalPadding));
+    final (tileSpacing, horizontalPadding) =
+        context.select<TileExtentController, (double, double)>((v) => (v.spacing, v.horizontalPadding));
     final brightness = Theme.of(context).brightness;
     return GridScaleGestureDetector<FilterGridItem<T>>(
       scrollableKey: scrollableKey,

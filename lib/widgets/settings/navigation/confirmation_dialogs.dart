@@ -45,6 +45,32 @@ class ConfirmationDialogPage extends StatelessWidget {
             onChanged: (v) => settings.confirmCreateVault = v,
             title: l10n.settingsConfirmationVaultDataLoss,
           ),
+          const Divider(height: 32),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmSetDateToNow,
+            onChanged: (v) => settings.confirmSetDateToNow = v,
+            title: l10n.settingsConfirmationSetDateToNowItems,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmShareByCopy,
+            onChanged: (v) => settings.confirmShareByCopy = v,
+            title: l10n.settingsConfirmationShareByCopy,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmEditAsCopiedFirst,
+            onChanged: (v) => settings.confirmEditAsCopiedFirst = v,
+            title: l10n.settingsConfirmationEditAsCopiedFirst,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmRemoveScenario,
+            onChanged: (v) => settings.confirmRemoveScenario = v,
+            title: l10n.settingsConfirmationRemoveScenario,
+          ),
+          SettingsSwitchListTile(
+            selector: (context, s) => s.confirmRemoveAssign,
+            onChanged: (v) => settings.confirmRemoveAssign = v,
+            title: l10n.settingsConfirmationRemoveAssign,
+          ),
         ]),
       ),
     );

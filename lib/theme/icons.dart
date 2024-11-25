@@ -206,6 +206,29 @@ class AIcons {
   static const selected = Icons.check_circle_outlined;
   static const unselected = Icons.radio_button_unchecked;
 
+  // t4y for classified personal features.
+  // presentation settings
+  static const presentation = Icons.security;
+  static const active = Icons.lightbulb_outline;
+  static const inactive = Icons.code_off_sharp;
+  static const fgwUsed = Icons.auto_stories;
+  static const shareByCopy = Icons.copy_all;
+  static const shareByDateNow = Icons.update;
+
+  // t4y:scenario pages
+  static const scenario = Icons.security;
+  static const scenarioExcludeUnique = Icons.remove_done;
+  static const scenarioInjectAnd = Icons.rule;
+  static const scenarioUnionOr = Icons.add_task;
+  static const lockScenario = Icons.lock_open_sharp;
+  static const unlockScenario = Icons.lock_sharp;
+  static const settingScenario = Icons.edit;
+  static const opScenario = Icons.settings;
+  static const scenarioActive = Icons.visibility_outlined;
+  static const scenarioInactive = Icons.block;
+  // t4y:assign filters
+  static const assignP = Icons.assignment_turned_in;
+  static const assignT = Icons.free_cancellation;
   // Material Icons references to make constant instances of `IconData`
   // as non-constant instances of `IconData` prevent icon font tree shaking
   static const labelImportantOutlineCodePoint = 0xe362;

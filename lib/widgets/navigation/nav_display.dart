@@ -9,11 +9,14 @@ import 'package:aves/widgets/common/search/page.dart';
 import 'package:aves/widgets/debug/app_debug_page.dart';
 import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
+import 'package:aves/widgets/filter_grids/assign_page.dart';
 import 'package:aves/widgets/filter_grids/countries_page.dart';
 import 'package:aves/widgets/filter_grids/places_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/settings/settings_page.dart';
 import 'package:flutter/material.dart';
+
+import '../filter_grids/scenario_page.dart';
 
 class NavigationDisplay {
   static String getFilterTitle(BuildContext context, CollectionFilter? filter) {
@@ -33,6 +36,8 @@ class NavigationDisplay {
   static String getPageTitle(BuildContext context, route) {
     final l10n = context.l10n;
     switch (route) {
+      case ScenarioListPage.routeName:
+        return l10n.drawerScenarioPage;
       case AlbumListPage.routeName:
         return l10n.drawerAlbumPage;
       case CountryListPage.routeName:
@@ -51,6 +56,9 @@ class NavigationDisplay {
         return MaterialLocalizations.of(context).searchFieldLabel;
       case SettingsPage.routeName:
         return l10n.settingsPageTitle;
+      case AssignListPage.routeName:
+        return l10n.drawerAssignPage;
+
       default:
         return route;
     }
@@ -58,6 +66,8 @@ class NavigationDisplay {
 
   static IconData? getPageIcon(String route) {
     switch (route) {
+      case ScenarioListPage.routeName:
+        return AIcons.scenario;
       case AlbumListPage.routeName:
         return AIcons.album;
       case CountryListPage.routeName:
@@ -76,6 +86,8 @@ class NavigationDisplay {
         return AIcons.search;
       case SettingsPage.routeName:
         return AIcons.settings;
+      case AssignListPage.routeName:
+        return AIcons.assignP;
       default:
         return null;
     }

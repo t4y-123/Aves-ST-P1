@@ -25,6 +25,10 @@ import 'package:aves/widgets/viewer/info/embedded/notifications.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../../model/metadata/date_modifier.dart';
+import '../../dialogs/aves_confirmation_dialog.dart';
 
 class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEditorMixin, SingleEntryEditorMixin {
   final StreamController<ActionEvent<EntryAction>> _eventStreamController = StreamController.broadcast();
@@ -45,6 +49,7 @@ class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEdi
       case EntryAction.editRating:
       case EntryAction.editTags:
       case EntryAction.removeMetadata:
+      case EntryAction.shareByDateNow:
         return canWrite;
       case EntryAction.exportMetadata:
         return true;
@@ -65,6 +70,7 @@ class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEdi
     switch (action) {
       // general
       case EntryAction.editDate:
+      case EntryAction.shareByDateNow:
         return targetEntry.canEditDate;
       case EntryAction.editLocation:
         return targetEntry.canEditLocation;
@@ -96,6 +102,8 @@ class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEdi
     _eventStreamController.add(ActionStartedEvent(action));
     switch (action) {
       // general
+      case EntryAction.shareByDateNow:
+        await _setDateToNow(context, targetEntry, collection);
       case EntryAction.editDate:
         await _editDate(context, targetEntry, collection);
       case EntryAction.editLocation:
@@ -126,6 +134,23 @@ class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEdi
     }
     _eventStreamController.add(ActionEndedEvent(action));
   }
+
+  Future<void> _setDateToNow(BuildContext context, AvesEntry targetEntry, CollectionLens? collection) async {
+    final dateTime = DateTime.now();
+    final formattedDateTime = DateFormat('yyyy-MM-dd HH:mm:ss.SSS').format(dateTime); // Format the date as needed
+
+    if (!await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.setDateToNow,
+      message: context.l10n.setDateToNowDialogMessage(formattedDateTime),
+      confirmationButtonLabel: context.l10n.continueButtonLabel,
+    )) return;
+
+    final modifier = DateModifier.setCustom(const {}, dateTime);
+    if (modifier == null) return;
+    await edit(context, targetEntry, () => targetEntry.editDate(modifier));
+  }
+
 
   Future<void> _editDate(BuildContext context, AvesEntry targetEntry, CollectionLens? collection) async {
     final modifier = await selectDateModifier(context, {targetEntry}, collection);
@@ -280,4 +305,35 @@ class EntryInfoActionDelegate with FeedbackMixin, PermissionAwareMixin, EntryEdi
       ),
     );
   }
+}
+
+class SetDateToNowDialogDelegate extends ConfirmationDialogDelegate {
+  final ValueNotifier<bool> _setMetadataDate = ValueNotifier(false);
+
+  SetDateToNowDialogDelegate() {
+    _setMetadataDate.value = settings.setMetadataDateBeforeFileOp;
+  }
+
+  void dispose() {
+    _setMetadataDate.dispose();
+  }
+
+  @override
+  List<Widget> build(BuildContext context) => [
+    Padding(
+      padding: const EdgeInsets.all(16) + const EdgeInsets.only(top: 8),
+      child: Text(context.l10n.moveUndatedConfirmationDialogMessage),
+    ),
+    ValueListenableBuilder<bool>(
+      valueListenable: _setMetadataDate,
+      builder: (context, flag, child) => SwitchListTile(
+        value: flag,
+        onChanged: (v) => _setMetadataDate.value = v,
+        title: Text(context.l10n.moveUndatedConfirmationDialogSetDate),
+      ),
+    ),
+  ];
+
+  @override
+  void apply() => settings.setMetadataDateBeforeFileOp = _setMetadataDate.value;
 }

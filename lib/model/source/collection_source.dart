@@ -1,26 +1,38 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:aves/model/assign/assign_entries.dart';
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/covers.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/catalog.dart';
 import 'package:aves/model/entry/extensions/location.dart';
 import 'package:aves/model/entry/sort.dart';
 import 'package:aves/model/favourites.dart';
+import 'package:aves/model/fgw/fgw_used_entry_record.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/assign.dart';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/filters/location.dart';
+import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/filters/tag.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/metadata/trash.dart';
+import 'package:aves/model/scenario/enum/scenario_item.dart';
+import 'package:aves/model/scenario/scenario.dart';
+import 'package:aves/model/scenario/scenario_step.dart';
+import 'package:aves/model/settings/modules/scenario.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/album.dart';
 import 'package:aves/model/source/analysis_controller.dart';
+import 'package:aves/model/source/assign.dart';
 import 'package:aves/model/source/events.dart';
 import 'package:aves/model/source/location/country.dart';
 import 'package:aves/model/source/location/location.dart';
 import 'package:aves/model/source/location/place.dart';
 import 'package:aves/model/source/location/state.dart';
+import 'package:aves/model/source/scenario.dart';
 import 'package:aves/model/source/tag.dart';
 import 'package:aves/model/source/trash.dart';
 import 'package:aves/model/vaults/vaults.dart';
@@ -64,7 +76,8 @@ mixin SourceBase {
   void invalidateEntries();
 }
 
-abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, PlaceMixin, StateMixin, LocationMixin, TagMixin, TrashMixin {
+abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, PlaceMixin, StateMixin, LocationMixin, TagMixin, TrashMixin, ScenarioMixin,
+AssignMixin  {
   static const fullScope = <CollectionFilter>{};
 
   CollectionSource() {
@@ -85,6 +98,25 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     });
     vaults.addListener(_onVaultsChanged);
+    // t4y: add for listen the scenario change.
+    settings.updateStream
+        .where((event) =>
+    event.key == ScenarioSettings.scenarioPinnedExcludeFiltersKey ||
+        event.key == ScenarioSettings.scenarioPinnedIntersectFiltersKey ||
+        event.key == ScenarioSettings.scenarioPinnedUnionFiltersKey)
+        .listen((event) {
+      final oldValue = event.oldValue;
+      if (oldValue is List<String>?) {
+        _onScenarioChanged();
+      }
+    });
+    //
+    assignRecords.addListener(updateScenario);
+    assignRecords.addListener(updateAssigns);
+    assignEntries.addListener(updateAssigns);
+    scenarios.addListener(updateScenario);
+    scenarios.addListener(updateAssigns);
+    scenarioSteps.addListener(updateScenario);
   }
 
   @mustCallSuper
@@ -113,12 +145,17 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
   @override
   Set<AvesEntry> get allEntries => Set.unmodifiable(_rawEntries);
 
-  Set<AvesEntry>? _visibleEntries, _trashedEntries;
+  Set<AvesEntry>? _visibleEntries, _trashedEntries, _noneScenarioVisibleEntries;
 
   @override
   Set<AvesEntry> get visibleEntries {
-    _visibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries));
+    _visibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: settings.useScenarios));
     return _visibleEntries!;
+  }
+
+  Set<AvesEntry> get noneScenarioVisibleEntries {
+    _noneScenarioVisibleEntries ??= Set.unmodifiable(_applyHiddenFilters(_rawEntries, useScenario: false));
+    return _noneScenarioVisibleEntries!;
   }
 
   @override
@@ -147,12 +184,74 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         ...vaults.vaultDirectories.where(vaults.isLocked).map((v) => AlbumFilter(v, null)),
       };
 
-  Iterable<AvesEntry> _applyHiddenFilters(Iterable<AvesEntry> entries) {
+  Iterable<AvesEntry> _applyHiddenFilters(Iterable<AvesEntry> entries, {bool useScenario = true}) {
     final hiddenFilters = {
       TrashFilter.instance,
       ..._getAppHiddenFilters(),
     };
-    return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+
+    if (!useScenario) {
+      return entries.where((entry) => !hiddenFilters.any((filter) => filter.test(entry)));
+    }
+    if (settings.scenarioPinnedExcludeFilters.isEmpty) {
+      return entries.where((entry) => false);
+    }
+    // Separate the filters by type once
+    return applyScenarioFilters(entries);
+  }
+
+  Iterable<AvesEntry> applyScenarioFilters(Iterable<AvesEntry> entries) {
+    final hiddenFilters = {
+      TrashFilter.instance,
+      ..._getAppHiddenFilters(),
+    };
+
+    final excludeUniqueFilters = settings.scenarioPinnedExcludeFilters;
+    final intersectAndFilters = settings.scenarioPinnedIntersectFilters;
+    final unionOrFilters = settings.scenarioPinnedUnionFilters;
+
+    // debugPrint('applyScenarioFilters excludeUniqueFilters $excludeUniqueFilters \n'
+    //     'intersectAndFilters $intersectAndFilters \n'
+    //     'unionOrFilters $unionOrFilters ');
+
+    final hasUnionOr = unionOrFilters.isNotEmpty;
+    final hasIntersectAnd = intersectAndFilters.isNotEmpty;
+
+    return entries.where((entry) {
+      if (hiddenFilters.any((filter) => filter.test(entry))) return false;
+
+      final uniqueFilterResult = excludeUniqueFilters.any((filter) => filter.test(entry));
+
+      switch (settings.scenarioGroupFactor) {
+        case ScenarioChipGroupFactor.intersectBeforeUnion:
+          if (hasUnionOr) {
+            //skip intersect if entry in in union post.
+            if (unionOrFilters.any((filter) => filter.test(entry))) return true;
+          }
+          //if a entry is not in union post, check if exist entry fit limit intersect.
+          if (uniqueFilterResult && hasIntersectAnd) {
+            return intersectAndFilters.every((filter) => filter.test(entry));
+          }
+          // if a entry is get in by union, it is always in ,
+          // if a entry is not in by union, its value is base the exclude value and intersect value,
+          // when have none intersect, it the same as unique.
+          return uniqueFilterResult;
+
+        case ScenarioChipGroupFactor.unionBeforeIntersect:
+          //skip union if entry is get rid in interject post.
+          if (hasIntersectAnd) {
+            if (!intersectAndFilters.every((filter) => filter.test(entry))) return false;
+          }
+          // try get union entry if not in exclude fit limit intersect.
+          if (!uniqueFilterResult && hasUnionOr) {
+            return unionOrFilters.any((filter) => filter.test(entry));
+          }
+          // if a entry is not get rid by intersect when exist,
+          // or not get in by union when not exist,
+          // the value is the same as exclude.
+          return uniqueFilterResult;
+      }
+    });
   }
 
   Iterable<AvesEntry> _applyTrashFilter(Iterable<AvesEntry> entries) {
@@ -167,6 +266,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     invalidatePlaceFilterSummary(entries: entries, notify: notify);
     invalidateStateFilterSummary(entries: entries, notify: notify);
     invalidateTagFilterSummary(entries: entries, notify: notify);
+    invalidateScenarioFilterSummary(entries: entries, notify: notify);
+    invalidateAssignFilterSummary(entries: entries, notify: notify);
   }
 
   @override
@@ -185,8 +286,35 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     updateTags();
   }
 
+  final Map<String, AvesEntry> _entriesByPath = {};
+
+  void addOrUpdateEntry(AvesEntry entry) {
+    final path = entry.path;
+    if (path != null) {
+      // Optionally update the existing entry
+      if (_entriesByPath.containsKey(path)) {
+        final preEntry = _entriesByPath[path];
+        //t4y: if share by copied exist with a same file,mean this duplicate happen in a share copy op,
+        // but as not sure which one will be added to db in multi progress,
+        // I add them all to share by copy record.
+        // and remove when remove expired share copied.
+        if (preEntry != null && shareCopiedEntries.all.contains(preEntry.contentId)) {
+          shareCopiedEntries.add({entry});
+        }
+        _rawEntries.remove(_entriesByPath[path]);
+        _entriesByPath[path] = entry;
+      } else {
+        _entriesByPath[path] = entry;
+      }
+    }
+  }
+
   void addEntries(Set<AvesEntry> entries, {bool notify = true}) {
     if (entries.isEmpty) return;
+
+    for (var entry in entries) {
+      addOrUpdateEntry(entry);
+    }
 
     final newIdMapEntries = Map.fromEntries(entries.map((entry) => MapEntry(entry.id, entry)));
     if (_rawEntries.isNotEmpty) {
@@ -218,9 +346,15 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     if (entries.isEmpty) return;
 
     final ids = entries.map((entry) => entry.id).toSet();
+    final mapContentIds = entries.map((entry) => entry.contentId ?? 0).toSet();
     await favourites.removeIds(ids);
     await covers.removeIds(ids);
     await localMediaDb.removeIds(ids);
+    debugPrint('$runtimeType  removeEntries');
+    await fgwUsedEntryRecord.removeEntryIds(ids);
+    debugPrint('$runtimeType  await fgwUsedEntryRecord.removeEntryIds(ids); $ids');
+    await shareCopiedEntries.removeEntryContentIds(mapContentIds);
+    debugPrint('$runtimeType  await shareCopiedEntries.removeEntryIds(ids);; $ids\n mapContentIds $mapContentIds');
 
     ids.forEach((id) => _entryById.remove);
     _rawEntries.removeAll(entries);
@@ -331,6 +465,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     required MoveType moveType,
     required Set<String> destinationAlbums,
     required Set<MoveOpEvent> movedOps,
+    Function(Set<AvesEntry>)? onUpdatedEntries,
   }) async {
     if (movedOps.isEmpty) return;
 
@@ -347,7 +482,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
     final fromAlbums = <String?>{};
     final movedEntries = <AvesEntry>{};
     final copy = moveType == MoveType.copy;
-    if (copy) {
+    final shareByCopy = moveType == MoveType.shareByCopy;
+    if (copy || shareByCopy) {
       movedOps.forEach((movedOp) {
         final sourceUri = movedOp.uri;
         final newFields = movedOp.newFields;
@@ -355,7 +491,7 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
         if (sourceEntry != null) {
           fromAlbums.add(sourceEntry.directory);
           movedEntries.add(sourceEntry.copyWith(
-            id: localMediaDb.nextId,
+            id: localMediaDb.nextDateId,
             uri: newFields['uri'] as String?,
             path: newFields['path'] as String?,
             contentId: newFields['contentId'] as int?,
@@ -372,6 +508,24 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       await localMediaDb.insertEntries(movedEntries);
       await localMediaDb.saveCatalogMetadata(movedEntries.map((entry) => entry.catalogMetadata).nonNulls.toSet());
       await localMediaDb.saveAddresses(movedEntries.map((entry) => entry.addressDetails).nonNulls.toSet());
+      await localMediaDb.saveCatalogMetadata(movedEntries.map((entry) => entry.catalogMetadata).whereNotNull().toSet());
+      await localMediaDb.saveAddresses(movedEntries.map((entry) => entry.addressDetails).whereNotNull().toSet());
+      // t4y: for intuitively, the copied items should be the most recently.
+      // And for functionally, somme apps  will still swallows you pic making it not be able to send to others unless made some modified.
+      if (shareByCopy) {
+        await shareCopiedEntries.add(movedEntries);
+        debugPrint('shareCopiedEntries.add(movedEntries updateAfterMove:\n'
+            '$movedEntries');
+        // final dateTime = DateTime.now();
+        // final modifier = DateModifier.setCustom(const {}, dateTime);
+        // await Future.wait(movedEntries.map((entry) async {
+        //   await entry.editDate(modifier);
+        //   debugPrint('shareCopiedEntries.  await entry.editDate(modifier);\n[$entry]');
+        // }));
+      }
+      if (onUpdatedEntries != null) {
+        onUpdatedEntries(movedEntries);
+      }
     } else {
       await Future.forEach<MoveOpEvent>(movedOps, (movedOp) async {
         final newFields = movedOp.newFields;
@@ -389,10 +543,19 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
           }
         }
       });
+      // // t4y: content Id after move to bin is null
+      // if (moveType == MoveType.toBin) {
+      //   final contentIds = movedEntries.map((e) => e.contentId);
+      //   debugPrint('$runtimeType  await shareCopiedEntries.removeEntries(movedEntries) in  updateAfterMove tobin'
+      //       ' :\n$movedEntries\n'
+      //       'movedEntries ContentIds:$contentIds');
+      //   await shareCopiedEntries.removeEntries(movedEntries);
+      // }
     }
 
     switch (moveType) {
       case MoveType.copy:
+      case MoveType.shareByCopy:
         addEntries(movedEntries);
       case MoveType.move:
       case MoveType.export:
@@ -553,6 +716,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagEntryCount(filter);
+    if (filter is ScenarioFilter) return scenarioEntryCount(filter);
+    if (filter is AssignFilter) return assignEntryCount(filter);
     return 0;
   }
 
@@ -569,6 +734,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagSize(filter);
+    if (filter is ScenarioFilter) return scenarioSize(filter);
+    if (filter is AssignFilter) return assignSize(filter);
     return 0;
   }
 
@@ -585,6 +752,8 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       }
     }
     if (filter is TagFilter) return tagRecentEntry(filter);
+    if (filter is ScenarioFilter) return scenarioRecentEntry(filter);
+    if (filter is AssignFilter) return assignRecentEntry(filter);
     return null;
   }
 
@@ -605,6 +774,16 @@ abstract class CollectionSource with SourceBase, AlbumMixin, CountryMixin, Place
       final candidateEntries = visibleEntries.where((entry) => newlyVisibleFilters.any((f) => f.test(entry))).toSet();
       analyze(null, entries: candidateEntries);
     }
+  }
+
+  void _onScenarioChanged() {
+    debugPrint('$runtimeType  _onScenarioChanged ');
+    updateDerivedFilters();
+    eventBus.fire(const FilterVisibilityChangedEvent());
+    _visibleEntries = Set.unmodifiable(_applyHiddenFilters(_rawEntries));
+    final candidateEntries = visibleEntries;
+    analyze(null, entries: candidateEntries);
+    notifyScenariosChanged();
   }
 
   void _onVaultsChanged() {

@@ -48,7 +48,7 @@ class PathFilter extends CollectionFilter {
   EntryFilter get positiveTest => _test;
 
   @override
-  bool get exclusiveProp => true;
+  bool get exclusiveProp => false;
 
   @override
   String get universalLabel => path;
@@ -64,7 +64,8 @@ class PathFilter extends CollectionFilter {
   }
 
   @override
-  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) => Icon(AIcons.explorer, size: size);
+  Widget? iconBuilder(BuildContext context, double size, {bool allowGenericIcon = true}) =>
+      Icon(AIcons.explorer, size: size);
 
   @override
   String get category => type;

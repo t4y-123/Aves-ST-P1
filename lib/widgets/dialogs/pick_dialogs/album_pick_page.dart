@@ -78,6 +78,8 @@ class _AlbumPickPageState extends State<_AlbumPickPage> {
       MoveType.move => l10n.albumPickPageTitleMove,
       MoveType.export => l10n.albumPickPageTitleExport,
       MoveType.toBin || MoveType.fromBin || null => l10n.albumPickPageTitlePick,
+      // TODO: Handle this case.
+      MoveType.shareByCopy => l10n.albumPickPageTitleShareByCopy,
     };
   }
 

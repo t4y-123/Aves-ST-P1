@@ -1,31 +1,103 @@
-<div align="center">
+## Aves-ST, 收图浏览
 
-<img src="https://raw.githubusercontent.com/deckerst/aves/develop/aves_logo.svg" alt='Aves logo' width="200" />
+This app offers enhanced features, flexibility, and convenience for managing and sharing photos, better than any traditional secure photo album apps.
 
-## Aves
+## 1
 
-![Version badge][Version badge]
-![Build badge][Build badge]
+In real-life scenarios, when sharing photo albums with others:
 
-Aves is a gallery and metadata explorer app. It is built for Android, with Flutter.
+(1) Static protection against social embarrassment: Only display selected photos/videos.
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-      alt='Get it on Google Play'
-      height="80">](https://play.google.com/store/apps/details?id=deckers.thibault.aves&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-      alt='Get it on IzzyOnDroid'
-      height="80">](https://apt.izzysoft.de/fdroid/index/apk/deckers.thibault.aves)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-      alt='Get it on F-Droid'
-      height="80">](https://f-droid.org/packages/deckers.thibault.aves.libre)
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png"
-      alt='Get it on GitHub'
-      height="80">](https://github.com/deckerst/aves/releases/latest)
+(2) Dynamic protection against social embarrassment: 
+Set different conditions for display scenarios, quickly switch between scenarios, and show only photos or videos that meet the criteria.
+
+(3) Restrictions can be locked or unlocked at any time.
+
+## 2
+
+More convenient and flexible use of personal wallpapers:
+
+Set private photos that might be inappropriate to display publicly as your personal wallpaper and switch to harmless, public-friendly wallpapers (e.g., random landscape photos) whenever needed.
+
+## 3
+More efficient image browsing :
+
+Search Assistant: Quickly filter and find suitable images using various criteria.
+
+Copy and share/update to current usage: Easily use images/videos in the "recent files" section of other apps, bypassing their often limited image browsing capabilities.
+
+1、在现实生活中，给他人查看相册内容时：
+
+(1)静态防社死：指定只显示固定选择的图片/视频内容。
+
+(2)动态防社死：指定不同条件限制场景，快速切换场景，只显示符合条件的图片或视频；
+
+(3)可随时锁定解锁限制。
+
+2、更方便大胆地设置任何不方便被他人看到的图片作为私人时间手机壁纸，同时随时切换无害的可当众展示的例如随便什么风景图壁纸。
+
+3、更方便的找图和用图模式，
+
+【查询助手】，使用各种限制，快速筛选合用的图片；
+
+【复制分享/更新于现】，使得更容易在其他软件【最近文件】处直接使用图片/视频，抛开不用其他软件孱弱的图片浏览功能。
+
+## 功能
+
+防社死
+
+1、临时指定,分享图片给好友观看时只显示指定的图片：
+Temporarily specify images to share with friends:
+Only the designated images will be displayed for viewing.
+![001_tmp_assign.png](snap%2F001_tmp_assign.png)
 
 
-[Compare versions](https://github.com/deckerst/aves/wiki/App-Versions)
-      
-<div align="left">
+2、自定义场景，例如只允许显示最近3小时内拍摄的照片：
+
+Custom scenarios:
+
+For example, only allow photos taken within the past 3 hours to be shown.
+
+![002_add_scenario.png](snap%2F002_add_scenario.png)
+
+
+3、等级壁纸，随时切换会让人社死的壁纸设置与不会社死的壁纸设置：
+
+Tiered wallpapers:
+
+Easily switch between socially embarrassing wallpapers and safe, non-embarrassing ones.
+
+![003_level_wallpaper.png](snap%2F003_level_wallpaper.png)
+
+
+4、复制分享，使想要分享的图片在其它APP中总是显示在最新。在查找图片这点上，图片浏览器总是比其它社交软件的图片查看功能更好用，不是么？
+
+Copy and share:
+
+Ensure that the images you want to share always appear at the top of the "recent files" list in other apps. 
+
+For finding and using images, a dedicated image viewer is always better than the built-in features of most social apps, isn’t it?
+![004_share_by_copy.png](snap%2F004_share_by_copy.png)
+
+
+5、卓面小部件显示横向壁纸，查询助手帮助查看指定条件图片：
+
+Desktop widgets and query assistant:
+
+Display horizontal wallpapers with a widget, and use the query assistant to find images that meet specific criteria.
+![005_fgw_widget_and_query_helper.png](snap%2F005_fgw_widget_and_query_helper.png)
+
+## 说明
+
+本项目基于开源项目：
+https://github.com/deckerst/aves
+修改。
+我对原开发者的了解除了帐号名称并不知道更多，所以以上功能可能被添加入原项目也可能不。
+除【展示】功能外的bug请联系原开发。
+
+
+-----------------------------------
+原项目部分说明：
 
 ## Features
 
@@ -39,33 +111,6 @@ Aves integrates with Android (from KitKat to Android 14, including Android TV) w
 
 ## Screenshots
 
-<div align="center">
-
-[<img src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/1.png"
-      alt='Collection screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/1.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/2.png"
-      alt='Image screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/2.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/5.png"
-      alt='Stats screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/5.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/3.png"
-      alt='Info (basic) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/3.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/4.png"
-      alt='Info (metadata) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/4.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/6.png"
-      alt='Countries screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/6.png)
-
-<div align="left">
 
 ## Changelog
 
@@ -79,48 +124,23 @@ Aves requires a few permissions to do its job:
 - **have network access**: necessary for the map view, and most likely for precise reverse geocoding too,
 - **view network connections**: checking for connection states allows Aves to gracefully degrade features that depend on internet.
 
-## Contributing
 
-### Issues
-
-[Bug reports](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Abug&template=bug_report.md&title=) and [feature requests](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Afeature&template=feature_request.md&title=) are welcome, but read the [guidelines](https://github.com/deckerst/aves/issues/234) first. If you have questions, check out the [discussions](https://github.com/deckerst/aves/discussions).
-
-### Code
-
-At this stage this project does *not* accept PRs.
-
-### Translations
-
-Translations are powered by [Weblate](https://hosted.weblate.org/engage/aves/) and the effort of wonderfully generous volunteers.
-<a href="https://hosted.weblate.org/engage/aves/">
-<img src="https://hosted.weblate.org/widgets/aves/-/multi-auto.svg" alt="Translation status" />
-</a>
-
-If you want to translate this app in your language and share the result, [there is a guide](https://github.com/deckerst/aves/wiki/Contributing-to-Translations).
-
-### Donations
-
-Some users have expressed the wish to financially support the project. Thanks! ❤️
-
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/paypal-badge-cropped.png"
-      alt='Donate with PayPal'
-      height="40">](https://www.paypal.com/donate/?hosted_button_id=RWKQ4J7D8USX6)
-[<img src="https://liberapay.com/assets/widgets/donate.svg"
-      alt='Donate using Liberapay'
-      height="40">](https://liberapay.com/deckerst/donate)
-
-## Project Setup
+## Project Setup（修改适配本项目）
 
 Before running or building the app, update the dependencies for the desired flavor:
 ```
-# scripts/apply_flavor_play.sh
+# scripts/apply_flavor_t4play.sh
 ```
 
 To build the project, create a file named `<app dir>/android/key.properties`. It should contain a reference to a keystore for app signing, and other necessary credentials. See [key_template.properties](https://github.com/deckerst/aves/blob/develop/android/key_template.properties) for the expected keys.
 
 To run the app:
 ```
-# ./flutterw run -t lib/main_play.dart --flavor play
+# ./flutterw run -t lib/main_play.dart --flavor t4play
+```
+To make release app:
+```
+# ./flutterw build apk --flavor t4play -t lib/main_t4play.dart
 ```
 
 [Version badge]: https://img.shields.io/github/v/release/deckerst/aves?include_prereleases&sort=semver

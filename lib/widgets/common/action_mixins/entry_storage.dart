@@ -5,11 +5,14 @@ import 'package:aves/app_mode.dart';
 import 'package:aves/model/entry/entry.dart';
 import 'package:aves/model/entry/extensions/multipage.dart';
 import 'package:aves/model/entry/extensions/props.dart';
+import 'package:aves/model/fgw/share_copied_entry.dart';
 import 'package:aves/model/filters/album.dart';
+import 'package:aves/model/filters/path.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/highlight.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/multipage.dart';
+import 'package:aves/model/settings/enums/presentation.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
@@ -19,6 +22,7 @@ import 'package:aves/services/common/services.dart';
 import 'package:aves/services/media/enums.dart';
 import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/theme/durations.dart';
+import 'package:aves/theme/format.dart';
 import 'package:aves/theme/themes.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/widgets/collection/collection_page.dart';
@@ -106,7 +110,7 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       onDone: (processed) async {
         final successOps = processed.where((e) => e.success).toSet();
         final exportedOps = successOps.where((e) => !e.skipped).toSet();
-        final newUris = exportedOps.map((v) => v.newFields['uri'] as String?).nonNulls.toSet();
+        final newUris = exportedOps.map((v) => v.newFields['uri'] as String?).whereNotNull().toSet();
         final isMainMode = context.read<ValueNotifier<AppMode>>().value == AppMode.main;
 
         source.resumeMonitoring();
@@ -157,19 +161,61 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     transientMultiPageInfo.forEach((v) => v.dispose());
   }
 
+  Future<void> deleteExpiredShareCopied(BuildContext context) async {
+    final source = context.read<CollectionSource>();
+    await shareCopiedEntries.refresh();
+    //await shareCopiedEntries.init();
+    final todoEntries = source.allEntries
+        .where((entry) => {PathFilter(androidFileUtils.avesShareByCopyPath)}.any((f) => f.test(entry)))
+        .toSet();
+    final expiredEntries = todoEntries.where(shareCopiedEntries.isExpiredCopied).toSet();
+    if (expiredEntries.isEmpty) return;
+    debugPrint('$runtimeType deleteExpiredShareCopied\n'
+        'todoEntries $todoEntries \n'
+        'expiredEntries $expiredEntries\n');
+    final expiredContentIds = expiredEntries.map((e) => e.contentId ?? 0).toSet();
+
+    final entriesByDestination = <String, Set<AvesEntry>>{};
+    entriesByDestination[AndroidFileUtils.trashDirPath] = expiredEntries;
+
+    //debugPrint('$runtimeType deleteExpiredShareCopied\n'
+    //     'settings.enableBin ${settings.enableBin} \n'
+    //     ' settings.shareByCopyExpiredRemoveUseBin ${settings.shareByCopyExpiredRemoveUseBin}\n');
+    //source.pauseMonitoring();
+    final useBin = settings.enableBin && settings.shareByCopyExpiredRemoveUseBin;
+    //debugPrint('$runtimeType deleteExpiredShareCopied delete to useBin $useBin \n');
+    // delete forever trashed items
+    await EntrySetActionDelegate().doDelete(
+      context: context,
+      entries: expiredEntries,
+      enableBin: useBin,
+      isShareByCopyDelete: true,
+    );
+    await shareCopiedEntries.removeIds(expiredContentIds);
+    // remove expired ids.
+    final expiredCopiedIds = shareCopiedEntries.all.where(shareCopiedEntries.isExpiredRecord).toSet();
+    if (expiredCopiedIds.isNotEmpty) {
+      await shareCopiedEntries.removeEntryContentIds(expiredCopiedIds);
+    }
+    //await delegate.setDateToNow(context,entries:todoEntries,showConfirm: false);
+    return;
+  }
+
   Future<void> doQuickMove(
     BuildContext context, {
     required MoveType moveType,
     required Map<String, Iterable<AvesEntry>> entriesByDestination,
     bool hideShowAction = false,
     VoidCallback? onSuccess,
+    bool isShareByCopyDelete = false,
   }) async {
+    Set<AvesEntry> updatedEntries = {};
     final entries = entriesByDestination.values.expand((v) => v).toSet();
     final todoCount = entries.length;
     assert(todoCount > 0);
 
     final toBin = moveType == MoveType.toBin;
-    final copy = moveType == MoveType.copy;
+    final copy = moveType == MoveType.copy || moveType == MoveType.shareByCopy;
 
     // permission for modification at destinations
     final destinationAlbums = entriesByDestination.keys.toSet();
@@ -196,7 +242,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       ].map((v) => v.toLowerCase()).toList();
       // case insensitive comparison
       final uniqueNames = names.toSet();
-      if (uniqueNames.length < names.length) {
+      //t4y: in share by copy, always rename the items.to avoid the show dialog break the operation.
+      if (uniqueNames.length < names.length && moveType != MoveType.shareByCopy) {
         final value = await showDialog<NameConflictStrategy>(
           context: context,
           builder: (context) => AvesSingleSelectionDialog<NameConflictStrategy>(
@@ -238,6 +285,11 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
           moveType: moveType,
           destinationAlbums: destinationAlbums,
           movedOps: movedOps,
+          onUpdatedEntries: (entries) {
+            updatedEntries.addAll(entries);
+            // debugPrint('$runtimeType doQuickMove entries:\n $entries');
+            // debugPrint('$runtimeType doQuickMove updatedEntries:\n $updatedEntries');
+          },
         );
 
         // delete (when trying to move to bin obsolete entries)
@@ -247,8 +299,8 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
 
         source.resumeMonitoring();
 
-        // cleanup
-        if ({MoveType.move, MoveType.toBin}.contains(moveType)) {
+        // cleanup// t4y: should not delete the share by copy dir.
+        if ({MoveType.move, MoveType.toBin}.contains(moveType) && !isShareByCopyDelete) {
           await storageService.deleteEmptyRegularDirectories(originAlbums);
         }
 
@@ -271,19 +323,22 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
             final navigator = Navigator.maybeOf(context);
             if (toBin) {
               if (movedEntries.isNotEmpty) {
-                action = SnackBarAction(
-                  label: Themes.asButtonLabel(l10n.entryActionRestore),
-                  onPressed: () {
-                    if (navigator != null) {
-                      doMove(
-                        navigator.context,
-                        moveType: MoveType.fromBin,
-                        entries: movedEntries,
-                        hideShowAction: true,
-                      );
-                    }
-                  },
-                );
+                // t4y: share by copy not need to restore.
+                if (!isShareByCopyDelete) {
+                  action = SnackBarAction(
+                    label: Themes.asButtonLabel(l10n.entryActionRestore),
+                    onPressed: () {
+                      if (navigator != null) {
+                        doMove(
+                          navigator.context,
+                          moveType: MoveType.fromBin,
+                          entries: movedEntries,
+                          hideShowAction: true,
+                        );
+                      }
+                    },
+                  );
+                }
               }
             } else if (!hideShowAction) {
               action = SnackBarAction(
@@ -311,6 +366,23 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
         }
       },
     );
+
+    if (moveType == MoveType.shareByCopy && settings.shareByCopyExpiredAutoRemove) {
+      // await deleteExpiredShareCopied(context);
+      final source = context.read<CollectionSource>();
+      final allCopiedEntries = source.allEntries
+          .where(
+              (entry) => {PathFilter(androidFileUtils.avesShareByCopyPath)}.any((f) => f.test(entry) && !entry.trashed))
+          .where(shareCopiedEntries.isShareCopied)
+          .toSet();
+      final todoEntries = switch (settings.shareByCopySetDateType) {
+        ShareByCopySetDateType.onlyThisTimeCopiedEntries =>
+          updatedEntries.isNotEmpty ? updatedEntries : allCopiedEntries,
+        ShareByCopySetDateType.allCopiedEntries => allCopiedEntries,
+      };
+      await EntrySetActionDelegate()
+          .setDateToNow(context, entries: todoEntries, showConfirm: false, isShareByCopy: true);
+    }
   }
 
   Future<void> doMove(
@@ -319,18 +391,21 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
     required Set<AvesEntry> entries,
     bool hideShowAction = false,
     VoidCallback? onSuccess,
+    bool isShareByCopyDelete = false,
+    bool shareByCopyNeedRemove = true,
   }) async {
-    if (moveType == MoveType.toBin) {
+    // debugPrint('$runtimeType doMove in viewerMode?[$isViewerMode]:${context.read<ValueNotifier<AppMode>>().value}');
+    if (moveType == MoveType.toBin && !isShareByCopyDelete) {
       final l10n = context.l10n;
       if (!await showSkippableConfirmationDialog(
         context: context,
         type: ConfirmationDialog.moveToBin,
         message: l10n.binEntriesConfirmationDialogMessage(entries.length),
         confirmationButtonLabel: l10n.deleteButtonLabel,
-      )) {
-        return;
-      }
+      )) return;
     }
+    // t4y delete the expired items first.
+    // when share by copy in viewer mode, not need to delete pre.
 
     final entriesByDestination = <String, Set<AvesEntry>>{};
     switch (moveType) {
@@ -352,6 +427,25 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
             entriesByDestination[originAlbum] = dirEntries.toSet();
           }
         });
+      case MoveType.shareByCopy:
+        final l10n = context.l10n;
+        final deleteTimeString = formatToLocalDuration(context, Duration(seconds: settings.shareByCopyRemoveInterval));
+        String dirName = pContext.basename(androidFileUtils.avesShareByCopyPath);
+        // debugPrint('$runtimeType deleteTimeStrings:$deleteTimeString dirName:$dirName');
+
+        if (!await showSkippableConfirmationDialog(
+          context: context,
+          type: ConfirmationDialog.shareByCopy,
+          message: l10n.shareByCopyDialogMessage(androidFileUtils.avesShareByCopyPath, dirName, deleteTimeString),
+          confirmationButtonLabel: l10n.continueButtonLabel,
+        )) return;
+        entriesByDestination[androidFileUtils.avesShareByCopyPath] = entries;
+    }
+
+    if (moveType == MoveType.shareByCopy &&
+        settings.shareByCopyRemoveSequence == ShareByCopyRemoveSequence.removeBeforeCopy &&
+        shareByCopyNeedRemove) {
+      await deleteExpiredShareCopied(context);
     }
 
     await doQuickMove(
@@ -359,7 +453,14 @@ mixin EntryStorageMixin on FeedbackMixin, PermissionAwareMixin, SizeAwareMixin {
       moveType: moveType,
       entriesByDestination: entriesByDestination,
       onSuccess: onSuccess,
+      isShareByCopyDelete: isShareByCopyDelete,
     );
+
+    if (moveType == MoveType.shareByCopy &&
+        settings.shareByCopyRemoveSequence == ShareByCopyRemoveSequence.removeAfterCopy &&
+        shareByCopyNeedRemove) {
+      await deleteExpiredShareCopied(context);
+    }
   }
 
   Future<void> rename(

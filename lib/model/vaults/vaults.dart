@@ -163,7 +163,7 @@ class Vaults extends ChangeNotifier {
     final vaultName = detailsForPath(dirPath)?.name;
     if (vaultName == null) return newEntries;
 
-    final knownPaths = source.allEntries.where((v) => v.origin == EntryOrigins.vault && v.directory == dirPath).map((v) => v.path).nonNulls.toSet();
+    final knownPaths = source.allEntries.where((v) => v.origin == EntryOrigins.vault && v.directory == dirPath).map((v) => v.path).whereNotNull().toSet();
     final untrackedPaths = await storageService.getUntrackedVaultPaths(vaultName, knownPaths);
     if (untrackedPaths.isNotEmpty) {
       debugPrint('Recovering ${untrackedPaths.length} untracked vault items');
@@ -171,7 +171,7 @@ class Vaults extends ChangeNotifier {
         final uri = Uri.file(untrackedPath).toString();
         final sourceEntry = await mediaFetchService.getEntry(uri, null, allowUnsized: true);
         if (sourceEntry != null) {
-          sourceEntry.id = localMediaDb.nextId;
+          sourceEntry.id = localMediaDb.nextDateId;
           sourceEntry.origin = EntryOrigins.vault;
           newEntries.add(sourceEntry);
         } else {

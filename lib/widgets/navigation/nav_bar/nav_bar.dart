@@ -16,6 +16,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../filter_grids/scenario_page.dart';
+
 class AppBottomNavBar extends StatefulWidget {
   final Stream<DraggableScrollbarEvent> events;
 
@@ -66,13 +68,14 @@ class _AppBottomNavBarState extends State<AppBottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    final showVideo = context.select<Settings, bool>((v) => !v.hiddenFilters.contains(MimeFilter.video));
-
+    final showVideo = context.select<Settings, bool>((s) => !s.hiddenFilters.contains(MimeFilter.video));
+    final showScenario = context.select<Settings, bool>((s) => s.useScenarios);
     final items = [
       const AvesBottomNavItem(route: CollectionPage.routeName),
-      if (showVideo) AvesBottomNavItem(route: CollectionPage.routeName, filter: MimeFilter.video),
+      if (!showScenario && showVideo) AvesBottomNavItem(route: CollectionPage.routeName, filter: MimeFilter.video),
       const AvesBottomNavItem(route: CollectionPage.routeName, filter: FavouriteFilter.instance),
       const AvesBottomNavItem(route: AlbumListPage.routeName),
+      if (showScenario) const AvesBottomNavItem(route: ScenarioListPage.routeName),
     ];
 
     Widget child = FloatingNavBar(
@@ -147,6 +150,8 @@ class _AppBottomNavBarState extends State<AppBottomNavBar> {
         settings: RouteSettings(name: routeName),
         builder: (context) {
           switch (routeName) {
+            case ScenarioListPage.routeName:
+              return const ScenarioListPage();
             case AlbumListPage.routeName:
               return const AlbumListPage();
             case CollectionPage.routeName:

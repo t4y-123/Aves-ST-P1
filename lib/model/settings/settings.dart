@@ -37,9 +37,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'modules/foreground_wallpaer.dart';
+import 'modules/scenario.dart';
+
 final Settings settings = Settings._private();
 
-class Settings with ChangeNotifier, SettingsAccess, AppSettings, DisplaySettings, NavigationSettings, SearchSettings, CollectionSettings, FilterGridsSettings, PrivacySettings, ViewerSettings, VideoSettings, SubtitlesSettings, InfoSettings {
+class Settings
+    with
+        ChangeNotifier,
+        SettingsAccess,
+        AppSettings,
+        DisplaySettings,
+        NavigationSettings,
+        SearchSettings,
+        CollectionSettings,
+        FilterGridsSettings,
+        PrivacySettings,
+        ViewerSettings,
+        VideoSettings,
+        SubtitlesSettings,
+        InfoSettings,
+        ForegroundWallpaperSettings,
+        ScenarioSettings {
   final List<StreamSubscription> _subscriptions = [];
   final EventChannel _platformSettingsChangeChannel = const OptionalEventChannel('deckers.thibault/aves/settings_change');
   final StreamController<SettingsChangedEvent> _updateStreamController = StreamController.broadcast();

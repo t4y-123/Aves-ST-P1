@@ -1071,5 +1071,351 @@
   "filePickerDoNotShowHiddenFiles": "Don’t show hidden files",
   "filePickerOpenFrom": "Open from",
   "filePickerNoItems": "No items",
-  "filePickerUseThisFolder": "Use this folder"
+  "filePickerUseThisFolder": "Use this folder",
+
+
+  "appExportForegroundWallpaper": "Foreground wallpaper",
+  "appExportScenario": "Scenarios",
+
+  "entryActionShareByCopy": "share by copy",
+  "entryActionShareByDateNow": "set date now",
+  "entrySetActionShareByCopy": "share by copy",
+  "entrySetActionShareByDateNow": "set date now",
+
+  "settingsShareByCopyTile": "Share by Copy",
+  "settingsShareByCopyPageTitle": "Share by Copy",
+  "albumPickPageTitleShareByCopy": "Share by Copy",
+  "settingsShowAvesShareCopiedItems": "Show Aves share copied items dir",
+  "settingsShareByCopyAutoRemove": "Auto remove expired copied items",
+  "settingsShareByCopyAutoRemoveUseBin": "Use bin when remove expired copied items",
+  "settingsShareByCopyCollectionPageAutoRemove": "Remove expired in launch collection page after copied",
+  "settingsShareByCopyViewerPageAutoRemove": "Remove expired in launch viewer page after copied",
+  "settingsShareByCopyAppModeViewAutoRemove": "Remove expired call from notification or single viewer with setting)",
+  "settingsExpiredInterval": "Expired Interval",
+  "settingsShareByCopyRecordExpiredInterval": "Record expired days",
+
+  "settingsFgwNewScheduleDefaultInterval": "Fgw new schedule default interval",
+
+  "shareByCopySetDateTypeOnlyThisTime": "only this time copied",
+  "shareByCopySetDateTypeAllCopiedEntries": "all copied pre and now",
+  "settingsShareByCopySetDateTypeTileTitle": "Set date to now copied entries range: ",
+
+  "shareByCopyRemoveBeforeCopy": "Remove before copy",
+  "shareByCopyRemoveAfterCopy": "Remove after copy",
+  "shareByCopyRemoveSequenceTileTitle": "Remove sequence",
+
+  "settingsClearShareCopiedItemsRecord": "Clear share by copy records : ",
+  "confirmClearShareCopiedItemsRecord": "This will clear all remember copied items {num} records\nContinue?",
+
+
+  "setDateToNowDialogMessage": "Items' date time will be set to now:\n\n{dateTime}\n\nAre you sure continue?",
+  "settingsConfirmationSetDateToNowItems": "Ask before setting items' date to now",
+
+  "shareByCopyDialogMessage": "Share items by copy them to path:\n{dirFullPath}\nMake easier shown in others APP recent items.\n\nEverytime copied, items in: \n{dirName}\nlive longer than {time} will be removed (default to bin if bin enabled) except in view mode or called by notification.\n\nYou can change some settings.\n\nAre you sure continue?",
+  "settingsConfirmationShareByCopy": "Ask before share by copy items",
+
+  "editAsCopiedFirstDialogMessage": "Data is precious.\n\nFor in some phone, it may override the original item without show any info while the user may want to keep the origin same as pre with a edited copied.\n\nSo,always copied and only edit the copied item.\n\n You need to back to collection page to find edited item.This copied will not be auto remove even cancel from edit.",
+  "settingsConfirmationEditAsCopiedFirst": "Ask before edit as copied first",
+
+  "filterFgwUsedLabel": "Fgw used entries",
+  "settingsForegroundWallpaperWidgetPageTitle": "Foreground Wallpaper Widget",
+
+
+  "settingsPresentationSectionTitle": "Presentation",
+  "settingsFgwEditSettingsTitle": "Foreground wallpaper edit",
+  "settingsPresentationForegroundWallpaperPageTitle": "Foreground wallpaper edit",
+  "settingsPresentationWallpaperAddDefaultScheduleTile": "Foreground wallpaper settings",
+  "settingsFgwOpSettingsTitle": "Foreground wallpaper operation",
+
+
+  "fgwScheduleGroupSetType346": "3/4/6,for home and lock screen",
+  "fgwScheduleGroupSetType333": "3/3/3,for only home screen",
+
+  "settingsFgwScheduleResetToDefault": "Reset to default",
+  "confirmResetAllScheduleToDefault": "This will clear all current guard levels, filter sets, and schedules, reset to default values.\ncontinue?",
+
+  "settingsAddNewScheduleGroup": "Add new group",
+  "confirmAddNewScheduleGroup": "This will add a new set of \n[guard levels/filters sets/schedules].Continue?",
+
+  "settingsClearRecentUsedEntryRecord": "Clear wallpaper used records",
+  "confirmClearRecentUsedEntryRecord": "This will clear all guard levels' used entries {num} record \nContinue?",
+
+  "settingsSetAllFgwScheduleDisplayType": "Set all schedules display order type",
+  "confirmSetAllFgwScheduleDisplayType": "This will set all schedules display type in a same value.Continue?",
+
+  "settingsFgwGuardLevel": "Set cur guard level",
+
+   "resetCompletedFeedback": "reset complete.",
+   "clearCompletedFeedback": "clear complete.",
+   "applyCompletedFeedback": "apply complete.",
+   "inputLabel": "Input value",
+   "enterNumber": "Enter Number",
+
+
+  "settingsFgwGuardLevelTabTypes": "Guard Level",
+  "settingsMultiTabEditPageBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsFgwScheduleBanner": "Can only remove widget schedule.",
+  "settingsFgwFiltersSetBanner": "Can not remove filters set unless none schedule using it.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveWhenRemove":"At least one item remain.",
+  "settingsFgwFixedTabAtLeastOneItemLeaveBeActive":"At least one item be active.",
+  "settingsForegroundWallpaperConfigApplyChanges": "Apply Changes",
+  "settingsForegroundWallpaperConfigAddItem": "Add Item",
+  "settingsMultiTabEditResetChange": "Reset Changes",
+  "settingsFgwScheduleSyncButtonText": "Sync Schedules Now:",
+  "settingsFgwScheduleSyncButtonAlert": "Sync Schedules tapped,please wait a few second.",
+  "settingsShowChipFgwButton": "Show fgw service on-off button in main page:",
+  "settingsWidgetUpdateWhenOpenPage": "Update widget when open page:",
+
+  "settingsMaxFgwUsedEntryRecord": "Maximum used record for each:\n[Guard level,Update type,Widget id]]",
+  "settingsGuardLevel": "Guard level",
+  "settingsLockFgwNotification": "Lock fgw notification service:",
+
+  "presentInfoTileTitle": "Item info:",
+
+  "curFgwGuardLevelTitle": "current fgw guard Level",
+  "guardLevelTitle": "Guard Level",
+  "guardLevelNamePrefix": "Level",
+
+  "renameLabelNameTileTitle": "Label Name",
+  "renameLabelNameDialogLabel": "New name",
+  "renameLabelNameDialogLabelAlreadyExistsHelper": "Illegal same name",
+
+  "numberDialogLabelNotValidHelper": "Illegal value",
+
+
+
+  "settingsCopySchedulesFromExist": "Copy schedules from exist ",
+  "settingsItemSelectColor": "Color:",
+  "settingsGuardLevelScheduleUpdateTypeMultiSelectionTitle": "Wallpaper update types",
+  "settingsCollectionScheduleUpdateTypeMultiSelectionNone": "None",
+  "settingsActiveTitle": "Active:",
+
+  "filterSetNamePrefix": "Filters set",
+  "settingsFilterSetTabTypes": "Filters Set",
+  "settingsFilterSetTile": "Filters Set Setting",
+  "settingsFilterSetCancelTile": "Cancel this added:",
+  "itemEmpty": "No Items",
+
+  "settingsWallpaperScheduleTabTypes": "Schedule",
+  "settingsScheduleNamePrefix": "Schedule: ",
+  "settingsGuardLevelScheduleSubPagePrefix": "Schedule Setting",
+  "settingsScheduleIntervalTile": "Interval:",
+  "settingsScheduleIntervalFixedIntervalInfo": "Fixed interval are inexact.\nDepending on your device battery optimizations and restrictions.",
+
+  "wallpaperUpdateTypeHome": "home",
+  "wallpaperUpdateTypeLock": "lock",
+  "wallpaperUpdateTypeBoth": "both",
+  "wallpaperUpdateTypeWidget": "widget",
+
+  "settingsWallpaperScheduleUpdateTypeAtLeastOneFeedback": "At least one type must be chosen!",
+  "settingsSelectOneGuardLevelTitle": "Select one guard level",
+  "settingsWallpaperUpdateEveryTimeUnlock": "When screen unlock: Interval=0",
+  "settingsWallpaperUpdateFixedInterval": "Inexact Fixed\n( >3s ): ",
+
+  "fgwDisplayType": "Display Type",
+  "fgwDisplayRandom": "Random",
+  "fgwDisplayMostRecentNotUsed": "Most recent not used",
+  "settingsScheduleDisplayTypeTile": "Entries Display Type",
+  "settingsScheduleDisplayTypeDialogTitle": "Entries Display Type",
+  "settingsScheduleIsActiveTitle": "Active:",
+
+  "fgwScheduleEntryEmptyMessage": "the entries of update type {updateKey} is empty,please check your settings.",
+
+  "initGuardLevelName01": "Exposure",
+  "initGuardLevelName02": "Moderate",
+  "initGuardLevelName03": "Safe",
+
+  "initFiltersSet346Name01": "Home: Exposure",
+  "initFiltersSet346Name02": "Home: Moderate",
+  "initFiltersSet346Name03": "Home & Lock: Safe",
+  "initFiltersSet346Name04": "Lock: Moderate & Exposure",
+
+  "initFiltersSet333Name01": "Home: Exposure",
+  "initFiltersSet333Name02": "Home: Moderate",
+  "initFiltersSet333Name03": "Home: Safe",
+
+  "settingsScenarioTabTypes": "Scenarios",
+  "settingsScenarioStepsTabTypes": "Scenarios step",
+  "settingsScenarioEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsScenarioStepsAllBanner": "Can only add or remove schedule in scenario edit page.",
+  "settingsScenarioStepsEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsTileScenarioLoadType": "Load type",
+  "settingsTileScenarioScenarioId": "ScenarioId",
+  "settingsTileScenarioStepNum": "StepNum",
+  "settingsTileScenarioOrderNum": "OrderNum",
+  "settingsTileScenarioDateMillis": "Date time",
+
+
+  "drawerScenarioPage": "Scenarios",
+  "scenarioPageTitle": "Scenarios",
+  "scenarioEmpty": "No scenario",
+  "createScenarioButtonLabel": "Create Scenario",
+
+  "scenarioLoadTypeExclude": "Exclude (Unique)",
+  "scenarioLoadTypeUnion": "Union (OR: additions)",
+  "scenarioLoadTypeIntersect": "Intersect (AND: constraints)",
+  "scenarioStepLoadTypeUnion": "Union (OR: additions)",
+  "scenarioStepLoadTypeIntersect": "Intersect (AND: constraints)",
+
+  "scenarioNamePrefix": "Scenario",
+
+  "scenarioGroupImportance": "By importance",
+  "scenarioGroupUnionBeforeIntersect": "Union Before Intersect",
+  "scenarioGroupIntersectBeforeUnion": "Intersect Before Union",
+  "scenarioGroupNone": "Do not group",
+
+  "scenarioTierFuncPinned": "Func Pinned",
+  "scenarioTierActivePinned": "Active Pinned",
+  "scenarioTierExcludeUnique": "Exclude (Unique)",
+  "scenarioTierIntersectAnd": "Intersect (AND: constraints)",
+  "scenarioTierUnionOr": "Union (OR: additions)",
+
+  "chipActionLockScenario": "Lock scenario",
+  "chipActionUnlockScenario": "Unlock scenario",
+  "chipActionSettingScenario": "Setting scenario",
+
+  "excludeName01": "All Exclude",
+  "excludeName02": "Image Exclude",
+  "excludeName03": "DCIM Exclude",
+  "excludeName04": "<3hour DCIM Exclude",
+  "excludeName05": "Share Copied Exclude",
+  "excludeName06": "Video Exclude",
+  "excludeName07": "Fgw Used",
+
+  "interjectName01": "Portrait Interject",
+  "interjectName02": "Landscape Interject",
+  "interjectName03": "Not Portrait Interject",
+  "interjectName04": "Not Landscape Interject",
+  "interjectName05": "<3hours Interject",
+  "interjectName06": "<12hours Interject",
+  "interjectName07": "<3days Interject",
+  "interjectName08": "Not Share Copied Interject",
+
+
+  "unionName01": "Video Union",
+  "unionName02": "Share Copied Union",
+  "unionName03": "Picture Union",
+
+  "settingsScenarioStepsTabTypes": "Scenario Steps",
+  "settingsScenarioStepsNamePrefix": "Scenario steps: ",
+  "settingsScenarioStepsSubPagePrefix": "Scenario steps setting",
+  "settingsScenarioEditSteps": "Edit steps",
+
+  "settingsScenariosEditConfigPageTile": "Scenarios Edit",
+  "settingsScenariosConfigPageTitle": "Scenarios Edit",
+  "scenarioFilterSettingTitle": "Edit Scenario",
+  "scenarioFilterAddNewTitle": "Add new scenario",
+  "scenarioFilterOpTitle": "Setting scenario",
+  "scenarioFilterLockTitle": ".Lock scenario",
+  "scenarioFilterUnlockTitle": ".Unlock scenario",
+  "configureLockTitle": "Configure Lock",
+  "pinDialogEnterDefault1234": "Enter PIN (default:1234)",
+
+  "settingsUseScenariosTileText": "Use scenarios",
+  "settingsScenariosOperationTile": "Scenarios settings",
+  "settingsScenariosOperationTitle": "Scenarios settings",
+  "settingsScenarioResetDefaultText": "Reset scenarios to default",
+  "settingsScenarioResetDefaultAlert": "Reset scenarios to default will resent all current settings of scenario.",
+  "settingsScenarioResetActivePinnedScenarioText": "Reset active scenarios to only first exclude scenario",
+  "settingsScenarioResetActivePinnedScenarioAlert": "Reset active scenarios to default to clear some potential mistake in using scenario like miss scenarios.",
+  "settingsSetPassDefaultText": "Set unlock password (default 1234)",
+  "settingsScenarioSetScenarioPassDefaultAlert": "The default value 1234",
+  "settingsCanScenarioAffectFgwTileText": "Can scenario affect foreground wallpaper",
+  "settingsConfirmationRemoveScenario": "Ask before remove scenario",
+  "settingsConfirmationRemoveAssign": "Ask before remove Assign",
+
+  "scenarioTitle": "Scenario",
+  "settingsCopyScenarioStepFromExist": "Copy filters steps from exist ",
+  "settingsItemTileColor": "Color:",
+  "settingsScenarioDateMills":"Date:",
+  "settingsScenarioLoadTypeMultiSelectionTitle": "Load type: (used in sequence.)",
+  "settingsScenarioLoadTypeSelectionTile": "Load type",
+  "settingsScenarioAtLeastOneExcludeItemLeaveWhenRemove":"At least one exclude scenario item remain active.",
+
+  "canNotRemoveFuncScenarioFiltersMessage": "Can not remove func scenario filters !!!\n\nTry else.",
+  "canNotRenameFuncScenarioFiltersMessage": "Can not rename func scenario filters !!!\n\nTry else.",
+  "canNotRemoveAllExcludeScenarioFiltersMessage": "At least 1 exclude scenario filters must remain !!!\n\nTry else.",
+  "chipRemoveScenarioFiltersMessage": "Only remove scenario filters without remove entries.\n\nContinue? ",
+
+  "searchQueryHelperSectionTitle": "Query Helper",
+  "queryHelperTypePath": "path",
+  "queryHelperTypeTime2Now": "Time to now",
+  "queryHelperTypeSize": "Size",
+  "queryHelperTypeWidth": "Width",
+  "queryHelperTypeHeight": "Height",
+  "queryHelperTypeDay": "Day",
+  "queryHelperTypeMonth": "Month",
+  "queryHelperTypeYear": "Year",
+  "queryHelperTypeId": "Id",
+  "queryHelperTypeFgwUsed": "FgwUsed",
+
+  "queryHelperDialogTitle":"Query helper dialog",
+  "queryHelperDialogOperator":"Operator: ",
+  "queryHelperDialogYear":"Year",
+  "queryHelperDialogMonths":"Months",
+  "queryHelperDialogDays":"Days",
+  "queryHelperDialogHours":"Hours",
+  "queryHelperDialogMinutes":"Minutes",
+  "queryHelperDialogSeconds":"Seconds",
+  "queryHelperDialogValueHintText":"Value",
+
+  "widgetId":"Widget id",
+  "updateType":"Update type",
+  "guardLevelId":"Guard level id",
+
+
+
+  "assignPageTitle": "Assigns",
+  "assignEmpty": "No Assigns",
+
+  "assignFilterNamePrefix": "Assign",
+  "assignTypePermanent": "Permanent",
+  "assignTypeTemporary": "Temporary",
+  "filterNoAssignLabel": "Not assign",
+
+  "assignTemporaryFollowActionNone": "None",
+  "assignTemporaryFollowActionMakeExclude": "New Exclude Scenario",
+  "assignTemporaryFollowActionActiveExclude": "New and active Exclude Scenario",
+  "assignTemporaryFollowActionActiveAndLock": "Active and lock Exclude Scenario",
+
+  "entryActionAssignPermanent": "Assign permanent",
+  "entryActionAssignTemporary": "Assign temporary",
+
+  "searchAssignSectionTitle": "Assign",
+
+  "settingsAssignConfigPageTitle": "Assign Edit",
+  "settingsTileAssignType": "Assign type",
+  "settingsAssignRecordTabTypes": "Assign Records",
+  "settingsAssignNamePrefix": "Assign Records",
+  "settingsAssignEntriesTabTypes": "Assign Entries",
+  "settingsAssignEditBanner": "Touch and Hold to move and reorder items.\nUnder this section need manually apply changes.",
+  "settingsAssignStepsAllBanner": "Can only remove entries assigned in record page.",
+  "settingsAssignStepsOneBanner": "Can only remove or  assigned in record page.",
+  "settingsAssignEntrySubPagePrefix": "Assign entry :",
+  "settingsAssignEditEntries": "Edit assign entries",
+
+  "settingsAssignEditTitle": "Assign edit",
+  "settingsAssignOperationTitle": "Assign settings",
+  "settingsAssignResetDefaultText": "Clear all assign record",
+  "settingsAssignResetDefaultAlert": "This op will clear all assign record to empty,\n\n Are you sure continue?",
+  "settingsAssignTemporaryFollowActionTile": "Assign temporary follow action",
+  "settingsTempAssignExpiredInterval": "Temporary assign expired interval",
+  "settingsAutoRemoveExpiredTempAssign": "Auto remove expired temporary assign",
+  "settingsAutoRemoveCorrespondScenarioAsTempAssignRemoveTile": "Auto remove correspond scenario as temp assign removed",
+  "settingsAutoRemoveTempAssignAsCorrespondScenarioRemoveTile": "Auto remove  temp assign as correspond scenario removed",
+
+  "chipRemoveAssignFiltersMessage": "Only remove assign record without romove entries.\nAre you sure continue??",
+  "drawerAssignPage": "Assign",
+
+  "widgetEmpty": "No widgets available.",
+  "widgetSettingPageTile": "Widgets settings",
+  "widgetSettingPageTitle": "Widgets settings",
+
+
+  "appNameSt": "Aves-ST",
+  "welcomeMessageSt": "Welcome to Aves-ST",
+
+  "foregroundWallpaperService": "Foreground Wallpaper Service",
+  "startWallpaperService": "Start Wallpaper Service",
+  "stopWallpaperService": "Stop Wallpaper Service"
 }

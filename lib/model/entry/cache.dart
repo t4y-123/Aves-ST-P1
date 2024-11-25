@@ -23,7 +23,8 @@ class EntryCache {
     int rotationDegrees,
     bool isFlipped,
   ) async {
-    debugPrint('Evict cached images for uri=$uri, mimeType=$mimeType, dateModifiedSecs=$dateModifiedSecs, rotationDegrees=$rotationDegrees, isFlipped=$isFlipped');
+    //t4y: comment for not used debug.
+    // debugPrint('Evict cached images for uri=$uri, mimeType=$mimeType, dateModifiedSecs=$dateModifiedSecs, rotationDegrees=$rotationDegrees, isFlipped=$isFlipped');
 
     // TODO TLAD provide pageId parameter for multi page items, if someday image editing features are added for them
     int? pageId;

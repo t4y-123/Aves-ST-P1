@@ -31,7 +31,7 @@ class AndroidFileUtils {
   static const trashDirPath = '#trash';
 
   late final String separator, vaultRoot, primaryStorage;
-  late final String dcimPath, downloadPath, moviesPath, picturesPath, avesVideoCapturesPath;
+  late final String dcimPath, downloadPath, moviesPath, picturesPath, avesVideoCapturesPath,avesShareByCopyPath;
   late final Set<String> videoCapturesPaths;
   Set<StorageVolume> storageVolumes = {};
   Future<void>? _loader;
@@ -56,6 +56,9 @@ class AndroidFileUtils {
     picturesPath = pContext.join(primaryStorage, standardDirPictures);
     // custom dirs
     avesVideoCapturesPath = pContext.join(dcimPath, 'Video Captures');
+    //t4y: add for share by copy.
+    avesShareByCopyPath = pContext.join(picturesPath, 'Aves_Copied_For_Share');
+
     videoCapturesPaths = {
       // from Samsung
       pContext.join(dcimPath, 'Videocaptures'),

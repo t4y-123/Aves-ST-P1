@@ -7,6 +7,7 @@ import 'package:aves/widgets/common/behaviour/pop/scope.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
+import 'package:aves/widgets/filter_grids/scenario_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class TvNavigationPopHandler implements PopHandler {
 
     return switch (homePage) {
       HomePageSetting.collection => context.read<CollectionLens>().filters.isEmpty,
-      HomePageSetting.albums || HomePageSetting.tags || HomePageSetting.explorer => true,
+      HomePageSetting.albums || HomePageSetting.tags || HomePageSetting.explorer || HomePageSetting.scenario => true,
     };
   }
 
@@ -53,10 +54,12 @@ class TvNavigationPopHandler implements PopHandler {
         );
 
     return switch (homePage) {
-      HomePageSetting.collection => buildRoute((context) => CollectionPage(source: context.read<CollectionSource>(), filters: null)),
+      HomePageSetting.collection =>
+        buildRoute((context) => CollectionPage(source: context.read<CollectionSource>(), filters: null)),
       HomePageSetting.albums => buildRoute((context) => const AlbumListPage()),
       HomePageSetting.tags => buildRoute((context) => const TagListPage()),
       HomePageSetting.explorer => buildRoute((context) => const ExplorerPage()),
+      HomePageSetting.scenario => buildRoute((context) => const ScenarioListPage()),
     };
   }
 }

@@ -597,6 +597,7 @@ class _EntryViewerStackState extends State<EntryViewerStack> with EntryViewContr
           }
         case MoveType.copy:
         case MoveType.export:
+        case MoveType.shareByCopy:
           break;
       }
     } else if (notification is PopupMenuOpenedNotification) {

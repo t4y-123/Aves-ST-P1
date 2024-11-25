@@ -15,6 +15,7 @@ import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/vaults/vaults.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/services/media/enums.dart';
 import 'package:aves/services/media/media_edit_service.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/widgets/collection/collection_page.dart';
@@ -39,10 +40,13 @@ import 'package:aves/widgets/viewer/multipage/conductor.dart';
 import 'package:aves/widgets/viewer/source_viewer_page.dart';
 import 'package:aves/widgets/viewer/video/conductor.dart';
 import 'package:aves_model/aves_model.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+
+import '../../../services/common/image_op_events.dart';
 
 class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, SingleEntryEditorMixin, EntryStorageMixin, VaultAwareMixin {
   final AvesEntry mainEntry, pageEntry;
@@ -76,6 +80,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         case EntryAction.move:
           return targetEntry.canEdit;
         case EntryAction.copy:
+        case EntryAction.shareByCopy:
           return canWrite;
         case EntryAction.rotateCCW:
         case EntryAction.rotateCW:
@@ -132,6 +137,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         case EntryAction.showGeoTiffOnMap:
         case EntryAction.convertMotionPhotoToStillImage:
         case EntryAction.viewMotionPhotoVideo:
+        case EntryAction.shareByDateNow:
           return _metadataActionDelegate.isVisible(
             appMode: appMode,
             targetEntry: targetEntry,
@@ -151,6 +157,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         return targetEntry.canRotate;
       case EntryAction.flip:
         return targetEntry.canFlip;
+      case EntryAction.shareByDateNow:
       case EntryAction.editDate:
       case EntryAction.editLocation:
       case EntryAction.editTitleDescription:
@@ -212,6 +219,8 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         EntryPrinter(targetEntry).print(context);
       case EntryAction.rename:
         _rename(context, targetEntry);
+      case EntryAction.shareByCopy:
+        _move(context, targetEntry, moveType: MoveType.shareByCopy);
       case EntryAction.copy:
         _move(context, targetEntry, moveType: MoveType.copy);
       case EntryAction.move:
@@ -256,16 +265,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
           ).dispatch(context);
         }
       case EntryAction.edit:
-        appService.edit(targetEntry.uri, targetEntry.mimeType).then((fields) async {
-          final error = fields['error'] as String?;
-          if (error == null) {
-            final resultUri = fields['uri'] as String?;
-            final mimeType = fields['mimeType'] as String?;
-            await _handleEditResult(context, resultUri, mimeType);
-          } else if (error == 'edit-resolve') {
-            await showNoMatchingAppDialog(context);
-          }
-        });
+        editWithCopyFirst(targetEntry, context);
       case EntryAction.open:
         appService.open(targetEntry.uri, targetEntry.mimeTypeAnySubtype, forceChooser: true).then((success) {
           if (!success) showNoMatchingAppDialog(context);
@@ -284,6 +284,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
       case EntryAction.rotateScreen:
         _rotateScreen(context);
       // metadata
+      case EntryAction.shareByDateNow:
       case EntryAction.editDate:
       case EntryAction.editLocation:
       case EntryAction.editTitleDescription:
@@ -298,6 +299,91 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
       // debug
       case EntryAction.debug:
         _goToDebug(context, targetEntry);
+    }
+  }
+
+  Future<void> editWithCopyFirst(AvesEntry targetEntry, BuildContext context) async {
+    if(targetEntry.directory ==null) {
+      showFeedback(context, FeedbackType.warn, '${context.l10n.entryActionEdit} ${context.l10n.genericFailureFeedback}');
+      return;
+    };
+    if (!await showSkippableConfirmationDialog(
+      context: context,
+      type: ConfirmationDialog.editAsCopiedFirst,
+      message: context.l10n.editAsCopiedFirstDialogMessage,
+      confirmationButtonLabel: context.l10n.continueButtonLabel,
+    )) return;
+    AvesEntry? copiedEntry;
+    final entries =  {targetEntry};
+    final source = context.read<CollectionSource>();
+    source.pauseMonitoring();
+    final opId = mediaEditService.newOpId;
+    final entriesByDestination = <String, Set<AvesEntry>>{};
+    entriesByDestination[targetEntry.directory!] =entries;
+    final destinationAlbums = entriesByDestination.keys.toSet();
+    final todoCount = entries.length;
+    const moveType = MoveType.copy;
+    await showOpReport<MoveOpEvent>(
+      context: context,
+      opStream: mediaEditService.move(
+        opId: opId,
+        entriesByDestination: entriesByDestination,
+        copy: true,
+        nameConflictStrategy: NameConflictStrategy.rename,
+      ),
+      itemCount: todoCount,
+      onCancel: () => mediaEditService.cancelFileOp(opId),
+      onDone: (processed) async {
+        final successOps = processed.where((v) => v.success).toSet();
+        // move
+        final movedOps = successOps.where((v) => !v.skipped && !v.deleted).toSet();
+        final movedEntries = movedOps
+            .map((v) => v.uri)
+            .map((uri) => entries.firstWhereOrNull((entry) => entry.uri == uri))
+            .whereNotNull()
+            .toSet();
+        debugPrint('$runtimeType editWithCopyFirst movedEntries:\n $movedEntries');
+
+        await source.updateAfterMove(
+          todoEntries: entries,
+          moveType: MoveType.copy,
+          destinationAlbums: destinationAlbums,
+          movedOps: movedOps,
+          onUpdatedEntries: (entries) {
+            copiedEntry =entries.isNotEmpty ? entries.first : null;
+          },
+        );
+        // delete (when trying to move to bin obsolete entries)
+        final deletedOps = successOps.where((v) => v.deleted).toSet();
+        final deletedUris = deletedOps.map((event) => event.uri).toSet();
+        await source.removeEntries(deletedUris, includeTrash: true);
+
+        source.resumeMonitoring();
+
+        final successCount = successOps.length;
+        if (successCount < todoCount) {
+          final count = todoCount - successCount;
+          showFeedback(
+            context,
+            FeedbackType.warn, context.l10n.collectionCopyFailureFeedback(count),
+          );
+        } else {
+          EntryMovedNotification(moveType, movedEntries).dispatch(context);
+        }
+      },
+    );
+    if(copiedEntry !=null){
+      debugPrint('$runtimeType editWithCopyFirst copiedEntry:\n $copiedEntry');
+      await appService.edit(copiedEntry!.uri, copiedEntry!.mimeType).then((fields) async {
+        final error = fields['error'] as String?;
+        if (error == null) {
+          final resultUri = fields['uri'] as String?;
+          final mimeType = fields['mimeType'] as String?;
+          await _handleEditResult(context, resultUri, mimeType);
+        } else if (error == 'edit-resolve') {
+          await showNoMatchingAppDialog(context);
+        }
+      });
     }
   }
 
@@ -453,6 +539,7 @@ class EntryActionDelegate with FeedbackMixin, PermissionAwareMixin, SizeAwareMix
         context,
         moveType: moveType,
         entries: {targetEntry},
+        shareByCopyNeedRemove: (settings.shareByCopyExpiredAutoRemove && settings.shareByCopyViewerPageAutoRemove)
       );
 
   Future<void> _convert(BuildContext context, AvesEntry targetEntry) async {

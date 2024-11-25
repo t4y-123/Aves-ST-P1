@@ -45,6 +45,13 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.editRating => l10n.entryInfoActionEditRating,
       EntrySetAction.editTags => l10n.entryInfoActionEditTags,
       EntrySetAction.removeMetadata => l10n.entryInfoActionRemoveMetadata,
+      //t4y:
+      EntrySetAction.shareByCopy => l10n.entryActionShareByCopy,
+      EntrySetAction.shareByDateNow => l10n.entryActionShareByDateNow,
+      // TODO: Handle this case.
+      EntrySetAction.assignPermanent => l10n.entryActionAssignPermanent,
+      // TODO: Handle this case.
+      EntrySetAction.assignTemporary => l10n.entryActionAssignTemporary,
     };
   }
 
@@ -90,6 +97,11 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.editRating => AIcons.rating,
       EntrySetAction.editTags => AIcons.tag,
       EntrySetAction.removeMetadata => AIcons.clear,
+      //t4y:
+      EntrySetAction.shareByCopy => AIcons.shareByCopy,
+      EntrySetAction.shareByDateNow => AIcons.shareByDateNow,
+      EntrySetAction.assignPermanent => AIcons.assignP,
+      EntrySetAction.assignTemporary => AIcons.assignT,
     };
   }
 }

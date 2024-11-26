@@ -28,13 +28,19 @@ class EditLockTypeDialog extends StatefulWidget {
 class _EditLockTypeDialogState extends State<EditLockTypeDialog> with FeedbackMixin, ScenarioAwareMixin {
   late CommonLockType _lockType;
 
+  // final List<CommonLockType> _lockTypeOptions = [
+  //   if (device.canAuthenticateUser) CommonLockType.system,
+  //   if (device.canUseCrypto) ...[
+  //     CommonLockType.pattern,
+  //     CommonLockType.pin,
+  //     CommonLockType.password,
+  //   ],
+  // ];
   final List<CommonLockType> _lockTypeOptions = [
     if (device.canAuthenticateUser) CommonLockType.system,
-    if (device.canUseCrypto) ...[
-      CommonLockType.pattern,
-      CommonLockType.pin,
-      CommonLockType.password,
-    ],
+    CommonLockType.pattern,
+    CommonLockType.pin,
+    CommonLockType.password,
   ];
 
   CommonLockType? get initialType => widget.initialType;

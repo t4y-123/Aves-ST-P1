@@ -182,7 +182,7 @@ class FgwOpSettingsPage extends StatelessWidget with FeedbackMixin, FgwAwareMixi
                 );
                 if (details == null) return;
                 // wait for the dialog to hide as applying the change may block the UI
-                await Future.delayed(ADurations.dialogTransitionAnimation * timeDilation);
+                await Future.delayed(ADurations.dialogTransitionLoose * timeDilation);
               },
               child: Text(l10n.applyButtonLabel),
             ),

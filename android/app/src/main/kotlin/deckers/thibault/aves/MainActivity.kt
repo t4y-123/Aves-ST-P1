@@ -452,7 +452,6 @@ open class MainActivity : FlutterFragmentActivity() {
                 Log.d(LOG_TAG, "FgwServiceHiddenActivity .FgwIntentAction.DUPLICATE return hashMapOf")
                 return hashMapOf(
                     INTENT_DATA_KEY_ACTION to FgwIntentAction.DUPLICATE,
-                    EXTRA_KEY_SAFE_MODE to false,
                     EXTRA_KEY_PAGE to "/collection",
 //                    FgwConstant.FGW_UPDATE_TYPE_EXTRA to intent?.getStringExtra(FgwConstant.FGW_UPDATE_TYPE_EXTRA),
 //                    FgwConstant.FGW_WIDGET_ID_EXTRA to intent?.getIntExtra(FgwConstant.FGW_WIDGET_ID_EXTRA, -1),

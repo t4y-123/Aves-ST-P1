@@ -66,10 +66,8 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
     required int itemCount,
     required Set<ScenarioFilter> selectedFilters,
   }) {
-    final selectedSingleItem = selectedFilters.length == 1;
     final isMain = appMode == AppMode.main;
 
-    final canCreate = !settings.isReadOnly && appMode.canCreateFilter && !isSelecting;
     switch (action) {
       case ChipSetAction.createAlbum:
       case ChipSetAction.createVault:
@@ -159,7 +157,7 @@ class ScenarioChipSetActionDelegate extends ChipSetActionDelegate<ScenarioFilter
       routeSettings: const RouteSettings(name: TileViewDialog.routeName),
     );
     // wait for the dialog to hide as applying the change may block the UI
-    await Future.delayed(ADurations.dialogTransitionAnimation * timeDilation);
+    await Future.delayed(ADurations.dialogTransitionLoose * timeDilation);
     if (value != null && initialValue != value) {
       sortFactor = value.$1!;
       settings.scenarioGroupFactor = value.$2!;

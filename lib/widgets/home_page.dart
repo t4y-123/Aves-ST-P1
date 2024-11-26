@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:aves/app_mode.dart';
-import 'package:aves/model/app/intent.dart';
 import 'package:aves/geo/uri.dart';
 import 'package:aves/model/app/intent.dart';
 import 'package:aves/model/app/permissions.dart';
@@ -47,7 +46,6 @@ import 'package:aves/widgets/editor/entry_editor_page.dart';
 import 'package:aves/widgets/explorer/explorer_page.dart';
 import 'package:aves/widgets/filter_grids/albums_page.dart';
 import 'package:aves/widgets/filter_grids/assign_page.dart';
-import 'package:aves/widgets/filter_grids/scenario_page.dart';
 import 'package:aves/widgets/filter_grids/tags_page.dart';
 import 'package:aves/widgets/map/map_page.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
@@ -180,7 +178,6 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
           _widgetId = (intentData[IntentDataKeys.widgetId] as int?) ?? 0;
         case IntentActions.widgetOpen:
         case IntentActions.fgwWidgetOpen:
-          String? uri, mimeType;
           final widgetId = intentData[IntentDataKeys.widgetId] as int?;
           if (widgetId == null) {
             error = true;
@@ -189,13 +186,14 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
             await settings.reload();
             final page = settings.getWidgetOpenPage(widgetId);
             switch (page) {
-              case WidgetOpenPage.home:
-              case WidgetOpenPage.updateWidget:
-                break;
               case WidgetOpenPage.collection:
                 _initialFilters = settings.getWidgetCollectionFilters(widgetId);
               case WidgetOpenPage.viewer:
-                uri = settings.getWidgetUri(widgetId);
+                appMode = AppMode.view;
+                intentUri = settings.getWidgetUri(widgetId);
+              case WidgetOpenPage.home:
+              case WidgetOpenPage.updateWidget:
+                break;
             }
             // t4y: for foreground update diff.
             if (intentAction == IntentActions.widgetOpen) {
@@ -206,19 +204,6 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
               if (page == WidgetOpenPage.updateWidget || settings.widgetUpdateWhenOpen) {
                 unawaited(ForegroundWallpaperWidgetService.update(widgetId));
               }
-            }
-          } else {
-            uri = intentData[IntentDataKeys.uri];
-            mimeType = intentData[IntentDataKeys.mimeType];
-          }
-          _secureUris = intentData[IntentDataKeys.secureUris];
-          if (uri != null) {
-            _viewerEntry = await _initViewerEntry(
-              uri: uri,
-              mimeType: mimeType,
-            );
-            if (_viewerEntry != null) {
-              appMode = AppMode.view;
             }
           }
         case IntentActions.fgwUsedRecordOpen:
@@ -309,8 +294,10 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         unawaited(AnalysisService.registerCallback());
         final source = context.read<CollectionSource>();
         if (source.loadedScope != CollectionSource.fullScope) {
-          await reportService.log('Initialize source to start app with mode=$appMode, loaded scope=${source.loadedScope}');
-          final loadTopEntriesFirst = settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty;
+          await reportService
+              .log('Initialize source to start app with mode=$appMode, loaded scope=${source.loadedScope}');
+          final loadTopEntriesFirst =
+              settings.homePage == HomePageSetting.collection && settings.homeCustomCollection.isEmpty;
           source.canAnalyze = true;
           await source.init(scope: CollectionSource.fullScope, loadTopEntriesFirst: loadTopEntriesFirst);
         }
@@ -338,6 +325,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
       default:
         break;
     }
+
+    debugPrint('Home setup complete in ${stopwatch.elapsed.inMilliseconds}ms');
     if (intentAction == IntentActions.fgwWidgetOpen) {
       final widgetId = intentData[IntentDataKeys.widgetId] as int?;
       final curGuardLevel = fgwGuardLevels.all.firstWhereOrNull((e) => e.guardLevel == settings.curFgwGuardLevelNum);
@@ -355,9 +344,6 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         }
       }
     }
-
-    debugPrint('Home setup complete in ${stopwatch.elapsed.inMilliseconds}ms');
-
     // `pushReplacement` is not enough in some edge cases
     // e.g. when opening the viewer in `view` mode should replace a viewer in `main` mode
     unawaited(Navigator.maybeOf(context)?.pushAndRemoveUntil(
@@ -372,7 +358,9 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
   }
 
   bool _isViewerSourceable(AvesEntry? viewerEntry) {
-    return viewerEntry != null && viewerEntry.directory != null && !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
+    return viewerEntry != null &&
+        viewerEntry.directory != null &&
+        !settings.hiddenFilters.any((filter) => filter.test(viewerEntry));
   }
 
   Future<AvesEntry?> _initViewerEntry({required String uri, required String? mimeType}) async {
@@ -425,52 +413,60 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
           _onSourceStateChanged();
           await loadingCompleter.future;
 
-            switch (_fgwOpenType) {
-              case null:
-              case FgwServiceOpenType.usedRecord:
-              case FgwServiceOpenType.shareByCopy:
-                final album = viewerEntry.directory;
-                if (album != null) {
-                  collection = CollectionLens(
-                    source: source,
-                    filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
-                    listenToSource: false,
-                    // if we group bursts, opening a burst sub-entry should:
-                    // - identify and select the containing main entry,
-                    // - select the sub-entry in the Viewer page.
-                    stackBursts: false,
-                  );
-                }
-              case FgwServiceOpenType.curFilters:
-                Set<CollectionFilter> filters = {};
-                // if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
-                //   final curLevel = await fgwScheduleHelper.getCurGuardLevel();
-                //   filters = {FgwUsedFilter(guardLevelId: curLevel.guardLevel)};
-                // } else {
-                filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
-                // }
-                debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
+          // collection = CollectionLens(
+          //   source: source,
+          //   filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
+          //   listenToSource: false,
+          //   // if we group bursts, opening a burst sub-entry should:
+          //   // - identify and select the containing main entry,
+          //   // - select the sub-entry in the Viewer page.
+          //   stackBursts: false,
+          // );
+
+          switch (_fgwOpenType) {
+            case null:
+            case FgwServiceOpenType.usedRecord:
+            case FgwServiceOpenType.shareByCopy:
+              final album = viewerEntry.directory;
+              if (album != null) {
                 collection = CollectionLens(
                   source: source,
-                  filters: filters,
+                  filters: {AlbumFilter(album, source.getAlbumDisplayName(context, album))},
                   listenToSource: false,
                   // if we group bursts, opening a burst sub-entry should:
                   // - identify and select the containing main entry,
                   // - select the sub-entry in the Viewer page.
                   stackBursts: false,
                 );
-                debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
-            }
+              }
+            case FgwServiceOpenType.curFilters:
+              Set<CollectionFilter> filters = {};
+              // if (_fgwOpenType == FgwServiceOpenType.usedRecord) {
+              //   final curLevel = await fgwScheduleHelper.getCurGuardLevel();
+              //   filters = {FgwUsedFilter(guardLevelId: curLevel.guardLevel)};
+              // } else {
+              filters = await fgwScheduleHelper.getScheduleFilters(WallpaperUpdateType.home);
+              // }
+              debugPrint('$runtimeType  FgwServiceOpenType [$_fgwOpenType] filters= [$filters]');
+              collection = CollectionLens(
+                source: source,
+                filters: filters,
+                listenToSource: false,
+                // if we group bursts, opening a burst sub-entry should:
+                // - identify and select the containing main entry,
+                // - select the sub-entry in the Viewer page.
+                stackBursts: false,
+              );
+              debugPrint('$runtimeType AppMode.fgwViewUsed collection:\n $collection');
+          }
 
-            final viewerEntryPath = viewerEntry.path;
-            final collectionEntry =
-                collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
-            if (collectionEntry != null) {
-              viewerEntry = collectionEntry;
-            } else {
-              debugPrint('collection does not contain viewerEntry=$viewerEntry');
-              collection = null;
-            }
+          final viewerEntryPath = viewerEntry.path;
+          final collectionEntry = collection?.sortedEntries.firstWhereOrNull((entry) => entry.path == viewerEntryPath);
+          if (collectionEntry != null) {
+            viewerEntry = collectionEntry;
+          } else {
+            debugPrint('collection does not contain viewerEntry=$viewerEntry');
+            collection = null;
           }
         }
 
@@ -494,7 +490,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         );
       default:
         routeName = _initialRouteName ?? settings.homePage.routeName;
-        filters = _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
+        filters =
+            _initialFilters ?? (settings.homePage == HomePageSetting.collection ? settings.homeCustomCollection : {});
     }
     Route buildRoute(WidgetBuilder builder) => DirectMaterialPageRoute(
           settings: RouteSettings(name: routeName),
@@ -502,6 +499,7 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         );
 
     final source = context.read<CollectionSource>();
+    // t4y: add for fgw.
     debugPrint('$runtimeType ${appMode}) _fgwOpenType $_fgwOpenType');
     switch (_fgwOpenType) {
       case null:
@@ -534,10 +532,8 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
           debugPrint('AppMode.fgwShareByCopy shareCopiedEntries $shareCopiedEntries');
         }
     }
-
+    // t4y end
     switch (routeName) {
-      case ScenarioListPage.routeName:
-        return buildRoute((context) => const ScenarioListPage());
       case AlbumListPage.routeName:
         return buildRoute((context) => const AlbumListPage());
       case TagListPage.routeName:
@@ -564,12 +560,12 @@ class _HomePageState extends State<HomePage> with FeedbackMixin, FgwAwareMixin {
         return buildRoute((context) => ExplorerPage(path: path));
       case HomeWidgetSettingsPage.routeName:
         return buildRoute((context) => HomeWidgetSettingsPage(widgetId: _widgetId!));
+      case FgwWidgetSettings.routeName:
+        return buildRoute((context) => FgwWidgetSettings(widgetId: _widgetId!));
       case ScreenSaverPage.routeName:
         return buildRoute((context) => ScreenSaverPage(source: source));
       case ScreenSaverSettingsPage.routeName:
         return buildRoute((context) => const ScreenSaverSettingsPage());
-      case FgwWidgetSettings.routeName:
-        return buildRoute((context) => FgwWidgetSettings(widgetId: _widgetId!));
       case SearchPage.routeName:
         return SearchPageRoute(
           delegate: CollectionSearchDelegate(

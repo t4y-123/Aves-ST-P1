@@ -113,7 +113,8 @@ class _FgwWidgetSettingsState extends State<FgwWidgetSettings> {
           readyCompleter.complete();
         }
       });
-      await source.init(canAnalyze: false);
+      source.canAnalyze = false;
+      await source.init(scope: CollectionSource.fullScope);
       await readyCompleter.future;
     }
     await fgwGuardLevels.syncRowsToBridge();

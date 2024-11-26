@@ -11,6 +11,7 @@ import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/enums/widget_outline.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
+import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/source/media_store_source.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/android_file_utils.dart';
@@ -99,7 +100,8 @@ Future<AvesEntry?> _getWidgetEntry(int widgetId, bool reuseEntry) async {
       readyCompleter.complete();
     }
   });
-  await source.init(canAnalyze: false);
+  source.canAnalyze = false;
+  await source.init(scope: CollectionSource.fullScope);
   await readyCompleter.future;
   try {
     final activeLevelNums = fgwGuardLevels.all.where((e) => e.isActive).map((e) => e.guardLevel);

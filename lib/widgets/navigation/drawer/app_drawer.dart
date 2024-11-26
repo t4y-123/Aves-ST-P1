@@ -1,3 +1,4 @@
+import 'package:aves/model/assign/assign_record.dart';
 import 'package:aves/model/filters/album.dart';
 import 'package:aves/model/filters/trash.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -173,13 +174,13 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
       color: colorScheme.primary,
       child: SafeArea(
         bottom: false,
-
         child: OutlinedButtonTheme(
           data: OutlinedButtonThemeData(
             style: ButtonStyle(
               foregroundColor: WidgetStateProperty.all<Color>(onPrimary),
               overlayColor: WidgetStateProperty.all<Color>(onPrimary.withAlpha((255.0 * .12).round())),
-              side: WidgetStateProperty.all<BorderSide>(BorderSide(width: 1, color: onPrimary.withAlpha((255.0 * .24).round()))),
+              side: WidgetStateProperty.all<BorderSide>(
+                  BorderSide(width: 1, color: onPrimary.withAlpha((255.0 * .24).round()))),
             ),
           ),
           child: Column(
@@ -243,7 +244,8 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
                     bool canSwitchProfile,
                     String profileSwitchingLabel,
                   ] = flags;
-                  if ((!canRequestInteractAcrossProfiles && !canSwitchProfile) || profileSwitchingLabel.isEmpty) return const SizedBox();
+                  if ((!canRequestInteractAcrossProfiles && !canSwitchProfile) || profileSwitchingLabel.isEmpty)
+                    return const SizedBox();
 
                   return OutlinedButton(
                     onPressed: () async {

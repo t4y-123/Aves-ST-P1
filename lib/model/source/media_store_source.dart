@@ -72,11 +72,11 @@ class MediaStoreSource extends CollectionSource {
     //t4y: for scenario
     await scenariosHelper.initScenarios();
 
-
     final currentTimeZoneOffset = DateTime.now().timeZoneOffset.inMilliseconds;
     final catalogTimeZoneOffset = settings.catalogTimeZoneOffsetMillis;
     if (currentTimeZoneOffset != catalogTimeZoneOffset) {
-      unawaited(reportService.recordError('Time zone offset change: $currentTimeZoneOffset -> $catalogTimeZoneOffset. Clear catalog metadata to get correct date/times.'));
+      unawaited(reportService.recordError(
+          'Time zone offset change: $currentTimeZoneOffset -> $catalogTimeZoneOffset. Clear catalog metadata to get correct date/times.'));
       await localMediaDb.clearDates();
       await localMediaDb.clearCatalogMetadata();
       settings.catalogTimeZoneOffsetMillis = currentTimeZoneOffset;
@@ -95,7 +95,8 @@ class MediaStoreSource extends CollectionSource {
     clearEntries();
 
     final scopeAlbumFilters = _targetScope?.whereType<AlbumFilter>();
-    final scopeDirectory = scopeAlbumFilters != null && scopeAlbumFilters.length == 1 ? scopeAlbumFilters.first.album : null;
+    final scopeDirectory =
+        scopeAlbumFilters != null && scopeAlbumFilters.length == 1 ? scopeAlbumFilters.first.album : null;
 
     final Set<AvesEntry> topEntries = {};
     if (loadTopEntriesFirst) {
@@ -108,11 +109,13 @@ class MediaStoreSource extends CollectionSource {
     }
 
     debugPrint('$runtimeType load ${stopwatch.elapsed} fetch known entries');
-    final knownEntries = await localMediaDb.loadEntries(origin: EntryOrigins.mediaStoreContent, directory: scopeDirectory);
+    final knownEntries =
+        await localMediaDb.loadEntries(origin: EntryOrigins.mediaStoreContent, directory: scopeDirectory);
     final knownLiveEntries = knownEntries.where((entry) => !entry.trashed).toSet();
 
     debugPrint('$runtimeType load ${stopwatch.elapsed} check obsolete entries');
-    final knownDateByContentId = Map.fromEntries(knownLiveEntries.map((entry) => MapEntry(entry.contentId, entry.dateModifiedSecs)));
+    final knownDateByContentId =
+        Map.fromEntries(knownLiveEntries.map((entry) => MapEntry(entry.contentId, entry.dateModifiedSecs)));
     final knownContentIds = knownDateByContentId.keys.toList();
     final removedContentIds = (await mediaStoreService.checkObsoleteContentIds(knownContentIds)).toSet();
     if (topEntries.isNotEmpty) {
@@ -167,7 +170,8 @@ class MediaStoreSource extends CollectionSource {
     }
 
     _loadedScope = _targetScope;
-    unawaited(reportService.log('$runtimeType load (known) done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${removedEntries.length} removed'));
+    unawaited(reportService.log(
+        '$runtimeType load (known) done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${removedEntries.length} removed'));
 
     if (_canAnalyze) {
       // it can discover new entries only if it can analyze them
@@ -202,7 +206,8 @@ class MediaStoreSource extends CollectionSource {
 
     // verify paths because some apps move files without updating their `last modified date`
     debugPrint('$runtimeType load ${stopwatch.elapsed} check obsolete paths');
-    final knownPathByContentId = Map.fromEntries(knownLiveEntries.map((entry) => MapEntry(entry.contentId, entry.path)));
+    final knownPathByContentId =
+        Map.fromEntries(knownLiveEntries.map((entry) => MapEntry(entry.contentId, entry.path)));
     final movedContentIds = (await mediaStoreService.checkObsoletePaths(knownPathByContentId)).toSet();
     movedContentIds.forEach((contentId) {
       // make obsolete by resetting its modified date
@@ -217,7 +222,9 @@ class MediaStoreSource extends CollectionSource {
         // when discovering modified entry with known content ID,
         // reuse known entry ID to overwrite it while preserving favourites, etc.
         final contentId = entry.contentId;
-        final existingEntry = knownContentIds.contains(contentId) ? knownLiveEntries.firstWhereOrNull((entry) => entry.contentId == contentId) : null;
+        final existingEntry = knownContentIds.contains(contentId)
+            ? knownLiveEntries.firstWhereOrNull((entry) => entry.contentId == contentId)
+            : null;
         entry.id = existingEntry?.id ?? localMediaDb.nextId;
 
         newEntries.add(entry);
@@ -263,7 +270,8 @@ class MediaStoreSource extends CollectionSource {
         notifyAlbumsChanged();
         // notifyScenariosChanged();
 
-        unawaited(reportService.log('$runtimeType load done in ${stopwatch.elapsed.inSeconds}s for ${knownEntries.length} known, ${newEntries.length} new, ${removedEntries.length} removed'));
+        unawaited(reportService
+            .log('$runtimeType load done in ${stopwatch.elapsed.inSeconds}s for , ${newEntries.length} new, removed'));
       },
       onError: (error) => debugPrint('$runtimeType stream error=$error'),
     );
@@ -292,7 +300,8 @@ class MediaStoreSource extends CollectionSource {
     }).nonNulls);
 
     // clean up obsolete entries
-    final obsoleteContentIds = (await mediaStoreService.checkObsoleteContentIds(changedUriByContentId.keys.toList())).toSet();
+    final obsoleteContentIds =
+        (await mediaStoreService.checkObsoleteContentIds(changedUriByContentId.keys.toList())).toSet();
     final obsoleteUris = obsoleteContentIds.map((contentId) => changedUriByContentId[contentId]).nonNulls.toSet();
     await removeEntries(obsoleteUris, includeTrash: false);
     obsoleteContentIds.forEach(changedUriByContentId.remove);
@@ -308,7 +317,9 @@ class MediaStoreSource extends CollectionSource {
       if (sourceEntry != null) {
         final existingEntry = allEntries.firstWhereOrNull((entry) => entry.contentId == contentId);
         // compare paths because some apps move files without updating their `last modified date`
-        if (existingEntry == null || (sourceEntry.dateModifiedSecs ?? 0) > (existingEntry.dateModifiedSecs ?? 0) || sourceEntry.path != existingEntry.path) {
+        if (existingEntry == null ||
+            (sourceEntry.dateModifiedSecs ?? 0) > (existingEntry.dateModifiedSecs ?? 0) ||
+            sourceEntry.path != existingEntry.path) {
           final newPath = sourceEntry.path;
           final volume = newPath != null ? androidFileUtils.getStorageVolume(newPath) : null;
           if (volume != null) {
@@ -324,7 +335,8 @@ class MediaStoreSource extends CollectionSource {
               existingDirectories.add(existingDirectory);
             }
           } else {
-            debugPrint('$runtimeType refreshUris entry=$sourceEntry is not located on a known storage volume. Will retry soon...');
+            debugPrint(
+                '$runtimeType refreshUris entry=$sourceEntry is not located on a known storage volume. Will retry soon...');
             tempUris.add(uri);
           }
         }

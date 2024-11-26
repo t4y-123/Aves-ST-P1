@@ -12,6 +12,7 @@ import 'package:aves/model/fgw/guard_level.dart';
 import 'package:aves/model/fgw/wallpaper_schedule.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
+import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/source/media_store_source.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/utils/android_file_utils.dart';
@@ -93,7 +94,8 @@ class FgwServiceHelper with FeedbackMixin {
           readyCompleter.complete();
         }
       });
-      await _source!.init(canAnalyze: false);
+      _source!.canAnalyze = false;
+      await _source!.init(scope: CollectionSource.fullScope);
       await readyCompleter.future;
     }
   }

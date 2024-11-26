@@ -1390,7 +1390,7 @@
   "newAlbumDialogAlbumAlreadyExistsHelper": "相册已存在",
   "@newAlbumDialogAlbumAlreadyExistsHelper": {},
   "mapAttributionOsmLiberty": "绘制于 [OpenMapTiles](https://www.openmaptiles.org/), [CC BY](http://creativecommons.org/licenses/by/4.0) • 主办方 [OSM Americana](https://tile.ourmap.us)",
-  "@mapAttributionOsmLiberty": {}
+  "@mapAttributionOsmLiberty": {},
   "@sortOrderShortestFirst": {},
 
 

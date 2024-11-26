@@ -8,7 +8,7 @@ import 'package:aves/widgets/common/identity/aves_logo.dart';
 import 'package:flutter/material.dart';
 
 class AppReference extends StatelessWidget {
-  static const avesGithub = 'https://github.com/deckerst/aves';
+  static const avesGithub = 'https://github.com/t4y-123/Aves-ST-P1';
 
   const AppReference({super.key});
 

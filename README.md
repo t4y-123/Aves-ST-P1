@@ -136,7 +136,7 @@ To build the project, create a file named `<app dir>/android/key.properties`. It
 
 To run the app:
 ```
-# ./flutterw run -t lib/main_play.dart --flavor t4play
+# ./flutterw run -t lib/main_t4play.dart --flavor t4play
 ```
 To make release app:
 ```

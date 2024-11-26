@@ -18,9 +18,9 @@ class SettingsDefaults {
     EntryAction.videoTogglePlay,
     EntryAction.videoShowNextFrame,
   ];
-  static const videoGestureDoubleTapTogglePlay = false;
+  static const videoGestureDoubleTapTogglePlay = true;
   static const videoGestureSideDoubleTapSeek = true;
-  static const videoGestureVerticalDragBrightnessVolume = false;
+  static const videoGestureVerticalDragBrightnessVolume = true;
 
   // subtitles
   static const subtitleFontSize = 20.0;

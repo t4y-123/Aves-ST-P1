@@ -1416,6 +1416,13 @@
   "welcomeMessageSt": "Welcome to Aves-ST",
 
   "collectionActionFix2Scenario": "Fix to scenario",
+  "fix2ScenarioName" :"Scenario name",
+  "fix2ScenarioDialogTitle": "Fix cur filters to scenario",
+  "autoScenarioTypeSuffix": "Auto load type suffix after created",
+
+  "fix2ScenarioLoadTypeSuffixExclude": " Exclude",
+  "fix2ScenarioLoadTypeSuffixUnion": " Union",
+  "fix2ScenarioLoadTypeSuffixIntersect": " Intersect",
 
 
   "foregroundWallpaperService": "Foreground Wallpaper Service",

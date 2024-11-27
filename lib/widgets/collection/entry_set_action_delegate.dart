@@ -20,6 +20,7 @@ import 'package:aves/model/filters/scenario.dart';
 import 'package:aves/model/metadata/date_modifier.dart';
 import 'package:aves/model/naming_pattern.dart';
 import 'package:aves/model/query.dart';
+import 'package:aves/model/scenario/scenario_by_fix_details.dart';
 import 'package:aves/model/scenario/scenarios_helper.dart';
 import 'package:aves/model/selection.dart';
 import 'package:aves/model/settings/settings.dart';
@@ -49,6 +50,7 @@ import 'package:aves/widgets/dialogs/aves_confirmation_dialog.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
 import 'package:aves/widgets/dialogs/convert_entry_dialog.dart';
 import 'package:aves/widgets/dialogs/entry_editors/rename_entry_set_page.dart';
+import 'package:aves/widgets/dialogs/filter_editors/fix_to_scenario_dialog.dart';
 import 'package:aves/widgets/dialogs/pick_dialogs/location_pick_page.dart';
 import 'package:aves/widgets/map/map_page.dart';
 import 'package:aves/widgets/search/search_delegate.dart';
@@ -213,7 +215,7 @@ class EntrySetActionDelegate
       case EntrySetAction.setHome:
         _setHome(context);
       case EntrySetAction.fix2Scenario:
-        _setHome(context);
+        _fix2Scenario(context);
       // browsing or selecting
       case EntrySetAction.map:
         _goToMap(context);
@@ -894,5 +896,19 @@ class EntrySetActionDelegate
   void _setHome(BuildContext context) async {
     settings.setHome(HomePageSetting.collection, customCollection: context.read<CollectionLens>().filters);
     showFeedback(context, FeedbackType.info, context.l10n.genericSuccessFeedback);
+  }
+
+  Future<void> _fix2Scenario(BuildContext context) async {
+    final curFilters = context.read<CollectionLens>().filters;
+    final details = await showDialog<ScenarioByFixDetails>(
+      context: context,
+      builder: (context) => Fix2ScenarioDialog(filters: curFilters),
+      routeSettings: const RouteSettings(name: Fix2ScenarioDialog.routeName),
+    );
+
+    if (details == null) return;
+
+    // wait for the dialog to hide
+    await Future.delayed(ADurations.dialogTransitionLoose * timeDilation);
   }
 }

@@ -1992,6 +1992,22 @@
   "widgetSettingPageTitle": "小部件设置",
   "@widgetSettingPageTitle": {},
 
+  "collectionActionFix2Scenario": "固定到场景",
+  "@collectionActionFix2Scenario": {},
+  "fix2ScenarioName": "场景名称",
+  "@fix2ScenarioName": {},
+  "fix2ScenarioDialogTitle": "将当前过滤条件固定到场景",
+  "@fix2ScenarioDialogTitle": {},
+  "autoScenarioTypeSuffix": "自动添加加载类型后缀",
+  "@autoScenarioTypeSuffix": {},
+
+  "fix2ScenarioLoadTypeSuffixExclude": " ：互斥",
+  "@fix2ScenarioLoadTypeSuffixExclude": {},
+  "fix2ScenarioLoadTypeSuffixUnion": " ：限制",
+  "@fix2ScenarioLoadTypeSuffixUnion": {},
+  "fix2ScenarioLoadTypeSuffixIntersect": "：补充",
+  "@fix2ScenarioLoadTypeSuffixIntersect": {},
+
   "appNameSt": "收图浏览",
   "@appNameSt": {},
   "welcomeMessageSt": "欢迎使用收图浏览",

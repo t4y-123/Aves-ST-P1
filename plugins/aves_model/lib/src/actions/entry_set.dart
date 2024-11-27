@@ -39,6 +39,8 @@ enum EntrySetAction {
   //t4y, add for assign filter.
   assignPermanent,
   assignTemporary,
+  //t4y, add for fix filters to scenario
+  fix2Scenario,
 }
 
 class EntrySetActions {
@@ -55,6 +57,7 @@ class EntrySetActions {
     EntrySetAction.toggleTitleSearch,
     EntrySetAction.addShortcut,
     EntrySetAction.setHome,
+    EntrySetAction.fix2Scenario,
     null,
     EntrySetAction.map,
     EntrySetAction.slideshow,

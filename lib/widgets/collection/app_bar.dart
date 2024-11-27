@@ -649,6 +649,7 @@ class _CollectionAppBarState extends State<CollectionAppBar>
       case EntrySetAction.toggleTitleSearch:
       case EntrySetAction.addShortcut:
       case EntrySetAction.setHome:
+      case EntrySetAction.fix2Scenario:
       // browsing or selecting
       case EntrySetAction.map:
       case EntrySetAction.slideshow:

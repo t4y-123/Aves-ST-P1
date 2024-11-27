@@ -19,6 +19,7 @@ extension ExtraEntrySetActionView on EntrySetAction {
         l10n.collectionActionShowTitleSearch,
       EntrySetAction.addShortcut => l10n.collectionActionAddShortcut,
       EntrySetAction.setHome => l10n.collectionActionSetHome,
+      EntrySetAction.fix2Scenario => l10n.collectionActionFix2Scenario,
       EntrySetAction.emptyBin => l10n.collectionActionEmptyBin,
       // browsing or selecting
       EntrySetAction.map => l10n.menuActionMap,
@@ -72,6 +73,7 @@ extension ExtraEntrySetActionView on EntrySetAction {
       EntrySetAction.addShortcut => AIcons.addShortcut,
       EntrySetAction.setHome => AIcons.home,
       EntrySetAction.emptyBin => AIcons.emptyBin,
+      EntrySetAction.fix2Scenario => AIcons.scenario,
       // browsing or selecting
       EntrySetAction.map => AIcons.map,
       EntrySetAction.slideshow => AIcons.slideshow,

@@ -1415,6 +1415,9 @@
   "appNameSt": "Aves-ST",
   "welcomeMessageSt": "Welcome to Aves-ST",
 
+  "collectionActionFix2Scenario": "Fix to scenario",
+
+
   "foregroundWallpaperService": "Foreground Wallpaper Service",
   "startWallpaperService": "Start Wallpaper Service",
   "stopWallpaperService": "Stop Wallpaper Service"

@@ -62,8 +62,6 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import 'collection_page.dart';
-
 class EntrySetActionDelegate
     with FeedbackMixin, PermissionAwareMixin, SizeAwareMixin, EntryEditorMixin, EntryStorageMixin {
   bool isVisible(
@@ -84,7 +82,8 @@ class EntrySetActionDelegate
       case EntrySetAction.select:
         return appMode.canSelectMedia && !isSelecting;
       case EntrySetAction.selectAll:
-        return (isSelecting && selectedItemCount < itemCount) || (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
+        return (isSelecting && selectedItemCount < itemCount) ||
+            (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
       case EntrySetAction.selectNone:
         return isSelecting && selectedItemCount == itemCount;
       // browsing
@@ -95,6 +94,7 @@ class EntrySetActionDelegate
       case EntrySetAction.addShortcut:
         return isMain && !isSelecting && !isTrash && device.canPinShortcut;
       case EntrySetAction.setHome:
+      case EntrySetAction.fix2Scenario:
         return isMain && !isSelecting && !isTrash && !useTvLayout;
       case EntrySetAction.emptyBin:
         return canWrite && isMain && isTrash;
@@ -149,13 +149,15 @@ class EntrySetActionDelegate
       case EntrySetAction.select:
         return hasItems;
       case EntrySetAction.selectAll:
-        return selectedItemCount < itemCount || (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
+        return selectedItemCount < itemCount ||
+            (!isSelecting && settings.collectionBrowsingQuickActions.contains(action));
       case EntrySetAction.selectNone:
         return hasSelection;
       case EntrySetAction.searchCollection:
       case EntrySetAction.toggleTitleSearch:
       case EntrySetAction.addShortcut:
       case EntrySetAction.setHome:
+      case EntrySetAction.fix2Scenario:
         return true;
       case EntrySetAction.emptyBin:
         return !isSelecting && hasItems;
@@ -209,6 +211,8 @@ class EntrySetActionDelegate
       case EntrySetAction.addShortcut:
         _addShortcut(context);
       case EntrySetAction.setHome:
+        _setHome(context);
+      case EntrySetAction.fix2Scenario:
         _setHome(context);
       // browsing or selecting
       case EntrySetAction.map:
@@ -272,7 +276,8 @@ class EntrySetActionDelegate
 
   Set<AvesEntry> _getTargetItems(BuildContext context) {
     final selection = context.read<Selection<AvesEntry>>();
-    final groupedEntries = (selection.isSelecting ? selection.selectedItems : context.read<CollectionLens>().sortedEntries);
+    final groupedEntries =
+        (selection.isSelecting ? selection.selectedItems : context.read<CollectionLens>().sortedEntries);
     return groupedEntries.expand((entry) => entry.stackedEntries ?? {entry}).toSet();
   }
 
@@ -490,8 +495,10 @@ class EntrySetActionDelegate
     if (!await checkStoragePermissionForAlbums(context, selectionDirs, entries: todoItems)) return;
 
     Set<String> obsoleteTags = todoItems.expand((entry) => entry.tags).toSet();
-    Set<String> obsoleteCountryCodes = todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.countryCode).nonNulls.toSet();
-    Set<String> obsoleteStateCodes = todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.stateCode).nonNulls.toSet();
+    Set<String> obsoleteCountryCodes =
+        todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.countryCode).nonNulls.toSet();
+    Set<String> obsoleteStateCodes =
+        todoItems.where((entry) => entry.hasAddress).map((entry) => entry.addressDetails?.stateCode).nonNulls.toSet();
 
     final dataTypes = <EntryDataType>{};
     final source = context.read<CollectionSource>();
@@ -593,7 +600,8 @@ class EntrySetActionDelegate
 
     if (unsupported.isEmpty) return supported;
 
-    final unsupportedTypes = unsupported.map((entry) => entry.mimeType).toSet().map(MimeUtils.displayType).toList()..sort();
+    final unsupportedTypes = unsupported.map((entry) => entry.mimeType).toSet().map(MimeUtils.displayType).toList()
+      ..sort();
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -682,7 +690,8 @@ class EntrySetActionDelegate
     await _edit(context, entries, (entry) => entry.editLocation(location));
   }
 
-  Future<LatLng?> editLocationByMap(BuildContext context, Set<AvesEntry> entries, LatLng clusterLocation, CollectionLens mapCollection) async {
+  Future<LatLng?> editLocationByMap(
+      BuildContext context, Set<AvesEntry> entries, LatLng clusterLocation, CollectionLens mapCollection) async {
     final editableEntries = await _getEditableItems(context, entries, canEdit: (entry) => entry.canEditLocation);
     if (editableEntries == null || editableEntries.isEmpty) return null;
 

@@ -151,6 +151,7 @@ class _Fix2ScenarioDialogState extends State<Fix2ScenarioDialog> with FeedbackMi
     }
     final newScenario = await scenarios.newRow(1, labelName: scenarioName, loadType: details.loadType);
     final newScenarioStep = scenarioSteps.newRow(
+      labelName: '$scenarioName 01',
       existMaxOrderNumOffset: 1,
       scenarioId: newScenario.id,
       existMaxStepNumOffset: 1,

@@ -1,91 +1,82 @@
 ## Aves-ST, 收图浏览
 
-This app offers enhanced features, flexibility, and convenience for managing and sharing photos, better than any traditional secure photo album apps.
+比「自带相册/Google相册/绝大多数保险柜or私密相册」更好用本地相册；
+比「Wallpaper Engine/小米画报」更合用的静态手机壁纸软件；
+免费，开源，全程禁止联网使用即可。
 
-## 1
-
-In real-life scenarios, when sharing photo albums with others:
-
-(1) Static protection against social embarrassment: Only display selected photos/videos.
-
-(2) Dynamic protection against social embarrassment: 
-Set different conditions for display scenarios, quickly switch between scenarios, and show only photos or videos that meet the criteria.
-
-(3) Restrictions can be locked or unlocked at any time.
-
-## 2
-
-More convenient and flexible use of personal wallpapers:
-
-Set private photos that might be inappropriate to display publicly as your personal wallpaper and switch to harmless, public-friendly wallpapers (e.g., random landscape photos) whenever needed.
-
-## 3
-More efficient image browsing :
-
-Search Assistant: Quickly filter and find suitable images using various criteria.
-
-Copy and share/update to current usage: Easily use images/videos in the "recent files" section of other apps, bypassing their often limited image browsing capabilities.
-
-1、在现实生活中，给他人查看相册内容时：
-
-(1)静态防社死：指定只显示固定选择的图片/视频内容。
-
-(2)动态防社死：指定不同条件限制场景，快速切换场景，只显示符合条件的图片或视频；
-
-(3)可随时锁定解锁限制。
-
-2、更方便大胆地设置任何不方便被他人看到的图片作为私人时间手机壁纸，同时随时切换无害的可当众展示的例如随便什么风景图壁纸。
-
-3、更方便的找图和用图模式，
-
-【查询助手】，使用各种限制，快速筛选合用的图片；
-
-【复制分享/更新于现】，使得更容易在其他软件【最近文件】处直接使用图片/视频，抛开不用其他软件孱弱的图片浏览功能。
-
-## 功能
-
-防社死
-
-1、临时指定,分享图片给好友观看时只显示指定的图片：
-Temporarily specify images to share with friends:
-Only the designated images will be displayed for viewing.
-![001_tmp_assign.png](snap%2F001_tmp_assign.png)
+A local album better than "built-in albums/Google Photos/most vault or private albums";
+A static mobile wallpaper app more suitable than "Wallpaper Engine/Xiaomi Wallpaper".
+Free, open-source,can with no internet usage allowed at most point.
 
 
-2、自定义场景，例如只允许显示最近3小时内拍摄的照片：
+## 功能 Features：
 
-Custom scenarios:
+### 1 更好的条件搜索：
+文件名，文件类型，文件大小，文件宽高，文件日期，文件至今时长，
+文件标签，评分，元数据，指定媒体集，长按反选筛除不需要的特征，
+多条件搜索，减轻翻查媒体集的难度。
 
-For example, only allow photos taken within the past 3 hours to be shown.
-
-![002_add_scenario.png](snap%2F002_add_scenario.png)
-
-
-3、等级壁纸，随时切换会让人社死的壁纸设置与不会社死的壁纸设置：
-
-Tiered wallpapers:
-
-Easily switch between socially embarrassing wallpapers and safe, non-embarrassing ones.
-
-![003_level_wallpaper.png](snap%2F003_level_wallpaper.png)
+![f001_search.png](snap%2Fmain_feature_pic%2Ff001_search.png)
 
 
-4、复制分享，使想要分享的图片在其它APP中总是显示在最新。在查找图片这点上，图片浏览器总是比其它社交软件的图片查看功能更好用，不是么？
+### 2 快速固化条件搜索为场景，密码锁定护隐私
+假设你大量图片视频不适合公开他人查看，但你又要演示相册所有功能，
+可以加个测试限制：只显示有标签tag{test}的图。
+如图示，3万张变100张。
+比诸多保险箱like私密相册好用了：与其隐藏什么，不如决定只显示什么。
+且不会因卸载或清空数据而丢失相册数据。
 
-Copy and share:
-
-Ensure that the images you want to share always appear at the top of the "recent files" list in other apps. 
-
-For finding and using images, a dedicated image viewer is always better than the built-in features of most social apps, isn’t it?
-![004_share_by_copy.png](snap%2F004_share_by_copy.png)
+![f002_scenario_restrictions.png](snap%2Fmain_feature_pic%2Ff002_scenario_restrictions.png)
 
 
-5、卓面小部件显示横向壁纸，查询助手帮助查看指定条件图片：
+### 3 临时指定与临时场景，自动密码锁定
+当临时需要给别人看几张图，却不希望他乱滑看到不该看的；
+【临时指定】自动生成临时标签和临时场景，并锁定，隐藏除选中内容外所有内容；
 
-Desktop widgets and query assistant:
+![f003_tmp_assign_and_tmp_scenario.png](snap%2Fmain_feature_pic%2Ff003_tmp_assign_and_tmp_scenario.png)
 
-Display horizontal wallpapers with a widget, and use the query assistant to find images that meet specific criteria.
-![005_fgw_widget_and_query_helper.png](snap%2F005_fgw_widget_and_query_helper.png)
+
+### 4 弃用其它软件如微信QQ孱弱的图片浏览功能
+在收图浏览中按条件搜索找到图片，
+【复制分享】项目至Aves_Copied_For_Share，且更新日期EXIF信息，
+简单就能在如微信最近文件处使用，不用额外翻找。
+不想复制，旁边就是【直接更新日期，不复制】。
+复制项目自动删除，默认删除至回收站，但我习惯手动设为彻底删除。
+
+![f004_weak_image_browsing.png](snap%2Fmain_feature_pic%2Ff004_weak_image_browsing.png)
+
+
+### 5 等级隐私壁纸通知栏快速切换（可密码锁定）
+不同等级设置不同的壁纸，私人时间随便什么壁纸。
+无需额外导入文件，几万张几十GB手机图片自由原处随机：
+不像小米画报额外存储，50G变100G，100G变200G，这谁用得起？
+
+![f005_privacy_guard_level_wallpaper.png](snap%2Fmain_feature_pic%2Ff005_privacy_guard_level_wallpaper.png)
+
+### 6 壁纸操作：快删除，快分享；
+点击进入快速删除不满意的壁纸，释放存储空间，
+或快速复制分享，原图分享好看的给朋友；
+快速按记录显示被使用过设为壁纸的文件；
+【警告：按记录显示，删除直接删除文件！无删除单个记录功能，有清空记录功能】
+
+![f006_01_quick_delete.png](snap%2Fmain_feature_pic%2Ff006_01_quick_delete.png)
+
+![f006_02_quick_copy_share.png](snap%2Fmain_feature_pic%2Ff006_02_quick_copy_share.png)
+
+### 7 为了看横向的壁纸：添加横向桌面工具前台壁纸
+（受等级影响显示不同设置图片）
+
+![f007_01_landscape_wallpaper.png](snap%2Fmain_feature_pic%2Ff007_01_landscape_wallpaper.png)
+
+![f007_01_landscape_wallpaper_modify_size.png](snap%2Fmain_feature_pic%2Ff007_01_landscape_wallpaper_modify_size.png)
+
+### 8 Thibault Deckers：视频【按帧前进后退+捕获帧】【4倍速播放】
+
+![f008_01_video_aves.png](snap%2Fmain_feature_pic%2Ff008_01_video_aves.png)
+
+我认为【捕获帧】很可以用来提取视频截屏生成壁纸，所以想提醒下有这个功能。
+
+
 
 ## 说明
 
